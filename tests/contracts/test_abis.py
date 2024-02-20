@@ -1,5 +1,5 @@
 import pytest
-from cow_py.common import abis
+from cow_py.contracts import abis
 
 
 @pytest.mark.parametrize(
