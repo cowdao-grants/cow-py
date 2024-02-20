@@ -1,4 +1,3 @@
-import pytest
 from cow_py.core.cow_error import (
     CowError,
 )  # Adjust the import path according to your project structure

@@ -7,6 +7,7 @@ import logging
 
 import httpx
 
+
 class GraphQLError(Exception):
     pass
 
