@@ -25,18 +25,19 @@ jobs:
           python-version-file: ${{ github.workspace }}/.python-version
           cache: poetry
           cache-dependency-path: poetry.lock
+
       - name: Install dependencies
         run: |
           poetry install
 
       - name: Typecheck
         run: |
-          pyright .
+          poetry run pyright .
 
       - name: Lint
         run: |
-          ruff check .
+          poetry run ruff check .
 
       - name: Test
         run: |
-          python3 -m pytest tests/
+          poetry run pytest tests/
