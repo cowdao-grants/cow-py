@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "cow-py"
+version = "0.1.0"
+description = ""
+authors = ["José Ribeiro <jose@bleu.studio>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+httpx = "^0.26.0"
+web3 = "^6.15.1"
+
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.2.2"
+pyright ="^1.1.296"
+pytest ="^7.2.1"
+ipython = "^8.21.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
