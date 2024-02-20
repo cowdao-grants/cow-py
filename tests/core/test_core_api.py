@@ -1,5 +1,5 @@
 import pytest
-from cow_py.core import constants, cow_error, abis, chains, config, utils
+from cow_py.common import constants, cow_error, abis, chains, config, utils
 
 
 @pytest.mark.parametrize("module", [constants, cow_error, abis, chains, config, utils])

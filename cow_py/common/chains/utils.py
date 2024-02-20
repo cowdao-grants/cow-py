@@ -1,4 +1,4 @@
-from cow_py.core.chains import CHAIN_SCANNER_MAP, Chain
+from cow_py.common.chains import CHAIN_SCANNER_MAP, Chain
 
 
 def get_explorer_link(chain: Chain, tx_hash: str) -> str:

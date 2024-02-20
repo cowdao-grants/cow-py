@@ -1,5 +1,5 @@
 import pytest
-from cow_py.core import abis
+from cow_py.common import abis
 
 
 @pytest.mark.parametrize(
