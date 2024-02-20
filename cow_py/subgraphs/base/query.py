@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 
-from cow_py.common.chains import Chain
+from cow_py.core.chains import Chain
 from cow_py.subgraphs.base.client import GraphQLClient
 
 

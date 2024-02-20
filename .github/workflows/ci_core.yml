@@ -1,0 +1,19 @@
+---
+name: CI libs/core
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/python_reusable.yml'
+      - '.github/workflows/ci_base.yml'
+      - 'cow_py/**'
+      - 'tests/**'
+  workflow_dispatch:  # Allows to trigger the workflow manually in GitHub UI
+
+jobs:
+  ci-libs-core:
+    uses:
+      ./.github/workflows/python_reusable.yml
+    with:
+      working-directory: ./
+    secrets: inherit
