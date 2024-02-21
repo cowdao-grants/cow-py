@@ -40,7 +40,7 @@ class GraphQLClient(ABC):
         return await gql(self.url, query, variables=variables)
 
     @abstractmethod
-    def get_url(self, chain) -> str:
+    def get_url(self, chain: Chain) -> str:
         pass
 
     @classmethod
