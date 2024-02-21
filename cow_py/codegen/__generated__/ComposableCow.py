@@ -7,6 +7,7 @@ from cow_py.codegen.components import (
     BaseContract,
     FileAbiLoader,
     ContractFactory,
+    get_abi_file,
 )
 
 
@@ -137,8 +138,6 @@ class ComposableCowMixin(BaseMixin):
 
 class ComposableCow(BaseContract, ComposableCowMixin):
     def __init__(self, chain: Chain = Chain.MAINNET, address: str = ""):
-        abi_loader = FileAbiLoader(
-            "/Users/joseribeiro/projects/bleu/cow/cow-py/cow_py/contracts/abi/ComposableCow.json"
-        )
+        abi_loader = FileAbiLoader(get_abi_file("ComposableCow"))
         contract = ContractFactory.create("ComposableCow", chain, address, abi_loader)
         super(ComposableCow, self).__init__(address, chain, abi=contract.ABI)

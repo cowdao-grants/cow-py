@@ -6,6 +6,7 @@ from cow_py.codegen.components import (
     BaseContract,
     FileAbiLoader,
     ContractFactory,
+    get_abi_file,
 )
 
 
@@ -91,9 +92,7 @@ class ExtensibleFallbackHandlerMixin(BaseMixin):
 
 class ExtensibleFallbackHandler(BaseContract, ExtensibleFallbackHandlerMixin):
     def __init__(self, chain: Chain = Chain.MAINNET, address: str = ""):
-        abi_loader = FileAbiLoader(
-            "/Users/joseribeiro/projects/bleu/cow/cow-py/cow_py/contracts/abi/ExtensibleFallbackHandler.json"
-        )
+        abi_loader = FileAbiLoader(get_abi_file("ExtensibleFallbackHandler"))
         contract = ContractFactory.create(
             "ExtensibleFallbackHandler", chain, address, abi_loader
         )

@@ -6,6 +6,7 @@ from cow_py.codegen.components import (
     BaseContract,
     FileAbiLoader,
     ContractFactory,
+    get_abi_file,
 )
 
 
@@ -80,8 +81,6 @@ class TWAPMixin(BaseMixin):
 
 class TWAP(BaseContract, TWAPMixin):
     def __init__(self, chain: Chain = Chain.MAINNET, address: str = ""):
-        abi_loader = FileAbiLoader(
-            "/Users/joseribeiro/projects/bleu/cow/cow-py/cow_py/contracts/abi/TWAP.json"
-        )
+        abi_loader = FileAbiLoader(get_abi_file("TWAP"))
         contract = ContractFactory.create("TWAP", chain, address, abi_loader)
         super(TWAP, self).__init__(address, chain, abi=contract.ABI)

@@ -4,7 +4,7 @@ from hexbytes import HexBytes
 from cow_py.common.chains import Chain
 from dataclasses import dataclass
 from enum import Enum
-from cow_py.codegen.components import BaseMixin, BaseContract, FileAbiLoader, ContractFactory
+from cow_py.codegen.components import BaseMixin, BaseContract, FileAbiLoader, ContractFactory, get_abi_file
 
 {{! Generate data classes and enums }}
 {{#each enums}}
@@ -39,6 +39,6 @@ class {{contractName}}Mixin(BaseMixin):
 class {{contractName}}(BaseContract, {{contractName}}Mixin):
     def __init__(self, chain: Chain = Chain.MAINNET, address: str = ""):
         {{!-- TEMPORARY -- abiPath should be a resolved ABI given we're already generating this --}}
-        abi_loader = FileAbiLoader("{{abiPath}}")
+        abi_loader = FileAbiLoader(get_abi_file("{{contractName}}"))
         contract = ContractFactory.create('{{contractName}}', chain, address, abi_loader)
         super({{contractName}}, self).__init__(address, chain, abi=contract.ABI)
