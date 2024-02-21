@@ -9,6 +9,7 @@ readme = "README.md"
 python = ">=3.8,<4.0"
 httpx = "^0.26.0"
 web3 = "^6.15.1"
+pybars3 = "^0.9.7"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -17,6 +18,9 @@ pyright ="^1.1.296"
 pytest ="^7.2.1"
 ipython = "*"
 pre-commit = "3.*"
+
+[tool.poetry.scripts]
+codegen = 'cow_py.codegen.main:main'
 
 [build-system]
 requires = ["poetry-core"]
