@@ -43,7 +43,7 @@ print(orders)
 - `common/`(WIP): Utilities and configurations, the backbone of the SDK.
 - `contracts/`(TODO): A pasture of Smart contract ABIs for interaction.
 - `order_book/`(TODO): Functions to wrangle orders on the CoW Protocol.
-- `order_signing/`(TODO): Tools for signing and validating orders.
+- `order_signing/`(TODO): Tools for signing and validating orders. Anything inside this module should use higher level modules, and the process of actually signing (ie. calling the web3 function to generate the signature, should be handled in contracts, not here).
 - `subgraphs/`(WIP): GraphQL clients for querying CoW Protocol data.
 - `web3/`: Web3 providers for blockchain interactions.
 
