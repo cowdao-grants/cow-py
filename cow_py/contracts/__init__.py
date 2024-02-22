@@ -1,3 +1,3 @@
-from cow_py.contracts import abis
+from cow_py.contracts import abi
 
-__all__ = ["abis"]
+__all__ = ["abi"]
