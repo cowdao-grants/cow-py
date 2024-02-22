@@ -4,6 +4,7 @@ from pybars import Compiler
 from cow_py.codegen.components.abi_loader import FileAbiLoader
 import importlib.resources
 from cow_py.codegen.components import templates
+from cow_py.codegen.components.templates import partials
 
 from cow_py.codegen.solidity_converter import SolidityConverter
 
@@ -13,6 +14,20 @@ CAMEL_TO_SNAKE_REGEX = re.compile(
     r"(?<=[A-Za-z])(?=[0-9])|"  # Letter to digit
     r"(?<=[0-9])(?=[A-Z])"  # Digit to uppercase
 )
+
+
+def compile_partial(partial_path: str) -> str:
+    with open(partial_path, "r") as file:
+        partial = file.read()
+    compiler = Compiler()
+    return compiler.compile(partial)
+
+
+def get_filename_without_extension(path: str):
+    """
+    Returns the a filename from the path, without the extension.
+    """
+    return path.split("/")[-1].split(".")[0]
 
 
 def to_python_conventional_name(name: str) -> str:
@@ -25,7 +40,12 @@ def to_python_conventional_name(name: str) -> str:
 
 def _get_template_file() -> str:
     pkg_files = importlib.resources.files(templates)
-    return str(next(x for x in pkg_files.iterdir() if x.suffix == ".handlebars"))  # type: ignore
+    return str(next(x for x in pkg_files.iterdir() if x.suffix == ".hbs"))  # type: ignore
+
+
+def _get_partials_files() -> str:
+    pkg_files = importlib.resources.files(partials)
+    return [str(x) for x in pkg_files.iterdir() if x.suffix == ".hbs"]  # type: ignore
 
 
 class ABIHandler:
@@ -212,9 +232,14 @@ class ABIHandler:
         return input_args
 
     def _render_template(self, data: Dict[str, Any]) -> str:
+        partials = {
+            get_filename_without_extension(partial_path): compile_partial(partial_path)
+            for partial_path in _get_partials_files()
+        }
+
         with open(_get_template_file(), "r") as file:
             template = file.read()
 
         compiler = Compiler()
         template = compiler.compile(template)
-        return template(data)
+        return template(data, partials=partials)
