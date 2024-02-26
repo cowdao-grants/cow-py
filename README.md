@@ -73,7 +73,7 @@ from cow_py.subgraph.client import SubgraphClient
 url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
 client = SubgraphClient(url=url)
 
-response = await client.execute(query=   """
+response = await client.execute(query="""
             query LastDaysVolume($days: Int!) {
               dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
                 timestamp
