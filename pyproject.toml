@@ -20,6 +20,7 @@ pytest ="^7.2.1"
 ipython = "*"
 pre-commit = "3.*"
 datamodel-code-generator = "^0.25.4"
+ariadne-codegen = "^0.12.0"
 
 [tool.poetry.scripts]
 web3_codegen = 'cow_py.codegen.main:main'
@@ -27,3 +28,11 @@ web3_codegen = 'cow_py.codegen.main:main'
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ariadne-codegen]
+remote_schema_url= "https://api.thegraph.com/subgraphs/name/cowprotocol/cow"
+queries_path = "cow_py/subgraph/queries"
+target_package_name="client"
+target_package_path="cow_py/subgraph"
+client_name="SubgraphClient"
+client_file_name="subgraph_client"

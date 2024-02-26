@@ -172,6 +172,32 @@ files = [
 test = ["coverage", "mypy", "pexpect", "ruff", "wheel"]
 
 [[package]]
+name = "ariadne-codegen"
+version = "0.12.0"
+description = "Generate fully typed GraphQL client from schema, queries and mutations!"
+optional = false
+python-versions = "*"
+files = [
+    {file = "ariadne_codegen-0.12.0-py2.py3-none-any.whl", hash = "sha256:bd7faabfa00838ef0ec2b1d87e6623f31cb842f222941290ba091641cff538ed"},
+    {file = "ariadne_codegen-0.12.0.tar.gz", hash = "sha256:bc3285543508fb8f286770c90ce63ece2532615628fec2ac7d50420c96e79fd5"},
+]
+
+[package.dependencies]
+autoflake = "*"
+black = "*"
+click = ">=8.1,<9.0"
+graphql-core = ">=3.2.0,<3.3"
+httpx = ">=0.23,<1.0"
+isort = "*"
+pydantic = ">=2.0.0,<3.0.0"
+toml = ">=0.10,<1.0"
+
+[package.extras]
+dev = ["ariadne", "freezegun", "mypy", "pylint", "pytest", "pytest-asyncio", "pytest-httpx", "pytest-mock", "requests-toolbelt", "types-toml"]
+opentelemetry = ["opentelemetry-api"]
+subscriptions = ["websockets (>=11.0,<12.0)"]
+
+[[package]]
 name = "asttokens"
 version = "2.4.1"
 description = "Annotate AST trees with source code positions"
@@ -218,6 +244,21 @@ docs = ["furo", "myst-parser", "sphinx", "sphinx-notfound-page", "sphinxcontrib-
 tests = ["attrs[tests-no-zope]", "zope-interface"]
 tests-mypy = ["mypy (>=1.6)", "pytest-mypy-plugins"]
 tests-no-zope = ["attrs[tests-mypy]", "cloudpickle", "hypothesis", "pympler", "pytest (>=4.3.0)", "pytest-xdist[psutil]"]
+
+[[package]]
+name = "autoflake"
+version = "2.3.0"
+description = "Removes unused imports and unused variables"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "autoflake-2.3.0-py3-none-any.whl", hash = "sha256:79a51eb8c0744759d2efe052455ab20aa6a314763510c3fd897499a402126327"},
+    {file = "autoflake-2.3.0.tar.gz", hash = "sha256:8c2011fa34701b9d7dcf05b9873bc4859d4fce4e62dfea90dffefd1576f5f01d"},
+]
+
+[package.dependencies]
+pyflakes = ">=3.0.0"
+tomli = {version = ">=2.0.1", markers = "python_version < \"3.11\""}
 
 [[package]]
 name = "backcall"
@@ -1072,6 +1113,17 @@ optional = false
 python-versions = "*"
 files = [
     {file = "genson-1.2.2.tar.gz", hash = "sha256:8caf69aa10af7aee0e1a1351d1d06801f4696e005f06cedef438635384346a16"},
+]
+
+[[package]]
+name = "graphql-core"
+version = "3.2.3"
+description = "GraphQL implementation for Python, a port of GraphQL.js, the JavaScript reference implementation for GraphQL."
+optional = false
+python-versions = ">=3.6,<4"
+files = [
+    {file = "graphql-core-3.2.3.tar.gz", hash = "sha256:06d2aad0ac723e35b1cb47885d3e5c45e956a53bc1b209a9fc5369007fe46676"},
+    {file = "graphql_core-3.2.3-py3-none-any.whl", hash = "sha256:5766780452bd5ec8ba133f8bf287dc92713e3868ddd83aee4faab9fc3e303dc3"},
 ]
 
 [[package]]
@@ -2003,6 +2055,17 @@ files = [
 typing-extensions = ">=4.6.0,<4.7.0 || >4.7.0"
 
 [[package]]
+name = "pyflakes"
+version = "3.2.0"
+description = "passive checker of Python programs"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pyflakes-3.2.0-py2.py3-none-any.whl", hash = "sha256:84b5be138a2dfbb40689ca07e2152deb896a65c3a3e24c251c5c62489568074a"},
+    {file = "pyflakes-3.2.0.tar.gz", hash = "sha256:1c61603ff154621fb2a9172037d84dca3500def8c8b630657d1701f026f8af3f"},
+]
+
+[[package]]
 name = "pygments"
 version = "2.17.2"
 description = "Pygments is a syntax highlighting package written in Python."
@@ -2853,4 +2916,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.8,<4.0"
-content-hash = "dd8a2d13ba503f5c1d0a9231eb75a76b056f439041159d956d53e9ba86e5330d"
+content-hash = "d3a074d4f44033aded3695e2f7df17bda89ece4a82de0c836f182189410f4297"
