@@ -38,3 +38,11 @@ target_package_name="client"
 target_package_path="cow_py/subgraph"
 client_name="SubgraphClient"
 client_file_name="subgraph_client"
+
+[tool.pyright]
+# NOTE: these paths are excluded but not IGNORED. They are still included in the analysis if they are referenced by source files that are not excluded. 
+exclude = ["**/node_modules",
+    "**/__pycache__",
+    "cow_py/subgraph/client/*.py",
+    "cow_py/order_book/__generated__/*.py"
+]
