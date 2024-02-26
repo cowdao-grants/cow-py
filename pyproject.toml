@@ -23,6 +23,7 @@ datamodel-code-generator = "^0.25.4"
 ariadne-codegen = "^0.12.0"
 pytest-httpx = "^0.30.0"
 pytest-asyncio = "^0.23.5"
+web3 = {extras = ["tester"], version = "^6.15.1"}
 
 [tool.poetry.scripts]
 web3_codegen = 'cow_py.codegen.main:main'
@@ -44,5 +45,6 @@ client_file_name="subgraph_client"
 exclude = ["**/node_modules",
     "**/__pycache__",
     "cow_py/subgraph/client/*.py",
-    "cow_py/order_book/__generated__/*.py"
+    # "cow_py/order_book/generated/*.py"
 ]
+reportIncompatibleVariableOverride='warning'
