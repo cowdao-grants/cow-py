@@ -1,0 +1,10 @@
+{{#each enums}}
+{{#if @first}}
+# TODO: Enums must be fixed before using them. They currently only use placeholder values.
+{{/if}}
+class {{this.name}}(Enum):
+{{#each this.values}}
+    {{this.name}} = {{this.value}}
+{{/each}}
+
+{{/each}}

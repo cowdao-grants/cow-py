@@ -1,0 +1,8 @@
+{{#each dataClasses}}
+@dataclass
+class {{this.name}}:
+{{#each this.properties}}
+    {{this.name}}: {{this.type}}
+{{/each}}
+
+{{/each}}

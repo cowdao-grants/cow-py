@@ -1,0 +1,10 @@
+# /**
+#  * GraphQL query for the total volume over the last N hours.
+#  * @param hours The number of hours to query.
+#  */
+query LastHoursVolume($hours: Int!) {
+  hourlyTotals(orderBy: timestamp, orderDirection: desc, first: $hours) {
+    timestamp
+    volumeUsd
+  }
+}

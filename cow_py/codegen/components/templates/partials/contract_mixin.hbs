@@ -1,0 +1,6 @@
+class {{contractName}}Mixin(BaseMixin):
+{{#each methods}}
+    def {{this.name}}(self{{#each this.inputs}}{{#if @first}}, {{/if}}{{this.name}}: {{this.type}}{{#unless @last}}, {{/unless}}{{/each}}) -> {{this.outputType}}:
+        return self.call_contract_method('{{this.originalName}}'{{#each this.inputs}}{{#if @first}}, {{/if}}{{#if this.isTuple}}{{this.destructuredArgs}}{{else}}{{this.name}}{{/if}}{{#unless @last}}, {{/unless}}{{/each}})
+
+{{/each}}

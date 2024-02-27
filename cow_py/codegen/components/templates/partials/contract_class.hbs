@@ -1,0 +1,6 @@
+class {{contractName}}(BaseContract, {{contractName}}Mixin):
+    def __init__(self, chain: Chain = Chain.MAINNET, address: str = ""):
+        {{!-- TEMPORARY -- abiPath should be a resolved ABI given we're already generating this --}}
+        abi_loader = FileAbiLoader(get_abi_file("{{contractName}}"))
+        contract = ContractFactory.create('{{contractName}}', chain, address, abi_loader)
+        super({{contractName}}, self).__init__(address, chain, abi=contract.ABI)
