@@ -8,10 +8,13 @@ class SubgraphEnvironment(Enum):
     STAGING = "staging"
 
 
-SUBGRAPH_BASE_URL = "https://api.thegraph.com/subgraphs/name/cowprotocol"
+SUBGRAPH_BASE_URL = "https://api.thegraph.com/subgraph/name/cowprotocol"
 
 
-def build_subgraph_url(chain: Chain, env: SubgraphEnvironment) -> str:
+def build_subgraph_url(
+    chain: Chain = Chain.MAINNET,
+    env: SubgraphEnvironment = SubgraphEnvironment.PRODUCTION,
+) -> str:
     base_url = SUBGRAPH_BASE_URL
 
     network_suffix = "" if chain == Chain.MAINNET else "-gc"
