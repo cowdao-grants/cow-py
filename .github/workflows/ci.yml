@@ -14,7 +14,7 @@ jobs:
     strategy:
       matrix:
         python-version: [
-          "3.8", "3.9", "3.10", "3.11", "3.12",
+          "3.10", "3.11", "3.12",
         ]
     timeout-minutes: 10
     steps:
@@ -31,6 +31,10 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: poetry
           cache-dependency-path: poetry.lock
+
+      - name: Poetry lock
+        run: |
+          poetry lock
 
       - name: Install dependencies
         run: |
