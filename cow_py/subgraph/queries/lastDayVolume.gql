@@ -1,0 +1,10 @@
+# /**
+#  * GraphQL query for the total volume over the last N days.
+#  * @param days The number of days to query.
+#  */
+query LastDaysVolume($days: Int!) {
+  dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
+    timestamp
+    volumeUsd
+  }
+}
