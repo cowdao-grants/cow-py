@@ -8,7 +8,7 @@ Welcome to the CoW Protocol Python SDK (cow_py), a developer-friendly Python lib
 
 ## 🐄 Features
 
-- Querying CoW Protocol subgraph.
+- Querying the CoW Protocol subgraph.
 - Managing orders on the CoW Protocol.
 - Interacting with CoW Protocol smart contracts.
 - Encoding orders metadata and pinning to CID.
