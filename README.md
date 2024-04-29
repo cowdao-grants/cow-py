@@ -87,22 +87,6 @@ data = client.get_data(response)
 pprint(data)
 ```
 
-### Signing an Order (TODO)
-
-```python
-from cow_py.order_signing import sign_order
-
-# Example order details
-order_details = {
-    "sell_token": "0x...",
-    "buy_token": "0x...",
-    "sell_amount": 100000,
-}
-
-signed_order = sign_order(order_details, private_key="your_private_key")
-print(signed_order)
-```
-
 ## 🐄 Development
 
 ### 🐄 Tests
@@ -129,7 +113,6 @@ Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook 
 ```bash
 make codegen
 ```
-
 
 ## 🐄 Contributing to the Herd
 
