@@ -1,0 +1,2 @@
+class AppDataDoc:
+    pass
