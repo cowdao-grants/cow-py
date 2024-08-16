@@ -18,13 +18,14 @@ from cow_py.contracts.sign import EcdsaSignature, SigningScheme
 from cow_py.contracts.sign import sign_order as _sign_order
 from cow_py.order_book.api import OrderBookApi
 from cow_py.order_book.config import OrderBookAPIConfigFactory
-from cow_py.order_book.generated.model import OrderQuoteSide1, TokenAmount
-from cow_py.order_book.generated.model import OrderQuoteSideKindSell
 from cow_py.order_book.generated.model import (
-    UID,
+    OrderQuoteSideKindSell,
+    OrderQuoteSide1,
     OrderCreation,
     OrderQuoteRequest,
     OrderQuoteResponse,
+    UID,
+    TokenAmount,
 )
 
 BUY_TOKEN = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"  # WETH
