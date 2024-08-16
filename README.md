@@ -8,7 +8,7 @@ Welcome to the CoW Protocol Python SDK (cow_py), a developer-friendly Python lib
 
 ## 🐄 Features
 
-- Querying CoW Protocol subgraphs.
+- Querying the CoW Protocol subgraph.
 - Managing orders on the CoW Protocol.
 - Interacting with CoW Protocol smart contracts.
 - Encoding orders metadata and pinning to CID.
@@ -27,14 +27,14 @@ pip install cow_py
 Here's a simple example to get your hooves dirty:
 
 ```python
-# TODO: this code is aspirational, this API doesn't exist
-from cow_py.order_book import OrderBook
 
-# Initialize the OrderBook
-order_book = OrderBook()
+from cow_py.order_book.api import OrderBookApi, UID
+
+# Initialize the OrderBookApi
+order_book_api = OrderBookApi()
 
 # Fetch and display orders
-orders = order_book.get_orders()
+orders = order_book.get_order_by_uid(UID("0x..."))
 print(orders)
 ```
 
@@ -44,19 +44,47 @@ print(orders)
 - `contracts/`(TODO): A pasture of Smart contract ABIs for interaction.
 - `order_book/`(TODO): Functions to wrangle orders on the CoW Protocol.
 - `order_signing/`(TODO): Tools for signing and validating orders. Anything inside this module should use higher level modules, and the process of actually signing (ie. calling the web3 function to generate the signature, should be handled in contracts, not here).
-- `subgraphs/`(WIP): GraphQL clients for querying CoW Protocol data.
+- `subgraph/`(WIP): GraphQL client for querying CoW Protocol's subgraph.
 - `web3/`: Web3 providers for blockchain interactions.
 
 ## 🐄 How to Use
 
-### Querying the Subgraph (WIP)
+### Querying the Subgraph
+
+Using the built-in GraphQL client, you can query the CoW Protocol's Subgraph to get real-time data on the CoW Protocol. You can query the Subgraph by using the `SubgraphClient` class and passing in the URL of the Subgraph.
 
 ```python
-from cow_py.subgraphs.queries import TotalsQuery
+from cow_py.subgraph.client import SubgraphClient
 
-totals_query = TotalsQuery()
-totals = await totals_query.execute()
-print(totals)
+url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
+client = SubgraphClient(url=url)
+
+# Fetch the total supply of the CoW Protocol, defined in a query in cow_py/subgraph/queries
+totals = await client.totals()
+print(totals) # Pydantic model, defined in cow_py/subgraph/graphql_client/{query_name}.py
+```
+
+Or you can leverage `SubgraphClient` to use a custom query and get the results as JSON:
+
+```python
+from pprint import pprint
+from cow_py.subgraph.client import SubgraphClient
+
+url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
+client = SubgraphClient(url=url)
+
+response = await client.execute(query="""
+            query LastDaysVolume($days: Int!) {
+              dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
+                timestamp
+                volumeUsd
+              }
+            }
+            """, variables=dict(days=2)
+            )
+
+data = client.get_data(response)
+pprint(data)
 ```
 
 ### Signing an Order (TODO)
@@ -74,6 +102,34 @@ order_details = {
 signed_order = sign_order(order_details, private_key="your_private_key")
 print(signed_order)
 ```
+
+## 🐄 Development
+
+### 🐄 Tests
+
+Run tests to ensure everything's working:
+
+```bash
+make test # or poetry run pytest
+```
+
+### 🐄 Formatting/Linting
+
+Run the formatter and linter:
+
+```bash
+make format # or ruff check . --fix
+make lint # or ruff format
+```
+
+### 🐄 Codegen
+
+Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook API:
+
+```bash
+make codegen
+```
+
 
 ## 🐄 Contributing to the Herd
 
