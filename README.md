@@ -8,7 +8,7 @@ Welcome to the CoW Protocol Python SDK (cow_py), a developer-friendly Python lib
 
 ## 🐄 Features
 
-- Querying CoW Protocol subgraph.
+- Querying the CoW Protocol subgraph.
 - Managing orders on the CoW Protocol.
 - Interacting with CoW Protocol smart contracts.
 - Encoding orders metadata and pinning to CID.
@@ -44,7 +44,7 @@ print(orders)
 - `contracts/`(TODO): A pasture of Smart contract ABIs for interaction.
 - `order_book/`(TODO): Functions to wrangle orders on the CoW Protocol.
 - `order_signing/`(TODO): Tools for signing and validating orders. Anything inside this module should use higher level modules, and the process of actually signing (ie. calling the web3 function to generate the signature, should be handled in contracts, not here).
-- `subgraph/`(WIP): GraphQL client for querying CoW Protocol's Subgraph.
+- `subgraph/`(WIP): GraphQL client for querying CoW Protocol's subgraph.
 - `web3/`: Web3 providers for blockchain interactions.
 
 ## 🐄 How to Use
