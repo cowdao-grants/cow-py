@@ -3,22 +3,44 @@ from web3 import Web3
 from multiformats import multibase, CID
 
 from cow_py.app_data.appDataCid import AppDataCid
-from cow_py.app_data.consts import MetaDataError
+from cow_py.app_data.appDataDoc import AppDataDoc
+from cow_py.app_data.consts import DEFAULT_IPFS_READ_URI, MetaDataError
+from cow_py.app_data.utils import fetch_doc_from_cid
 
 
 class AppDataHex:
     def __init__(self, app_data_hex: str):
         self.app_data_hex = app_data_hex
 
-    def to_cid(self) -> AppDataCid:
+    def to_cid(self) -> str:
         cid = self._app_data_hex_to_cid()
         self._assert_cid(cid)
-        return AppDataCid(cid)
+        return cid
 
-    def to_cid_legacy(self) -> AppDataCid:
+    def to_cid_legacy(self) -> str:
         cid = self._app_data_hex_to_cid_legacy()
         self._assert_cid(cid)
-        return AppDataCid(cid)
+        return cid
+
+    async def to_doc(self, ipfs_uri: str = DEFAULT_IPFS_READ_URI) -> Dict[str, Any]:
+        try:
+            cid = self.to_cid()
+            return await fetch_doc_from_cid(cid, ipfs_uri)
+        except Exception as e:
+            raise MetaDataError(
+                f"Unexpected error decoding AppData: appDataHex={self.app_data_hex}, message={e}"
+            )
+
+    async def to_doc_legacy(
+        self, ipfs_uri: str = DEFAULT_IPFS_READ_URI
+    ) -> Dict[str, Any]:
+        try:
+            cid = self.to_cid_legacy()
+            return await fetch_doc_from_cid(cid, ipfs_uri)
+        except Exception as e:
+            raise MetaDataError(
+                f"Unexpected error decoding AppData: appDataHex={self.app_data_hex}, message={e}"
+            )
 
     def _assert_cid(self, cid: str):
         if not cid:

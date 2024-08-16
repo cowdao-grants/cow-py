@@ -12,7 +12,9 @@ APP_DATA_DOC = {
 
 APP_DATA_STRING = '{"appCode":"CoW Swap","metadata":{},"version":"0.7.0"}'
 
-CID = AppDataCid("f01551b20337aa6e6c2a7a0d1eb79a35ebd88b08fc963d5f7a3fc953b7ffb2b7f5898a1df")
+CID = AppDataCid(
+    "f01551b20337aa6e6c2a7a0d1eb79a35ebd88b08fc963d5f7a3fc953b7ffb2b7f5898a1df"
+)
 
 APP_DATA_HEX = AppDataHex(
     "0x337aa6e6c2a7a0d1eb79a35ebd88b08fc963d5f7a3fc953b7ffb2b7f5898a1df"
@@ -35,9 +37,13 @@ APP_DATA_DOC_CUSTOM = {
 
 APP_DATA_STRING_2 = '{"appCode":"CoW Swap","environment":"production","metadata":{"quote":{"slippageBips":"50","version":"0.2.0"},"orderClass":{"orderClass":"market","version":"0.1.0"}},"version":"0.6.0"}'
 
-CID_2 = "f01551b208af4e8c9973577b08ac21d17d331aade86c11ebcc5124744d621ca8365ec9424"
+CID_2 = AppDataCid(
+    "f01551b208af4e8c9973577b08ac21d17d331aade86c11ebcc5124744d621ca8365ec9424"
+)
 
-APP_DATA_HEX_2 = "0x8af4e8c9973577b08ac21d17d331aade86c11ebcc5124744d621ca8365ec9424"
+APP_DATA_HEX_2 = AppDataHex(
+    "0x8af4e8c9973577b08ac21d17d331aade86c11ebcc5124744d621ca8365ec9424"
+)
 
 APP_DATA_STRING_LEGACY = '{"version":"0.7.0","appCode":"CowSwap","metadata":{}}'
 
