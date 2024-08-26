@@ -1,5 +1,5 @@
-from cow_py.app_data.appDataCid import AppDataCid
-from cow_py.app_data.appDataHex import AppDataHex
+from cow_py.app_data.app_data_cid import AppDataCid
+from cow_py.app_data.app_data_hex import AppDataHex
 
 HTTP_STATUS_OK = 200
 HTTP_STATUS_INTERNAL_ERROR = 500

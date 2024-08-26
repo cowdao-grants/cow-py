@@ -1,7 +1,7 @@
 import httpx
 import pytest
 from unittest.mock import patch
-from cow_py.app_data.appDataCid import AppDataCid
+from cow_py.app_data.app_data_cid import AppDataCid
 from cow_py.app_data.consts import DEFAULT_IPFS_READ_URI
 from .mocks import APP_DATA_HEX, CID, APP_DATA_HEX_2, CID_2
 
@@ -20,7 +20,7 @@ async def test_fetch_doc_from_cid():
         "version": "0.1.0",
     }
 
-    with patch("cow_py.app_data.appDataCid.httpx.AsyncClient.get") as mock_get:
+    with patch("httpx.AsyncClient.get") as mock_get:
         mock_get.return_value = httpx.Response(200, json=expected)
 
         app_data_hex = AppDataCid(valid_serialized_cid)

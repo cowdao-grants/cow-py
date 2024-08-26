@@ -1,6 +1,4 @@
 from typing import Any, Dict
-import httpx
-from multiformats import CID, multibase
 
 from cow_py.app_data.consts import DEFAULT_IPFS_READ_URI
 from cow_py.app_data.utils import extract_digest, fetch_doc_from_cid
