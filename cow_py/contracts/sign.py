@@ -1,5 +1,6 @@
+from dataclasses import dataclass
 from enum import IntEnum
-from typing import List, NamedTuple, Union
+from typing import List, Union
 
 from eth_account import Account
 from eth_account.datastructures import SignedMessage
@@ -35,22 +36,26 @@ class SigningScheme(IntEnum):
     PRESIGN = 0b11
 
 
-class EcdsaSignature(NamedTuple):
+@dataclass
+class EcdsaSignature:
     scheme: SigningScheme
     data: str
 
 
-class Eip1271SignatureData(NamedTuple):
+@dataclass
+class Eip1271SignatureData:
     verifier: str
     signature: bytes
 
 
-class Eip1271Signature(NamedTuple):
+@dataclass
+class Eip1271Signature:
     scheme: SigningScheme
     data: Eip1271SignatureData
 
 
-class PreSignSignature(NamedTuple):
+@dataclass
+class PreSignSignature:
     scheme: SigningScheme
     data: str
 
@@ -79,12 +84,17 @@ def sign_order(
     )
 
 
-def sign_order_cancellation(domain, order_uid: Union[str, bytes], owner, scheme):
+def sign_order_cancellation(
+    domain, order_uid: Union[str, bytes], owner: LocalAccount, scheme: SigningScheme
+):
     return sign_order_cancellations(domain, [order_uid], owner, scheme)
 
 
 def sign_order_cancellations(
-    domain, order_uids: List[Union[str, bytes]], owner, scheme
+    domain,
+    order_uids: List[Union[str, bytes]],
+    owner: LocalAccount,
+    scheme: SigningScheme,
 ):
     data = {"orderUids": order_uids}
     types = {"OrderCancellations": CANCELLATIONS_TYPE_FIELDS}

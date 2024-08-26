@@ -28,11 +28,8 @@ def patched_sign_message_builder(account: LocalAccount):
         signature = account.signHash(message_hash)
         r, s, v = signature["r"], signature["s"], signature["v"]
 
-        # Adjust v to be 27 or 28
-        v_adjusted = v + 27 if v < 27 else v
-
         # Concatenate the signature components into a hex string
-        signature_hex = to_hex(r)[2:] + to_hex(s)[2:] + hex(v_adjusted)[2:]
+        signature_hex = to_hex(r)[2:] + to_hex(s)[2:] + hex(v)[2:]
 
         return signature_hex
 

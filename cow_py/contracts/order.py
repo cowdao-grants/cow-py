@@ -1,18 +1,19 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Literal, Optional, Union
 
 from eth_account.messages import _hash_eip191_message, encode_typed_data
 from eth_typing import Hash32, HexStr
 from eth_utils.conversions import to_bytes, to_hex
+from web3.constants import ADDRESS_ZERO
 
 
 @dataclass
 class Order:
     # Sell token address.
-    sellToken: str
+    sell_token: str = field(metadata={"alias": "sellToken"})
     # Buy token address.
-    buyToken: str
+    buy_token: str = field(metadata={"alias": "buyToken"})
     # An optional address to receive the proceeds of the trade instead of the
     # owner (i.e. the order signer).
     receiver: str
@@ -23,7 +24,7 @@ class Order:
     # amount represents the maximum sell amount that can be executed. For partial
     # fill orders, this represents a component of the limit price fraction.
     #
-    sellAmount: int
+    sell_amount: int = field(metadata={"alias": "sellAmount"})
     # The order buy amount.
     #
     # For fill or kill sell orders, this amount represents the minimum buy amount
@@ -31,32 +32,52 @@ class Order:
     # represents the exact buy amount that will be executed. For partial fill
     # orders, this represents a component of the limit price fraction.
     #
-    buyAmount: int
+    buy_amount: int = field(metadata={"alias": "buyAmount"})
     # The timestamp this order is valid until
-    validTo: int
+    valid_to: int = field(metadata={"alias": "validTo"})
     # Arbitrary application specific data that can be added to an order. This can
     # also be used to ensure uniqueness between two orders with otherwise the
     # exact same parameters.
-    appData: str
+    app_data: str = field(metadata={"alias": "appData"})
     # Fee to give to the protocol.
-    feeAmount: int
+    fee_amount: int = field(metadata={"alias": "feeAmount"})
     # The order kind.
     kind: str
     # Specifies whether or not the order is partially fillable.
-    partiallyFillable: bool = False
+    partially_fillable: bool = field(
+        default=False, metadata={"alias": "partiallyFillable"}
+    )
     # Specifies how the sell token balance will be withdrawn. It can either be
     # taken using ERC20 token allowances made directly to the Vault relayer
     # (default) or using Balancer Vault internal or external balances.
-    sellTokenBalance: Optional[str] = None
+    sell_token_balance: Optional[str] = field(
+        default=None, metadata={"alias": "sellTokenBalance"}
+    )
     # Specifies how the buy token balance will be paid. It can either be paid
     # directly in ERC20 tokens (default) in Balancer Vault internal balances.
-    buyTokenBalance: Optional[str] = None
+    buy_token_balance: Optional[str] = field(
+        default=None, metadata={"alias": "buyTokenBalance"}
+    )
+
+    def __getattr__(self, name):
+        for field in self.__dataclass_fields__.values():
+            if field.metadata.get("alias") == name:
+                return getattr(self, field.name)
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
+
+    def __setattr__(self, name, value):
+        for field in self.__dataclass_fields__.values():
+            if field.metadata.get("alias") == name:
+                return super().__setattr__(field.name, value)
+        return super().__setattr__(name, value)
 
 
 # Gnosis Protocol v2 order cancellation data.
 @dataclass
 class OrderCancellations:
-    orderUids: bytearray
+    order_uids: bytearray
 
 
 # Marker address to indicate that an order is buying Ether.
@@ -148,30 +169,27 @@ def normalize_buy_token_balance(
         raise ValueError(f"Invalid order balance {balance}")
 
 
-ZERO_ADDRESS = "0x" + "00" * 20
-
-
 def normalize_order(order: Order):
-    if order.receiver == ZERO_ADDRESS:
+    if order.receiver == ADDRESS_ZERO:
         raise ValueError("receiver cannot be address(0)")
 
     return {
-        "sellToken": order.sellToken,
-        "buyToken": order.buyToken,
-        "receiver": order.receiver if order.receiver else ZERO_ADDRESS,
-        "sellAmount": order.sellAmount,
-        "buyAmount": order.buyAmount,
-        "validTo": order.validTo,
-        "appData": hashify(order.appData),
-        "feeAmount": order.feeAmount,
+        "sellToken": order.sell_token,
+        "buyToken": order.buy_token,
+        "receiver": order.receiver if order.receiver else ADDRESS_ZERO,
+        "sellAmount": order.sell_amount,
+        "buyAmount": order.buy_amount,
+        "validTo": order.valid_to,
+        "appData": hashify(order.app_data),
+        "feeAmount": order.fee_amount,
         "kind": order.kind,
-        "partiallyFillable": order.partiallyFillable,
+        "partiallyFillable": order.partially_fillable,
         "sellTokenBalance": (
-            order.sellTokenBalance
-            if order.sellTokenBalance
+            order.sell_token_balance
+            if order.sell_token_balance
             else OrderBalance.ERC20.value
         ),
-        "buyTokenBalance": normalize_buy_token_balance(order.buyTokenBalance),
+        "buyTokenBalance": normalize_buy_token_balance(order.buy_token_balance),
     }
 
 
@@ -236,7 +254,7 @@ ORDER_UID_LENGTH = 56
 @dataclass
 class OrderUidParams:
     # The EIP-712 order struct hash.
-    orderDigest: str
+    order_digest: str = field(metadata={"alias": "orderDigest"})
     # The owner of the order.
     owner: str
     # The timestamp this order is valid until.

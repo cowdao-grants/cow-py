@@ -25,15 +25,15 @@ ORDER_KIND_SELL = "SELL"
 
 SAMPLE_ORDER = Order(
     **{
-        "sellToken": fill_bytes(20, 0x01),
-        "buyToken": fill_bytes(20, 0x02),
+        "sell_token": fill_bytes(20, 0x01),
+        "buy_token": fill_bytes(20, 0x02),
         "receiver": fill_bytes(20, 0x03),
-        "sellAmount": to_wei("42", "ether"),
-        "buyAmount": to_wei("13.37", "ether"),
-        "validTo": 0xFFFFFFFF,
-        "appData": keccak(text="")[0:20],
-        "feeAmount": to_wei("1.0", "ether"),
+        "sell_amount": to_wei("42", "ether"),
+        "buy_amount": to_wei("13.37", "ether"),
+        "valid_to": 0xFFFFFFFF,
+        "app_data": keccak(text="")[0:20],
+        "fee_amount": to_wei("1.0", "ether"),
         "kind": ORDER_KIND_SELL,
-        "partiallyFillable": False,
+        "partially_fillable": False,
     }
 )
