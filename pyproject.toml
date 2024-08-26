@@ -19,6 +19,8 @@ jsonref = "^1.1.0"
 multiformats = "^0.3.1.post4"
 py-cid = "^0.3.0"
 pymultihash = "^0.8.2"
+pinatapy-vourhey = "^0.2.0"
+json-stable-stringify-python = "^0.2"
 
 
 [tool.poetry.group.dev.dependencies]

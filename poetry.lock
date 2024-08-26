@@ -1599,6 +1599,16 @@ MarkupSafe = ">=2.0"
 i18n = ["Babel (>=2.7)"]
 
 [[package]]
+name = "json-stable-stringify-python"
+version = "0.2"
+description = "Deterministic JSON stringify"
+optional = false
+python-versions = "*"
+files = [
+    {file = "json_stable_stringify_python-0.2.tar.gz", hash = "sha256:28057974145844012d0f4628c1ae4a4fe31119293453cd898fe741e6dfb54171"},
+]
+
+[[package]]
 name = "jsonref"
 version = "1.1.0"
 description = "jsonref is a library for automatic dereferencing of JSON Reference objects for Python."
@@ -2132,6 +2142,20 @@ files = [
 
 [package.dependencies]
 ptyprocess = ">=0.5"
+
+[[package]]
+name = "pinatapy-vourhey"
+version = "0.2.0"
+description = "Non-official Pinata.cloud library"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pinatapy-vourhey-0.2.0.tar.gz", hash = "sha256:453a32629ad11b92dd7153feb64d4302c8d17036cc17c5c3d8108809700bdc2b"},
+    {file = "pinatapy_vourhey-0.2.0-py3-none-any.whl", hash = "sha256:86c204949eb9dd8e21ca28e5ee1f7b774a72f57f998ef7fba8a4ca41dd5a2554"},
+]
+
+[package.dependencies]
+requests = "*"
 
 [[package]]
 name = "platformdirs"
@@ -3647,4 +3671,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "993952ba1b62b880a9fea993c0205b00d38854570bbde67475baa21f96bf18e8"
+content-hash = "6b5c40cee6c82b4f7505408e1e904ddd0fecd377dd2a78103ab06ccc3aca4236"
