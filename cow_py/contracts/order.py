@@ -60,17 +60,17 @@ class Order:
     )
 
     def __getattr__(self, name):
-        for field in self.__dataclass_fields__.values():
-            if field.metadata.get("alias") == name:
-                return getattr(self, field.name)
+        for f in self.__dataclass_fields__.values():
+            if f.metadata.get("alias") == name:
+                return getattr(self, f.name)
         raise AttributeError(
             f"'{type(self).__name__}' object has no attribute '{name}'"
         )
 
     def __setattr__(self, name, value):
-        for field in self.__dataclass_fields__.values():
-            if field.metadata.get("alias") == name:
-                return super().__setattr__(field.name, value)
+        for f in self.__dataclass_fields__.values():
+            if f.metadata.get("alias") == name:
+                return super().__setattr__(f.name, value)
         return super().__setattr__(name, value)
 
 
