@@ -141,6 +141,12 @@ cd cow-py
 poetry install
 ```
 
+If you need to interact with the contracts, please run the code generator. It should be updated if a new abi is added on the package.
+
+```bash
+python -m cow_py.codegen.main
+```
+
 Run tests to ensure everything's working:
 
 ```bash
