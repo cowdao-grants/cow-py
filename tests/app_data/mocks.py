@@ -1,16 +1,18 @@
 from cow_py.app_data.app_data_cid import AppDataCid
+from cow_py.app_data.app_data_doc import AppDataDoc
 from cow_py.app_data.app_data_hex import AppDataHex
 
 HTTP_STATUS_OK = 200
 HTTP_STATUS_INTERNAL_ERROR = 500
 
-APP_DATA_DOC = {
-    "version": "0.7.0",
-    "appCode": "CoW Swap",
-    "metadata": {},
-}
+APP_DATA_DOC = AppDataDoc(
+    {
+        "version": "0.7.0",
+        "appCode": "CoW Swap",
+        "metadata": {},
+    }
+)
 
-APP_DATA_STRING = '{"appCode":"CoW Swap","metadata":{},"version":"0.7.0"}'
 
 CID = AppDataCid(
     "f01551b20337aa6e6c2a7a0d1eb79a35ebd88b08fc963d5f7a3fc953b7ffb2b7f5898a1df"
@@ -20,8 +22,8 @@ APP_DATA_HEX = AppDataHex(
     "0x337aa6e6c2a7a0d1eb79a35ebd88b08fc963d5f7a3fc953b7ffb2b7f5898a1df"
 )
 
-APP_DATA_DOC_CUSTOM = {
-    **APP_DATA_DOC,
+APP_DATA_DOC_CUSTOM_VALUES = {
+    **APP_DATA_DOC.app_data_doc,
     "environment": "test",
     "metadata": {
         "referrer": {
@@ -35,7 +37,18 @@ APP_DATA_DOC_CUSTOM = {
     },
 }
 
-APP_DATA_STRING_2 = '{"appCode":"CoW Swap","environment":"production","metadata":{"quote":{"slippageBips":"50","version":"0.2.0"},"orderClass":{"orderClass":"market","version":"0.1.0"}},"version":"0.6.0"}'
+
+APP_DATA_2 = AppDataDoc(
+    {
+        "appCode": "CoW Swap",
+        "environment": "production",
+        "metadata": {
+            "quote": {"slippageBips": "50", "version": "0.2.0"},
+            "orderClass": {"orderClass": "market", "version": "0.1.0"},
+        },
+        "version": "0.6.0",
+    }
+)
 
 CID_2 = AppDataCid(
     "f01551b208af4e8c9973577b08ac21d17d331aade86c11ebcc5124744d621ca8365ec9424"
