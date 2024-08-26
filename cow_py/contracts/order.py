@@ -80,13 +80,6 @@ class OrderCancellations:
     order_uids: bytearray
 
 
-# Marker address to indicate that an order is buying Ether.
-#
-# Note that this address is only has special meaning in the `buyToken` and will
-# be treated as a ERC20 token address in the `sellToken` position, causing the
-# settlement to revert.
-BUY_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-
 BytesLike = Union[str, bytes, HexStr]
 
 HashLike = Union[BytesLike, int]
