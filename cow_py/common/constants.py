@@ -8,13 +8,6 @@ This module contains constants and functions related to the CoW Protocol. It pro
 the main CoW contract addresses to CoW's supported networks.
 """
 
-# Marker address to indicate that an order is buying Ether.
-#
-# Note that this address is only has special meaning in the `buyToken` and will
-# be treated as a ERC20 token address in the `sellToken` position, causing the
-# settlement to revert.
-BUY_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
-
 
 class CowContractAddress(Enum):
     VAULT_RELAYER = "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110"
