@@ -75,14 +75,16 @@ def test_hash_order():
 
 def test_hash_order_cancellation():
     order_uid = b"0" * 56
-    cancellation_hash = hash_order_cancellation(SAMPLE_DOMAIN, order_uid)
+    cancellation_hash = hash_order_cancellation(SAMPLE_DOMAIN, order_uid.hex())
     assert isinstance(cancellation_hash, str)
     assert len(cancellation_hash) == 64  # 32 bytes in hex
 
 
 def test_hash_order_cancellations():
     order_uids = [b"0" * 56, b"1" * 56]
-    cancellations_hash = hash_order_cancellations(SAMPLE_DOMAIN, order_uids)
+    cancellations_hash = hash_order_cancellations(
+        SAMPLE_DOMAIN, [uid.hex() for uid in order_uids]
+    )
     assert isinstance(cancellations_hash, str)
     assert len(cancellations_hash) == 64  # 32 bytes in hex
 

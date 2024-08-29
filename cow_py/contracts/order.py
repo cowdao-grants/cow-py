@@ -227,7 +227,9 @@ def hash_order_cancellation(domain: TypedDataDomain, order_uid: str) -> str:
     return hash_order_cancellations(domain, [order_uid])
 
 
-def hash_order_cancellations(domain_data: TypedDataDomain, order_uids: str) -> str:
+def hash_order_cancellations(
+    domain_data: TypedDataDomain, order_uids: list[str]
+) -> str:
     """
     Compute the 32-byte signing hash for the specified order cancellations.
 

@@ -69,7 +69,7 @@ def ecdsa_sign_typed_data(
     owner: LocalAccount,
     domain_data: TypedDataDomain,
     message_types: Dict[str, Any],
-    message_data: Dict[str, Union[str, int]],
+    message_data: Dict[str, Any],
 ) -> SignedMessage:
     return Account._sign_hash(
         hash_typed_data(domain_data, message_types, message_data), owner.key
