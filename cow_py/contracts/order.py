@@ -1,11 +1,13 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Any, Dict, Literal, Optional, Union
 
 from eth_account.messages import _hash_eip191_message, encode_typed_data
 from eth_typing import Hash32, HexStr
 from eth_utils.conversions import to_bytes, to_hex
 from web3.constants import ADDRESS_ZERO
+
+from cow_py.contracts.domain import TypedDataDomain
 
 
 @dataclass
@@ -106,6 +108,7 @@ class OrderBalance(Enum):
 # /**
 #  * The EIP-712 type fields definition for a Gnosis Protocol v2 order.
 #  */
+# The EIP-712 type fields definition for a Gnosis Protocol v2 order.
 ORDER_TYPE_FIELDS = [
     dict(name="sellToken", type="address"),
     dict(name="buyToken", type="address"),
@@ -120,7 +123,6 @@ ORDER_TYPE_FIELDS = [
     dict(name="sellTokenBalance", type="string"),
     dict(name="buyTokenBalance", type="string"),
 ]
-# The EIP-712 type fields definition for a Gnosis Protocol v2 order.
 CANCELLATIONS_TYPE_FIELDS = [
     dict(name="orderUids", type="bytes[]"),
 ]
@@ -156,13 +158,13 @@ def normalize_buy_token_balance(
     """
     if balance in [None, OrderBalance.ERC20.value, OrderBalance.EXTERNAL.value]:
         return OrderBalance.ERC20.value
-    elif balance == OrderBalance.INTERNAL:
+    elif balance == OrderBalance.INTERNAL.value:
         return OrderBalance.INTERNAL.value
     else:
         raise ValueError(f"Invalid order balance {balance}")
 
 
-def normalize_order(order: Order):
+def normalize_order(order: Order) -> Dict[str, Union[str, int]]:
     if order.receiver == ADDRESS_ZERO:
         raise ValueError("receiver cannot be address(0)")
 
@@ -186,7 +188,9 @@ def normalize_order(order: Order):
     }
 
 
-def hash_typed_data(domain, types, data) -> Hash32:
+def hash_typed_data(
+    domain: TypedDataDomain, types: Dict[str, Any], data: Dict[str, Any]
+) -> Hash32:
     """
     Compute the 32-byte signing hash for the specified order.
 
@@ -196,12 +200,12 @@ def hash_typed_data(domain, types, data) -> Hash32:
     :return: Hex-encoded 32-byte order digest.
     """
     encoded_data = encode_typed_data(
-        domain_data=domain, message_types=types, message_data=data
+        domain_data=domain.to_dict(), message_types=types, message_data=data
     )
     return _hash_eip191_message(encoded_data)
 
 
-def hash_order(domain, order):
+def hash_order(domain: TypedDataDomain, order: Order) -> Hash32:
     """
     Compute the 32-byte signing hash for the specified order.
 
@@ -209,10 +213,10 @@ def hash_order(domain, order):
     :param order: The order to compute the digest for.
     :return: Hex-encoded 32-byte order digest.
     """
-    return hash_typed_data(domain, ORDER_TYPE_FIELDS, normalize_order(order))
+    return hash_typed_data(domain, {"Order": ORDER_TYPE_FIELDS}, normalize_order(order))
 
 
-def hash_order_cancellation(domain, order_uid) -> str:
+def hash_order_cancellation(domain: TypedDataDomain, order_uid: str) -> str:
     """
     Compute the 32-byte signing hash for the specified cancellation.
 
@@ -223,7 +227,7 @@ def hash_order_cancellation(domain, order_uid) -> str:
     return hash_order_cancellations(domain, [order_uid])
 
 
-def hash_order_cancellations(domain_data, order_uids) -> str:
+def hash_order_cancellations(domain_data: TypedDataDomain, order_uids: str) -> str:
     """
     Compute the 32-byte signing hash for the specified order cancellations.
 
@@ -233,7 +237,7 @@ def hash_order_cancellations(domain_data, order_uids) -> str:
     """
     return _hash_eip191_message(
         encode_typed_data(
-            domain_data,
+            domain_data.to_dict(),
             message_types={"OrderCancellations": CANCELLATIONS_TYPE_FIELDS},
             message_data={"orderUids": order_uids},
         )
