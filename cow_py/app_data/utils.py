@@ -15,12 +15,8 @@ MULTIBASE_BASE16 = "f"
 
 
 def extract_digest(cid_str: str) -> str:
-    # TODO: Verify this
     cid = CID.decode(cid_str)
-    if cid_str[0] == MULTIBASE_BASE16:
-        return "0x" + cid.digest.hex()[4:]
-
-    return "0x" + cid.set(base="base58btc").digest.hex()[4:]
+    return "0x" + cid.raw_digest.hex()
 
 
 def sort_nested_dict(d):
