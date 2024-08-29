@@ -1,6 +1,6 @@
 from typing import Dict, Any
 
-from eth_utils import keccak
+from eth_utils.crypto import keccak
 
 from cow_py.app_data.app_data_hex import AppDataHex
 from cow_py.app_data.consts import DEFAULT_APP_DATA_DOC

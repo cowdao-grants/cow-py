@@ -1,5 +1,3 @@
-from unittest.mock import patch
-import pytest
 from cow_py.app_data.app_data_doc import AppDataDoc
 from .mocks import (
     APP_DATA_2,
