@@ -1,6 +1,6 @@
 from typing import Dict, Any
 from web3 import Web3
-from multiformats import multibase, CID
+from multiformats import multibase
 
 from cow_py.app_data.consts import DEFAULT_IPFS_READ_URI, MetaDataError
 from cow_py.app_data.utils import fetch_doc_from_cid
@@ -23,25 +23,9 @@ class AppDataHex:
         self._assert_cid(cid)
         return cid
 
-    def to_cid_legacy(self) -> str:
-        cid = self._app_data_hex_to_cid_legacy()
-        self._assert_cid(cid)
-        return cid
-
     async def to_doc(self, ipfs_uri: str = DEFAULT_IPFS_READ_URI) -> Dict[str, Any]:
         try:
             cid = self.to_cid()
-            return await fetch_doc_from_cid(cid, ipfs_uri)
-        except Exception as e:
-            raise MetaDataError(
-                f"Unexpected error decoding AppData: appDataHex={self.app_data_hex}, message={e}"
-            )
-
-    async def to_doc_legacy(
-        self, ipfs_uri: str = DEFAULT_IPFS_READ_URI
-    ) -> Dict[str, Any]:
-        try:
-            cid = self.to_cid_legacy()
             return await fetch_doc_from_cid(cid, ipfs_uri)
         except Exception as e:
             raise MetaDataError(
@@ -65,18 +49,6 @@ class AppDataHex:
             }
         )
         return multibase.encode(cid_bytes, "base16")
-
-    def _app_data_hex_to_cid_legacy(self) -> str:
-        cid_bytes = self._to_cid_bytes(
-            {
-                "version": CID_V1_PREFIX,
-                "multicodec": CID_DAG_PB_MULTICODEC,
-                "hashing_algorithm": SHA2_256_HASHING_ALGORITHM,
-                "hashing_length": SHA2_256_HASHING_LENGTH,
-                "multihash_hex": self.app_data_hex,
-            }
-        )
-        return str(CID.decode(cid_bytes).set(version=0))
 
     def _to_cid_bytes(self, params: Dict[str, Any]) -> bytes:
         hash_bytes = Web3.to_bytes(hexstr=params["multihash_hex"])

@@ -1,7 +1,8 @@
-from re import T
 from typing import Any, Dict
 import httpx
 from multiformats import CID
+from collections.abc import Mapping
+
 
 import json
 
@@ -22,8 +23,16 @@ def extract_digest(cid_str: str) -> str:
     return "0x" + cid.set(base="base58btc").digest.hex()[4:]
 
 
+def sort_nested_dict(d):
+    return {
+        k: sort_nested_dict(v) if isinstance(v, Mapping) else v
+        for k, v in sorted(d.items())
+    }
+
+
 def stringify_deterministic(obj):
-    return json.dumps(obj, sort_keys=True, separators=(",", ":"))
+    sorted_dict = sort_nested_dict(obj)
+    return json.dumps(sorted_dict, sort_keys=True, separators=(",", ":"))
 
 
 async def fetch_doc_from_cid(
