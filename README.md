@@ -122,14 +122,62 @@ make format # or ruff check . --fix
 make lint # or ruff format
 ```
 
-### 🐄 Codegen
+### 🐄 Code Generation
 
-Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook API:
+The SDK uses various code generation tools for different components. Here's how to work with them:
+
+#### Full Code Generation
+
+To run all code generation processes:
 
 ```bash
 make codegen
 ```
 
+This command runs three separate code generation tasks:
+
+1. Web3 Codegen
+2. Orderbook Codegen
+3. Subgraph Codegen
+
+#### Individual Code Generation Tasks
+
+You can also run these tasks individually:
+
+1. Web3 Codegen:
+
+   ```bash
+   make web3_codegen
+   ```
+
+   This runs `python -m cow_py.codegen.main`, which processes the ABIs in the `cow_py/contracts/abi` directory and generates corresponding Python classes.
+
+2. Orderbook Codegen:
+
+   ```bash
+   make orderbook_codegen
+   ```
+
+   This uses `datamodel-codegen` to generate models from the CoW Protocol Orderbook OpenAPI specification.
+
+3. Subgraph Codegen:
+
+   ```bash
+   make subgraph_codegen
+   ```
+
+   This uses `ariadne-codegen` to generate code for interacting with the CoW Protocol subgraph.
+
+#### When to Update Generated Code
+
+You should run the appropriate code generation task when:
+
+1. There are changes to the smart contract ABIs (use `web3_codegen`).
+2. The Orderbook API specification is updated (use `orderbook_codegen`).
+3. The subgraph schema changes (use `subgraph_codegen`).
+4. You modify any of the code generation templates or logic.
+
+It's a good practice to run `make codegen` as part of your development process, especially before committing changes that might affect these generated components.
 
 ## 🐄 Contributing to the Herd
 
@@ -141,16 +189,11 @@ cd cow-py
 poetry install
 ```
 
-If you need to interact with the contracts, please run the code generator. It should be updated if a new abi is added on the package.
+After making changes, make sure to run the appropriate code generation tasks and tests:
 
 ```bash
-python -m cow_py.codegen.main
-```
-
-Run tests to ensure everything's working:
-
-```bash
-poetry run pytest
+make codegen
+make test
 ```
 
 ## 🐄 Need Help?
