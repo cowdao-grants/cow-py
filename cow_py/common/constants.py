@@ -1,5 +1,6 @@
 from enum import Enum
 from typing import Dict
+
 from .chains import Chain
 
 """
@@ -17,14 +18,14 @@ class CowContractAddress(Enum):
     EXTENSIBLE_FALLBACK_HANDLER = "0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5"
 
 
-def map_address_to_supported_networks(address) -> Dict[Chain, str]:
+def map_address_to_supported_networks(address) -> Dict[int, str]:
     """
     Maps a given address to all supported networks.
 
     :param address: The address to be mapped.
     :return: A dictionary mapping the address to each supported chain.
     """
-    return {chain_id: address for chain_id in Chain}
+    return {chain.chain_id: address for chain in Chain}
 
 
 COW_PROTOCOL_SETTLEMENT_CONTRACT_CHAIN_ADDRESS_MAP = map_address_to_supported_networks(

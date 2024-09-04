@@ -6,24 +6,26 @@ class Chain(Enum):
     Supported chains and their respective `chainId` for the SDK.
     """
 
-    MAINNET = 1
-    GNOSIS = 100
-    SEPOLIA = 11155111
+    MAINNET = (1, "ethereum", "https://etherscan.io")
+    GNOSIS = (100, "gnosis", "https://gnosisscan.io")
+    SEPOLIA = (11155111, "sepolia", "https://sepolia.etherscan.io")
 
-    def __init__(self, id) -> None:
+    def __init__(self, id: int, network_name: str, explorer_url: str) -> None:
         self.id = id
+        self.network_name = network_name
+        self.explorer_url = explorer_url
+
+    @property
+    def name(self) -> str:
+        return self.network_name
+
+    @property
+    def explorer(self) -> str:
+        return self.explorer_url
+
+    @property
+    def chain_id(self) -> int:
+        return self.id
 
 
-SUPPORTED_CHAINS = {Chain.MAINNET, Chain.GNOSIS, Chain.SEPOLIA}
-
-CHAIN_NAMES = {
-    Chain.MAINNET: "ethereum",
-    Chain.GNOSIS: "gnosis",
-    Chain.SEPOLIA: "sepolia",
-}
-
-CHAIN_SCANNER_MAP = {
-    Chain.MAINNET: "https://etherscan.io",
-    Chain.GNOSIS: "https://gnosisscan.io",
-    Chain.SEPOLIA: "https://sepolia.etherscan.io/",
-}
+SUPPORTED_CHAINS = {chain for chain in Chain}
