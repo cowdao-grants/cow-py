@@ -8,7 +8,7 @@ Welcome to the CoW Protocol Python SDK (cow_py), a developer-friendly Python lib
 
 ## 🐄 Features
 
-- Querying CoW Protocol subgraph.
+- Querying the CoW Protocol subgraph.
 - Managing orders on the CoW Protocol.
 - Interacting with CoW Protocol smart contracts.
 - Encoding orders metadata and pinning to CID.
@@ -44,7 +44,7 @@ print(orders)
 - `contracts/`(TODO): A pasture of Smart contract ABIs for interaction.
 - `order_book/`(TODO): Functions to wrangle orders on the CoW Protocol.
 - `order_signing/`(TODO): Tools for signing and validating orders. Anything inside this module should use higher level modules, and the process of actually signing (ie. calling the web3 function to generate the signature, should be handled in contracts, not here).
-- `subgraph/`(WIP): GraphQL client for querying CoW Protocol's Subgraph.
+- `subgraph/`(WIP): GraphQL client for querying CoW Protocol's subgraph.
 - `web3/`: Web3 providers for blockchain interactions.
 
 ## 🐄 How to Use
@@ -110,6 +110,56 @@ data = client.get_data(response)
 pprint(data)
 ```
 
+Or you can leverage `SubgraphClient` to use a custom query and get the results as JSON:
+
+```python
+from pprint import pprint
+from cow_py.subgraph.client import SubgraphClient
+
+url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
+client = SubgraphClient(url=url)
+
+response = await client.execute(query="""
+            query LastDaysVolume($days: Int!) {
+              dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
+                timestamp
+                volumeUsd
+              }
+            }
+            """, variables=dict(days=2)
+            )
+
+data = client.get_data(response)
+pprint(data)
+```
+
+## 🐄 Development
+
+### 🐄 Tests
+
+Run tests to ensure everything's working:
+
+```bash
+make test # or poetry run pytest
+```
+
+### 🐄 Formatting/Linting
+
+Run the formatter and linter:
+
+```bash
+make format # or ruff check . --fix
+make lint # or ruff format
+```
+
+### 🐄 Codegen
+
+Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook API:
+
+```bash
+make codegen
+```
+
 ## 🐄 Development
 
 ### 🐄 Tests
@@ -156,13 +206,62 @@ make format # or ruff check . --fix
 make lint # or ruff format
 ```
 
-### 🐄 Codegen
+### 🐄 Code Generation
 
-Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook API:
+The SDK uses various code generation tools for different components. Here's how to work with them:
+
+#### Full Code Generation
+
+To run all code generation processes:
 
 ```bash
 make codegen
 ```
+
+This command runs three separate code generation tasks:
+
+1. Web3 Codegen
+2. Orderbook Codegen
+3. Subgraph Codegen
+
+#### Individual Code Generation Tasks
+
+You can also run these tasks individually:
+
+1. Web3 Codegen:
+
+   ```bash
+   make web3_codegen
+   ```
+
+   This runs `python -m cow_py.codegen.main`, which processes the ABIs in the `cow_py/contracts/abi` directory and generates corresponding Python classes.
+
+2. Orderbook Codegen:
+
+   ```bash
+   make orderbook_codegen
+   ```
+
+   This uses `datamodel-codegen` to generate models from the CoW Protocol Orderbook OpenAPI specification.
+
+3. Subgraph Codegen:
+
+   ```bash
+   make subgraph_codegen
+   ```
+
+   This uses `ariadne-codegen` to generate code for interacting with the CoW Protocol subgraph.
+
+#### When to Update Generated Code
+
+You should run the appropriate code generation task when:
+
+1. There are changes to the smart contract ABIs (use `web3_codegen`).
+2. The Orderbook API specification is updated (use `orderbook_codegen`).
+3. The subgraph schema changes (use `subgraph_codegen`).
+4. You modify any of the code generation templates or logic.
+
+It's a good practice to run `make codegen` as part of your development process, especially before committing changes that might affect these generated components.
 
 ## 🐄 Contributing to the Herd
 
@@ -174,10 +273,11 @@ cd cow-py
 poetry install
 ```
 
-Run tests to ensure everything's working:
+After making changes, make sure to run the appropriate code generation tasks and tests:
 
 ```bash
-poetry run pytest
+make codegen
+make test
 ```
 
 ## 🐄 Need Help?

@@ -8,7 +8,7 @@ class Chain(Enum):
 
     MAINNET = (1, "ethereum", "https://etherscan.io")
     GNOSIS = (100, "gnosis", "https://gnosisscan.io")
-    SEPOLIA = (11155111, "sepolia", "https://sepolia.etherscan.io/")
+    SEPOLIA = (11155111, "sepolia", "https://sepolia.etherscan.io")
 
     def __init__(self, id: int, network_name: str, explorer_url: str) -> None:
         self.id = id

@@ -75,11 +75,12 @@ class ApiBase:
     async def _fetch(self, path, method="GET", **kwargs):
         url = self.config.get_base_url() + path
 
-        del kwargs["context_override"]
+        # remove context_override key used by our backoff decorator
+        clean_kwargs = {k: v for k, v in kwargs.items() if k != "context_override"}
 
         async with httpx.AsyncClient() as client:
             builder = RequestBuilder(
                 RequestStrategy(),
                 JsonResponseAdapter(),
             )
-            return await builder.execute(client, url, method, **kwargs)
+            return await builder.execute(client, url, method, **clean_kwargs)
