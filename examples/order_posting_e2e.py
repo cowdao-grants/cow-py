@@ -5,7 +5,6 @@
 import asyncio
 import json
 import os
-from dataclasses import asdict
 
 from web3 import Account
 
@@ -48,12 +47,9 @@ async def get_order_quote(
 
 
 def sign_order(order: Order) -> EcdsaSignature:
-    order_domain = asdict(
-        domain(
-            chain=CHAIN, verifying_contract=CowContractAddress.SETTLEMENT_CONTRACT.value
-        )
+    order_domain = domain(
+        chain=CHAIN, verifying_contract=CowContractAddress.SETTLEMENT_CONTRACT.value
     )
-    del order_domain["salt"]  # TODO: improve interfaces
 
     return _sign_order(order_domain, order, ACCOUNT, SigningScheme.EIP712)
 
