@@ -1,6 +1,7 @@
 from typing import Dict
 
 import web3
+
 from cow_py.common.chains import Chain
 
 DEFAULT_PROVIDER_NETWORK_MAPPING = {
