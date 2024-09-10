@@ -2,7 +2,6 @@ import backoff
 import httpx
 from aiolimiter import AsyncLimiter
 
-
 DEFAULT_LIMITER_OPTIONS = {"rate": 5, "per": 1.0}
 
 DEFAULT_BACKOFF_OPTIONS = {

@@ -1,0 +1,15 @@
+# /**
+#  * GraphQL query for the total number of tokens, orders, traders, settlements, volume, and fees.
+#  */
+query Totals {
+  totals {
+    tokens
+    orders
+    traders
+    settlements
+    volumeUsd
+    volumeEth
+    feesUsd
+    feesEth
+  }
+}
