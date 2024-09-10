@@ -1,5 +1,6 @@
 from abc import ABC
-from typing import Any, Optional
+import json
+from typing import Any, Dict, Optional
 
 import httpx
 
@@ -7,6 +8,41 @@ from cow_py.common.api.decorators import rate_limitted, with_backoff
 from cow_py.common.config import SupportedChainId
 
 Context = dict[str, Any]
+
+
+class BaseApiError(Exception):
+    """Base exception for OrderBookApi errors."""
+
+    def __init__(self, message: str, response: Optional[Any] = None):
+        self.message = message
+        self.response = response
+        super().__init__(self.message)
+
+
+class SerializationError(BaseApiError):
+    """Raised when there's an error in serializing or deserializing data."""
+
+    pass
+
+
+class ApiResponseError(BaseApiError):
+    """Raised when the API returns an error response."""
+
+    def __init__(self, message: str, error_type: str, response: Dict[str, Any]):
+        self.error_type = error_type
+        super().__init__(message, response)
+
+
+class NetworkError(BaseApiError):
+    """Raised when there's a network-related error."""
+
+    pass
+
+
+class UnexpectedResponseError(BaseApiError):
+    """Raised when the API returns an unexpected response."""
+
+    pass
 
 
 class APIConfig(ABC):
@@ -57,29 +93,46 @@ class RequestBuilder:
 
 
 class JsonResponseAdapter(ResponseAdapter):
-    def adapt_response(self, response):
-        if response.headers.get("content-type") == "application/json":
-            return response.json()
-        else:
-            return response.text
+    def adapt_response(self, response: httpx.Response) -> Any:
+        try:
+            if response.headers.get("content-type") == "application/json":
+                return response.json()
+            else:
+                return response.text
+        except json.JSONDecodeError as e:
+            raise SerializationError(
+                f"Failed to decode JSON response: {str(e)}", response.text
+            )
 
 
 class ApiBase:
-    """Base class for APIs utilizing configuration and request execution."""
-
     def __init__(self, config: APIConfig):
         self.config = config
 
     @with_backoff()
     @rate_limitted()
-    async def _fetch(self, path, method="GET", **kwargs):
+    async def _fetch(self, path: str, method="GET", **kwargs):
         url = self.config.get_base_url() + path
-
         del kwargs["context_override"]
 
-        async with httpx.AsyncClient() as client:
-            builder = RequestBuilder(
-                RequestStrategy(),
-                JsonResponseAdapter(),
+        try:
+            async with httpx.AsyncClient() as client:
+                builder = RequestBuilder(RequestStrategy(), JsonResponseAdapter())
+                response = await builder.execute(client, url, method, **kwargs)
+
+                if isinstance(response, dict) and "errorType" in response:
+                    raise ApiResponseError(
+                        f"API returned an error: {response.get('description', 'No description')}",
+                        response["errorType"],
+                        response,
+                    )
+
+                return response
+        except httpx.NetworkError as e:
+            raise NetworkError(f"Network error occurred: {str(e)}")
+        except httpx.HTTPStatusError as e:
+            raise UnexpectedResponseError(
+                f"Unexpected HTTP status: {e.response.status_code}", e.response
             )
-            return await builder.execute(client, url, method, **kwargs)
+        except Exception as e:
+            raise BaseApiError(f"An unexpected error occurred: {str(e)}")
