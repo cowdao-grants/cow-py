@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from typing import Optional
 
 from cow_py.common.chains import Chain
@@ -11,6 +11,12 @@ class TypedDataDomain:
     chainId: int
     verifyingContract: str
     salt: Optional[str] = None
+
+    def to_dict(self):
+        base_dict = asdict(self)
+        if "salt" in base_dict and base_dict["salt"] is None:
+            del base_dict["salt"]
+        return base_dict
 
 
 def domain(chain: Chain, verifying_contract: str) -> TypedDataDomain:

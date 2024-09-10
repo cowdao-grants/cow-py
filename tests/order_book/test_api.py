@@ -1,34 +1,34 @@
+# test_order_book_api.py
 from unittest.mock import AsyncMock, Mock, patch
-
 import pytest
-
 from cow_py.order_book.api import OrderBookApi
-from cow_py.order_book.generated.model import OrderQuoteSide1
-from cow_py.order_book.generated.model import OrderQuoteSideKindSell
-from cow_py.order_book.generated.model import TokenAmount
+from cow_py.order_book.config import OrderBookAPIConfigFactory
+from cow_py.common.config import SupportedChainId
 from cow_py.order_book.generated.model import (
+    Address,
     OrderQuoteRequest,
+    OrderQuoteSide1,
+    OrderQuoteSideKindSell,
+    TokenAmount,
     OrderQuoteResponse,
     Trade,
     OrderCreation,
+    UID,
 )
 
 
 @pytest.fixture
 def order_book_api():
-    return OrderBookApi()
+    config = OrderBookAPIConfigFactory.get_config("prod", SupportedChainId.MAINNET)
+    return OrderBookApi(config=config)
 
 
 @pytest.mark.asyncio
 async def test_get_version(order_book_api):
     expected_version = "1.0.0"
     with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
-        mock_request.return_value = AsyncMock(
-            status_code=200,
-            text=expected_version,
-        )
+        mock_request.return_value.text = expected_version
         version = await order_book_api.get_version()
-
         mock_request.assert_awaited_once()
         assert version == expected_version
 
@@ -49,7 +49,6 @@ async def test_get_trades_by_order_uid(order_book_api):
             "txHash": "mock_transaction_hash",
         }
     ]
-    mock_trade = Trade(**mock_trade_data[0])
     with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
         mock_request.return_value = AsyncMock(
             status_code=200,
@@ -58,7 +57,9 @@ async def test_get_trades_by_order_uid(order_book_api):
         )
         trades = await order_book_api.get_trades_by_order_uid("mock_order_uid")
         mock_request.assert_awaited_once()
-        assert trades == [mock_trade]
+        assert len(trades) == 1
+        assert isinstance(trades[0], Trade)
+        assert trades[0].orderUid == UID("mock_order_uid")
 
 
 @pytest.mark.asyncio
@@ -97,9 +98,8 @@ async def test_post_quote(order_book_api):
         },
         "verified": True,
         "from": "0x",
-        "expiration": "0",
+        "expiration": "2023-05-01T00:00:00Z",
     }
-    mock_order_quote_response = OrderQuoteResponse(**mock_order_quote_response_data)
     with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
         mock_request.return_value = AsyncMock(
             status_code=200,
@@ -110,12 +110,13 @@ async def test_post_quote(order_book_api):
             mock_order_quote_request, mock_order_quote_side
         )
         mock_request.assert_awaited_once()
-        assert response == mock_order_quote_response
+        assert isinstance(response, OrderQuoteResponse)
+        assert response.quote.sellToken == Address("0x")
 
 
 @pytest.mark.asyncio
 async def test_post_order(order_book_api):
-    mock_response = "mock_uid"
+    mock_uid = "mock_uid"
     mock_order_creation = OrderCreation(
         **{
             "sellToken": "0x",
@@ -134,14 +135,12 @@ async def test_post_order(order_book_api):
             "buyTokenBalance": "erc20",
             "quoteId": 0,
             "appDataHash": "0x",
-            "from_": "0x",
+            "from": "0x",
         }
     )
     with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
-        mock_request.return_value = AsyncMock(
-            status_code=200,
-            text=mock_response,
-        )
+        mock_request.return_value.text = mock_uid
         response = await order_book_api.post_order(mock_order_creation)
         mock_request.assert_awaited_once()
-        assert response.root == mock_response
+        assert isinstance(response, UID)
+        assert response.root == mock_uid

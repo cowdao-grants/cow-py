@@ -1,15 +1,13 @@
-from dataclasses import dataclass
-
 from hexbytes import HexBytes
-
+from cow_py.common.chains import Chain
+from dataclasses import dataclass
 from cow_py.codegen.components import (
-    BaseContract,
     BaseMixin,
-    ContractFactory,
+    BaseContract,
     FileAbiLoader,
+    ContractFactory,
     get_abi_file,
 )
-from cow_py.common.chains import Chain
 
 
 @dataclass
