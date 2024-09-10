@@ -296,24 +296,6 @@ files = [
 ]
 
 [[package]]
-name = "bases"
-version = "0.3.0"
-description = "Python library for general Base-N encodings."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "bases-0.3.0-py3-none-any.whl", hash = "sha256:a2fef3366f3e522ff473d2e95c21523fe8e44251038d5c6150c01481585ebf5b"},
-    {file = "bases-0.3.0.tar.gz", hash = "sha256:70f04a4a45d63245787f9e89095ca11042685b6b64b542ad916575ba3ccd1570"},
-]
-
-[package.dependencies]
-typing-extensions = ">=4.6.0"
-typing-validation = ">=1.1.0"
-
-[package.extras]
-dev = ["base58", "mypy", "pylint", "pytest", "pytest-cov"]
-
-[[package]]
 name = "bitarray"
 version = "2.9.2"
 description = "efficient arrays of booleans -- C extension"
@@ -3237,23 +3219,6 @@ files = [
 ]
 
 [[package]]
-name = "typing-validation"
-version = "1.2.11.post4"
-description = "A simple library for runtime type-checking."
-optional = false
-python-versions = ">=3.7"
-files = [
-    {file = "typing_validation-1.2.11.post4-py3-none-any.whl", hash = "sha256:73dd504ddebf5210e80d5f65ba9b30efbd0fa42f266728fda7c4f0ba335c699c"},
-    {file = "typing_validation-1.2.11.post4.tar.gz", hash = "sha256:7aed04ecfbda07e63b7266f90e5d096f96344f7facfe04bb081b21e4a9781670"},
-]
-
-[package.dependencies]
-typing-extensions = {version = ">=4.6.0", markers = "python_version < \"3.11\""}
-
-[package.extras]
-dev = ["mypy", "pylint", "pytest", "pytest-cov", "rich"]
-
-[[package]]
 name = "urllib3"
 version = "2.2.2"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -3269,16 +3234,6 @@ brotli = ["brotli (>=1.0.9)", "brotlicffi (>=0.8.0)"]
 h2 = ["h2 (>=4,<5)"]
 socks = ["pysocks (>=1.5.6,!=1.5.7,<2.0)"]
 zstd = ["zstandard (>=0.18.0)"]
-
-[[package]]
-name = "varint"
-version = "1.0.2"
-description = "Simple python varint implementation"
-optional = false
-python-versions = "*"
-files = [
-    {file = "varint-1.0.2.tar.gz", hash = "sha256:a6ecc02377ac5ee9d65a6a8ad45c9ff1dac8ccee19400a5950fb51d594214ca5"},
-]
 
 [[package]]
 name = "virtualenv"
