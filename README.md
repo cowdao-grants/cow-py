@@ -164,6 +164,34 @@ Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook 
 make codegen
 ```
 
+## 🐄 Development
+
+### 🐄 Tests
+
+Run tests to ensure everything's working:
+
+```bash
+make test # or poetry run pytest
+```
+
+### 🐄 Formatting/Linting
+
+Run the formatter and linter:
+
+```bash
+make format # or ruff check . --fix
+make lint # or ruff format
+```
+
+### 🐄 Codegen
+
+Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook API:
+
+```bash
+make codegen
+```
+
+
 ## 🐄 Contributing to the Herd
 
 Interested in contributing? Here's how you can help:

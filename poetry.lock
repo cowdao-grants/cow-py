@@ -296,6 +296,24 @@ files = [
 ]
 
 [[package]]
+name = "bases"
+version = "0.3.0"
+description = "Python library for general Base-N encodings."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "bases-0.3.0-py3-none-any.whl", hash = "sha256:a2fef3366f3e522ff473d2e95c21523fe8e44251038d5c6150c01481585ebf5b"},
+    {file = "bases-0.3.0.tar.gz", hash = "sha256:70f04a4a45d63245787f9e89095ca11042685b6b64b542ad916575ba3ccd1570"},
+]
+
+[package.dependencies]
+typing-extensions = ">=4.6.0"
+typing-validation = ">=1.1.0"
+
+[package.extras]
+dev = ["base58", "mypy", "pylint", "pytest", "pytest-cov"]
+
+[[package]]
 name = "bitarray"
 version = "2.9.2"
 description = "efficient arrays of booleans -- C extension"
@@ -2002,6 +2020,44 @@ files = [
 typing-extensions = {version = ">=4.1.0", markers = "python_version < \"3.11\""}
 
 [[package]]
+name = "multiformats"
+version = "0.3.1.post4"
+description = "Python implementation of multiformats protocols."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "multiformats-0.3.1.post4-py3-none-any.whl", hash = "sha256:5b1d61bd8275c9e817bdbee38dbd501b26629011962ee3c86c46e7ccd0b14129"},
+    {file = "multiformats-0.3.1.post4.tar.gz", hash = "sha256:d00074fdbc7d603c2084b4c38fa17bbc28173cf2750f51f46fbbc5c4d5605fbb"},
+]
+
+[package.dependencies]
+bases = ">=0.3.0"
+multiformats-config = ">=0.3.0"
+typing-extensions = ">=4.6.0"
+typing-validation = ">=1.1.0"
+
+[package.extras]
+dev = ["blake3", "mmh3", "mypy", "pycryptodomex", "pylint", "pyskein", "pytest", "pytest-cov", "rich"]
+full = ["blake3", "mmh3", "pycryptodomex", "pyskein", "rich"]
+
+[[package]]
+name = "multiformats-config"
+version = "0.3.1"
+description = "Pre-loading configuration module for the 'multiformats' package."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "multiformats-config-0.3.1.tar.gz", hash = "sha256:7eaa80ef5d9c5ee9b86612d21f93a087c4a655cbcb68960457e61adbc62b47a7"},
+    {file = "multiformats_config-0.3.1-py3-none-any.whl", hash = "sha256:dec4c9d42ed0d9305889b67440f72e8e8d74b82b80abd7219667764b5b0a8e1d"},
+]
+
+[package.dependencies]
+multiformats = "*"
+
+[package.extras]
+dev = ["mypy", "pylint", "pytest", "pytest-cov"]
+
+[[package]]
 name = "mypy-extensions"
 version = "1.0.0"
 description = "Type system extensions for programs checked with the mypy type checker."
@@ -3219,6 +3275,23 @@ files = [
 ]
 
 [[package]]
+name = "typing-validation"
+version = "1.2.11.post4"
+description = "A simple library for runtime type-checking."
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "typing_validation-1.2.11.post4-py3-none-any.whl", hash = "sha256:73dd504ddebf5210e80d5f65ba9b30efbd0fa42f266728fda7c4f0ba335c699c"},
+    {file = "typing_validation-1.2.11.post4.tar.gz", hash = "sha256:7aed04ecfbda07e63b7266f90e5d096f96344f7facfe04bb081b21e4a9781670"},
+]
+
+[package.dependencies]
+typing-extensions = {version = ">=4.6.0", markers = "python_version < \"3.11\""}
+
+[package.extras]
+dev = ["mypy", "pylint", "pytest", "pytest-cov", "rich"]
+
+[[package]]
 name = "urllib3"
 version = "2.2.2"
 description = "HTTP library with thread-safe connection pooling, file post, and more."
@@ -3506,4 +3579,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<4.0"
-content-hash = "b560a5c3845be211a0319c912867980bc038e467912ae8cb16ef93a15ce87604"
+content-hash = "764273bcc99bc9be5abd014f48e0eac375651b9fd4d48b7d4b6a78fe56a15f2e"
