@@ -1,6 +1,7 @@
 .PHONY: codegen web3_codegen orderbook_codegen subgraph_codegen test lint format remove_unused_imports
 
-codegen: web3_codegen orderbook_codegen subgraph_codegen
+codegen: web3_codegen orderbook_codegen
+# codegen: web3_codegen orderbook_codegen subgraph_codegen
 
 web3_codegen:
 	poetry run python -m cow_py.codegen.main
