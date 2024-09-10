@@ -47,6 +47,8 @@ jobs:
           poetry run ruff check .
 
       - name: Test
+        env:
+          E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY: ${{ secrets.E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY }}
         run: |
           poetry run pytest tests/
 
