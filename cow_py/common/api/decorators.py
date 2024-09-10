@@ -2,7 +2,6 @@ import backoff
 import httpx
 from aiolimiter import AsyncLimiter
 
-from cow_py.common.api.errors import ApiResponseError
 
 DEFAULT_LIMITER_OPTIONS = {"rate": 5, "per": 1.0}
 
@@ -34,7 +33,7 @@ def with_backoff():
 
             @backoff.on_exception(
                 backoff.expo,
-                (httpx.HTTPStatusError, httpx.NetworkError, ApiResponseError),
+                (httpx.NetworkError, httpx.HTTPStatusError),
                 **internal_backoff_opts,
             )
             async def closure():

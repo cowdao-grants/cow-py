@@ -1,5 +1,7 @@
 from typing import Any, Dict, Optional
 
+from httpx import Response
+
 
 class BaseApiError(Exception):
     """Base exception for OrderBookApi errors."""
@@ -19,7 +21,9 @@ class SerializationError(BaseApiError):
 class ApiResponseError(BaseApiError):
     """Raised when the API returns an error response."""
 
-    def __init__(self, message: str, error_type: str, response: Dict[str, Any]):
+    def __init__(
+        self, message: str, error_type: str, response: Dict[str, Any] | Response
+    ):
         self.error_type = error_type
         super().__init__(message, response)
 
