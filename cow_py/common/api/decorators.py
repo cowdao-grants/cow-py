@@ -31,7 +31,9 @@ def with_backoff():
                 internal_backoff_opts = backoff_opts
 
             @backoff.on_exception(
-                backoff.expo, httpx.HTTPStatusError, **internal_backoff_opts
+                backoff.expo,
+                (httpx.NetworkError, httpx.HTTPStatusError),
+                **internal_backoff_opts,
             )
             async def closure():
                 return await func(*args, **kwargs)

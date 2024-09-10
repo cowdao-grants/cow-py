@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   pull_request:
   push:
-    branches: main 
+    branches: main
   release:
     types: [released]
 
@@ -13,9 +13,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: [
-          "3.10", "3.11", "3.12",
-        ]
+        python-version: ["3.10", "3.11", "3.12"]
     timeout-minutes: 10
     steps:
       - name: Checkout
@@ -49,6 +47,8 @@ jobs:
           poetry run ruff check .
 
       - name: Test
+        env:
+          E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY: ${{ secrets.E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY }}
         run: |
           poetry run pytest tests/
 
@@ -57,7 +57,7 @@ jobs:
           poetry build -f sdist
 
       - name: Archive production artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: wheels
           path: |

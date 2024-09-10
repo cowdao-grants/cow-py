@@ -8,7 +8,7 @@ from cow_py.contracts.order import hash_order_cancellation
 
 from cow_py.contracts.sign import SigningScheme, sign_order, sign_order_cancellation
 
-from .conftest import SAMPLE_ORDER
+from .conftest import SAMPLE_DOMAIN, SAMPLE_ORDER
 
 w3 = Web3(EthereumTesterProvider())
 
@@ -28,11 +28,8 @@ def patched_sign_message_builder(account: LocalAccount):
         signature = account.signHash(message_hash)
         r, s, v = signature["r"], signature["s"], signature["v"]
 
-        # Adjust v to be 27 or 28
-        v_adjusted = v + 27 if v < 27 else v
-
         # Concatenate the signature components into a hex string
-        signature_hex = to_hex(r)[2:] + to_hex(s)[2:] + hex(v_adjusted)[2:]
+        signature_hex = to_hex(r)[2:] + to_hex(s)[2:] + hex(v)[2:]
 
         return signature_hex
 
@@ -49,8 +46,7 @@ async def test_sign_order(monkeypatch, scheme):
     # Use monkeypatch to temporarily replace sign_message
     monkeypatch.setattr(signer, "sign_message", patched_sign_message)
 
-    domain = {"name": "test"}
-    signed_order = sign_order(domain, SAMPLE_ORDER, signer, scheme)
+    signed_order = sign_order(SAMPLE_DOMAIN, SAMPLE_ORDER, signer, scheme)
 
     # Extract 'v' value from the last two characters of the signature
     v = signed_order.data[-2:]
@@ -64,11 +60,10 @@ async def test_sign_order(monkeypatch, scheme):
 )
 async def test_sign_order_cancellation(scheme):
     signer = w3.eth.account.create()
-    domain = {"name": "test"}
     order_uid = "0x" + "2a" * 56
 
-    signature_data = sign_order_cancellation(domain, order_uid, signer, scheme)
-    order_hash = hash_order_cancellation(domain, order_uid)
+    signature_data = sign_order_cancellation(SAMPLE_DOMAIN, order_uid, signer, scheme)
+    order_hash = hash_order_cancellation(SAMPLE_DOMAIN, order_uid)
 
     assert (
         w3.eth.account._recover_hash(order_hash, signature=signature_data.data)

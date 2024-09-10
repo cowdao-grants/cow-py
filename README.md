@@ -40,11 +40,11 @@ print(orders)
 
 ## 🐄 Project Structure
 
-- `common/`(WIP): Utilities and configurations, the backbone of the SDK.
+- `common/`: Utilities and configurations, the backbone of the SDK.
 - `contracts/`(TODO): A pasture of Smart contract ABIs for interaction.
-- `order_book/`(TODO): Functions to wrangle orders on the CoW Protocol.
+- `order_book/`: Functions to wrangle orders on the CoW Protocol.
 - `order_signing/`(TODO): Tools for signing and validating orders. Anything inside this module should use higher level modules, and the process of actually signing (ie. calling the web3 function to generate the signature, should be handled in contracts, not here).
-- `subgraph/`(WIP): GraphQL client for querying CoW Protocol's Subgraph.
+- `subgraph/`: GraphQL client for querying CoW Protocol's Subgraph.
 - `web3/`: Web3 providers for blockchain interactions.
 
 ## 🐄 How to Use
@@ -87,20 +87,27 @@ data = client.get_data(response)
 pprint(data)
 ```
 
-### Signing an Order (TODO)
+Or you can leverage `SubgraphClient` to use a custom query and get the results as JSON:
 
 ```python
-from cow_py.order_signing import sign_order
+from pprint import pprint
+from cow_py.subgraph.client import SubgraphClient
 
-# Example order details
-order_details = {
-    "sell_token": "0x...",
-    "buy_token": "0x...",
-    "sell_amount": 100000,
-}
+url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
+client = SubgraphClient(url=url)
 
-signed_order = sign_order(order_details, private_key="your_private_key")
-print(signed_order)
+response = await client.execute(query="""
+            query LastDaysVolume($days: Int!) {
+              dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
+                timestamp
+                volumeUsd
+              }
+            }
+            """, variables=dict(days=2)
+            )
+
+data = client.get_data(response)
+pprint(data)
 ```
 
 ## 🐄 Development
@@ -130,6 +137,32 @@ Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook 
 make codegen
 ```
 
+## 🐄 Development
+
+### 🐄 Tests
+
+Run tests to ensure everything's working:
+
+```bash
+make test # or poetry run pytest
+```
+
+### 🐄 Formatting/Linting
+
+Run the formatter and linter:
+
+```bash
+make format # or ruff check . --fix
+make lint # or ruff format
+```
+
+### 🐄 Codegen
+
+Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook API:
+
+```bash
+make codegen
+```
 
 ## 🐄 Contributing to the Herd
 
@@ -141,10 +174,11 @@ cd cow-py
 poetry install
 ```
 
-Run tests to ensure everything's working:
+After making changes, make sure to run the appropriate code generation tasks and tests:
 
 ```bash
-poetry run pytest
+make codegen
+make test
 ```
 
 ## 🐄 Need Help?
