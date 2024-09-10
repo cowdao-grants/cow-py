@@ -29,7 +29,6 @@ pytest-asyncio = "^0.23.6"
 web3 = { extras = ["tester"], version = "^6.17.0" }
 pycln = "^2.4.0"
 pytest-cov = "^5.0.0"
-pytest-recording = "^0.13.2"
 python-dotenv = "^1.0.1"
 
 [tool.poetry.scripts]
