@@ -108,7 +108,7 @@ class ApiBase:
         data: Union[Dict[str, Any], List[Dict[str, Any]], str], model_class: Type[T]
     ) -> Union[T, List[T]]:
         if isinstance(data, str):
-            return model_class(data)
+            return model_class(data)  # type: ignore
         if isinstance(data, list):
             model_class, *_ = get_args(model_class)
             return [model_class(**item) for item in data]
