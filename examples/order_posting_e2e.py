@@ -6,6 +6,7 @@ import asyncio
 import json
 import os
 
+from dotenv import load_dotenv
 from web3 import Account
 
 from cow_py.common.chains import Chain
@@ -17,18 +18,19 @@ from cow_py.contracts.sign import EcdsaSignature, SigningScheme
 from cow_py.contracts.sign import sign_order as _sign_order
 from cow_py.order_book.api import OrderBookApi
 from cow_py.order_book.config import OrderBookAPIConfigFactory
-from cow_py.order_book.generated.model import OrderQuoteSide1, TokenAmount
-from cow_py.order_book.generated.model import OrderQuoteSideKindSell
 from cow_py.order_book.generated.model import (
-    UID,
+    OrderQuoteSideKindSell,
+    OrderQuoteSide1,
     OrderCreation,
     OrderQuoteRequest,
     OrderQuoteResponse,
+    UID,
+    TokenAmount,
 )
 
 BUY_TOKEN = "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"  # WETH
 SELL_TOKEN = "0xbe72E441BF55620febc26715db68d3494213D8Cb"  # USDC
-SELL_AMOUNT_BEFORE_FEE = "10000000000000000000"  # 100 USDC with 18 decimals
+SELL_AMOUNT_BEFORE_FEE = "5000000000000000000"  # 50 USDC with 18 decimals
 ORDER_KIND = "sell"
 CHAIN = Chain.SEPOLIA
 CHAIN_ID = SupportedChainId.SEPOLIA
@@ -36,8 +38,14 @@ CHAIN_ID = SupportedChainId.SEPOLIA
 config = OrderBookAPIConfigFactory.get_config("prod", CHAIN_ID)
 ORDER_BOOK_API = OrderBookApi(config)
 
-ADDRESS = os.getenv("USER_ADDRESS")
-ACCOUNT = Account.from_key(os.getenv("PRIVATE_KEY"))
+load_dotenv()
+
+PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+
+if not PRIVATE_KEY:
+    raise ValueError("Missing variables on .env file")
+
+ACCOUNT = Account.from_key(PRIVATE_KEY)
 
 
 async def get_order_quote(
@@ -57,7 +65,7 @@ def sign_order(order: Order) -> EcdsaSignature:
 async def post_order(order: Order, signature: EcdsaSignature) -> UID:
     order_creation = OrderCreation(
         **{
-            "from": ADDRESS,
+            "from": ACCOUNT.address,
             "sellToken": order.sellToken,
             "buyToken": order.buyToken,
             "sellAmount": order.sellAmount,
@@ -80,7 +88,7 @@ async def main():
         **{
             "sellToken": SELL_TOKEN,
             "buyToken": BUY_TOKEN,
-            "from": ADDRESS,
+            "from": ACCOUNT.address,
         }
     )
     order_side = OrderQuoteSide1(
@@ -95,7 +103,7 @@ async def main():
         **{
             "sellToken": SELL_TOKEN,
             "buyToken": BUY_TOKEN,
-            "receiver": ADDRESS,
+            "receiver": ACCOUNT.address,
             "validTo": order_quote_dict["validTo"],
             "appData": "0x0000000000000000000000000000000000000000000000000000000000000000",
             "sellAmount": SELL_AMOUNT_BEFORE_FEE,  # Since it is a sell order, the sellAmountBeforeFee is the same as the sellAmount

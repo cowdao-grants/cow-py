@@ -2,6 +2,7 @@ import backoff
 import httpx
 from aiolimiter import AsyncLimiter
 
+
 DEFAULT_LIMITER_OPTIONS = {"rate": 5, "per": 1.0}
 
 DEFAULT_BACKOFF_OPTIONS = {
@@ -31,7 +32,9 @@ def with_backoff():
                 internal_backoff_opts = backoff_opts
 
             @backoff.on_exception(
-                backoff.expo, httpx.HTTPStatusError, **internal_backoff_opts
+                backoff.expo,
+                (httpx.NetworkError, httpx.HTTPStatusError),
+                **internal_backoff_opts,
             )
             async def closure():
                 return await func(*args, **kwargs)
