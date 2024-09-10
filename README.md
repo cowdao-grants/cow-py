@@ -87,20 +87,27 @@ data = client.get_data(response)
 pprint(data)
 ```
 
-### Signing an Order (TODO)
+Or you can leverage `SubgraphClient` to use a custom query and get the results as JSON:
 
 ```python
-from cow_py.order_signing import sign_order
+from pprint import pprint
+from cow_py.subgraph.client import SubgraphClient
 
-# Example order details
-order_details = {
-    "sell_token": "0x...",
-    "buy_token": "0x...",
-    "sell_amount": 100000,
-}
+url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
+client = SubgraphClient(url=url)
 
-signed_order = sign_order(order_details, private_key="your_private_key")
-print(signed_order)
+response = await client.execute(query="""
+            query LastDaysVolume($days: Int!) {
+              dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
+                timestamp
+                volumeUsd
+              }
+            }
+            """, variables=dict(days=2)
+            )
+
+data = client.get_data(response)
+pprint(data)
 ```
 
 ## 🐄 Development
@@ -130,7 +137,6 @@ Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook 
 make codegen
 ```
 
-
 ## 🐄 Contributing to the Herd
 
 Interested in contributing? Here's how you can help:
@@ -141,10 +147,11 @@ cd cow-py
 poetry install
 ```
 
-Run tests to ensure everything's working:
+After making changes, make sure to run the appropriate code generation tasks and tests:
 
 ```bash
-poetry run pytest
+make codegen
+make test
 ```
 
 ## 🐄 Need Help?

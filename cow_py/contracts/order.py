@@ -1,18 +1,21 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
-from typing import Literal, Optional, Union
+from typing import Any, Dict, Literal, Optional, Union
 
 from eth_account.messages import _hash_eip191_message, encode_typed_data
 from eth_typing import Hash32, HexStr
 from eth_utils.conversions import to_bytes, to_hex
+from web3.constants import ADDRESS_ZERO
+
+from cow_py.contracts.domain import TypedDataDomain
 
 
 @dataclass
 class Order:
     # Sell token address.
-    sellToken: str
+    sell_token: str = field(metadata={"alias": "sellToken"})
     # Buy token address.
-    buyToken: str
+    buy_token: str = field(metadata={"alias": "buyToken"})
     # An optional address to receive the proceeds of the trade instead of the
     # owner (i.e. the order signer).
     receiver: str
@@ -23,7 +26,7 @@ class Order:
     # amount represents the maximum sell amount that can be executed. For partial
     # fill orders, this represents a component of the limit price fraction.
     #
-    sellAmount: int
+    sell_amount: int = field(metadata={"alias": "sellAmount"})
     # The order buy amount.
     #
     # For fill or kill sell orders, this amount represents the minimum buy amount
@@ -31,40 +34,53 @@ class Order:
     # represents the exact buy amount that will be executed. For partial fill
     # orders, this represents a component of the limit price fraction.
     #
-    buyAmount: int
+    buy_amount: int = field(metadata={"alias": "buyAmount"})
     # The timestamp this order is valid until
-    validTo: int
+    valid_to: int = field(metadata={"alias": "validTo"})
     # Arbitrary application specific data that can be added to an order. This can
     # also be used to ensure uniqueness between two orders with otherwise the
     # exact same parameters.
-    appData: str
+    app_data: str = field(metadata={"alias": "appData"})
     # Fee to give to the protocol.
-    feeAmount: int
+    fee_amount: int = field(metadata={"alias": "feeAmount"})
     # The order kind.
     kind: str
     # Specifies whether or not the order is partially fillable.
-    partiallyFillable: bool = False
+    partially_fillable: bool = field(
+        default=False, metadata={"alias": "partiallyFillable"}
+    )
     # Specifies how the sell token balance will be withdrawn. It can either be
     # taken using ERC20 token allowances made directly to the Vault relayer
     # (default) or using Balancer Vault internal or external balances.
-    sellTokenBalance: Optional[str] = None
+    sell_token_balance: Optional[str] = field(
+        default=None, metadata={"alias": "sellTokenBalance"}
+    )
     # Specifies how the buy token balance will be paid. It can either be paid
     # directly in ERC20 tokens (default) in Balancer Vault internal balances.
-    buyTokenBalance: Optional[str] = None
+    buy_token_balance: Optional[str] = field(
+        default=None, metadata={"alias": "buyTokenBalance"}
+    )
+
+    def __getattr__(self, name):
+        for f in self.__dataclass_fields__.values():
+            if f.metadata.get("alias") == name:
+                return getattr(self, f.name)
+        raise AttributeError(
+            f"'{type(self).__name__}' object has no attribute '{name}'"
+        )
+
+    def __setattr__(self, name, value):
+        for f in self.__dataclass_fields__.values():
+            if f.metadata.get("alias") == name:
+                return super().__setattr__(f.name, value)
+        return super().__setattr__(name, value)
 
 
 # Gnosis Protocol v2 order cancellation data.
 @dataclass
 class OrderCancellations:
-    orderUids: bytearray
+    order_uids: bytearray
 
-
-# Marker address to indicate that an order is buying Ether.
-#
-# Note that this address is only has special meaning in the `buyToken` and will
-# be treated as a ERC20 token address in the `sellToken` position, causing the
-# settlement to revert.
-BUY_ETH_ADDRESS = "0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE"
 
 BytesLike = Union[str, bytes, HexStr]
 
@@ -92,6 +108,7 @@ class OrderBalance(Enum):
 # /**
 #  * The EIP-712 type fields definition for a Gnosis Protocol v2 order.
 #  */
+# The EIP-712 type fields definition for a Gnosis Protocol v2 order.
 ORDER_TYPE_FIELDS = [
     dict(name="sellToken", type="address"),
     dict(name="buyToken", type="address"),
@@ -106,7 +123,6 @@ ORDER_TYPE_FIELDS = [
     dict(name="sellTokenBalance", type="string"),
     dict(name="buyTokenBalance", type="string"),
 ]
-# The EIP-712 type fields definition for a Gnosis Protocol v2 order.
 CANCELLATIONS_TYPE_FIELDS = [
     dict(name="orderUids", type="bytes[]"),
 ]
@@ -142,40 +158,39 @@ def normalize_buy_token_balance(
     """
     if balance in [None, OrderBalance.ERC20.value, OrderBalance.EXTERNAL.value]:
         return OrderBalance.ERC20.value
-    elif balance == OrderBalance.INTERNAL:
+    elif balance == OrderBalance.INTERNAL.value:
         return OrderBalance.INTERNAL.value
     else:
         raise ValueError(f"Invalid order balance {balance}")
 
 
-ZERO_ADDRESS = "0x" + "00" * 20
-
-
-def normalize_order(order: Order):
-    if order.receiver == ZERO_ADDRESS:
+def normalize_order(order: Order) -> Dict[str, Union[str, int]]:
+    if order.receiver == ADDRESS_ZERO:
         raise ValueError("receiver cannot be address(0)")
 
     return {
-        "sellToken": order.sellToken,
-        "buyToken": order.buyToken,
-        "receiver": order.receiver if order.receiver else ZERO_ADDRESS,
-        "sellAmount": order.sellAmount,
-        "buyAmount": order.buyAmount,
-        "validTo": order.validTo,
-        "appData": hashify(order.appData),
-        "feeAmount": order.feeAmount,
+        "sellToken": order.sell_token,
+        "buyToken": order.buy_token,
+        "receiver": order.receiver if order.receiver else ADDRESS_ZERO,
+        "sellAmount": order.sell_amount,
+        "buyAmount": order.buy_amount,
+        "validTo": order.valid_to,
+        "appData": hashify(order.app_data),
+        "feeAmount": order.fee_amount,
         "kind": order.kind,
-        "partiallyFillable": order.partiallyFillable,
+        "partiallyFillable": order.partially_fillable,
         "sellTokenBalance": (
-            order.sellTokenBalance
-            if order.sellTokenBalance
+            order.sell_token_balance
+            if order.sell_token_balance
             else OrderBalance.ERC20.value
         ),
-        "buyTokenBalance": normalize_buy_token_balance(order.buyTokenBalance),
+        "buyTokenBalance": normalize_buy_token_balance(order.buy_token_balance),
     }
 
 
-def hash_typed_data(domain, types, data) -> Hash32:
+def hash_typed_data(
+    domain: TypedDataDomain, types: Dict[str, Any], data: Dict[str, Any]
+) -> Hash32:
     """
     Compute the 32-byte signing hash for the specified order.
 
@@ -185,12 +200,12 @@ def hash_typed_data(domain, types, data) -> Hash32:
     :return: Hex-encoded 32-byte order digest.
     """
     encoded_data = encode_typed_data(
-        domain_data=domain, message_types=types, message_data=data
+        domain_data=domain.to_dict(), message_types=types, message_data=data
     )
     return _hash_eip191_message(encoded_data)
 
 
-def hash_order(domain, order):
+def hash_order(domain: TypedDataDomain, order: Order) -> Hash32:
     """
     Compute the 32-byte signing hash for the specified order.
 
@@ -198,10 +213,10 @@ def hash_order(domain, order):
     :param order: The order to compute the digest for.
     :return: Hex-encoded 32-byte order digest.
     """
-    return hash_typed_data(domain, ORDER_TYPE_FIELDS, normalize_order(order))
+    return hash_typed_data(domain, {"Order": ORDER_TYPE_FIELDS}, normalize_order(order))
 
 
-def hash_order_cancellation(domain, order_uid) -> str:
+def hash_order_cancellation(domain: TypedDataDomain, order_uid: str) -> str:
     """
     Compute the 32-byte signing hash for the specified cancellation.
 
@@ -212,7 +227,9 @@ def hash_order_cancellation(domain, order_uid) -> str:
     return hash_order_cancellations(domain, [order_uid])
 
 
-def hash_order_cancellations(domain_data, order_uids) -> str:
+def hash_order_cancellations(
+    domain_data: TypedDataDomain, order_uids: list[str]
+) -> str:
     """
     Compute the 32-byte signing hash for the specified order cancellations.
 
@@ -222,7 +239,7 @@ def hash_order_cancellations(domain_data, order_uids) -> str:
     """
     return _hash_eip191_message(
         encode_typed_data(
-            domain_data,
+            domain_data.to_dict(),
             message_types={"OrderCancellations": CANCELLATIONS_TYPE_FIELDS},
             message_data={"orderUids": order_uids},
         )
@@ -236,7 +253,7 @@ ORDER_UID_LENGTH = 56
 @dataclass
 class OrderUidParams:
     # The EIP-712 order struct hash.
-    orderDigest: str
+    order_digest: str = field(metadata={"alias": "orderDigest"})
     # The owner of the order.
     owner: str
     # The timestamp this order is valid until.

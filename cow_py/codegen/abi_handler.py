@@ -39,6 +39,17 @@ def to_python_conventional_name(name: str) -> str:
     return CAMEL_TO_SNAKE_REGEX.sub("_", name).lower()
 
 
+def to_camel_case(name: str) -> str:
+    """Converts a snake_case name to a camelCase name."""
+    name = name.lower()
+    return name[0] + name.title().replace("_", "")[1:]
+
+
+def dict_keys_to_camel_case(d: Dict[str, Any]) -> Dict[str, Any]:
+    """Converts all keys in a dictionary to camelCase."""
+    return {to_camel_case(k): v for k, v in d.items()}
+
+
 def _get_template_file() -> str:
     pkg_files = importlib.resources.files(templates)
     return str(next(x for x in pkg_files.iterdir() if x.suffix == ".hbs"))  # type: ignore

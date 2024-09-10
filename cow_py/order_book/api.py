@@ -164,7 +164,6 @@ class OrderBookApi(ApiBase):
             context_override=context_override,
             method="POST",
         )
-
         return OrderQuoteResponse(**response)
 
     async def post_order(self, order: OrderCreation, context_override: Context = {}):
@@ -188,7 +187,7 @@ class OrderBookApi(ApiBase):
             method="DELETE",
         )
 
-        return UID(response)
+        return response
 
     async def put_app_data(
         self,

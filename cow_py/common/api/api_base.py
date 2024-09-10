@@ -1,48 +1,14 @@
 from abc import ABC
 import json
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import httpx
 
 from cow_py.common.api.decorators import rate_limitted, with_backoff
+from cow_py.common.api.errors import ApiResponseError, BaseApiError, SerializationError
 from cow_py.common.config import SupportedChainId
 
 Context = dict[str, Any]
-
-
-class BaseApiError(Exception):
-    """Base exception for OrderBookApi errors."""
-
-    def __init__(self, message: str, response: Optional[Any] = None):
-        self.message = message
-        self.response = response
-        super().__init__(self.message)
-
-
-class SerializationError(BaseApiError):
-    """Raised when there's an error in serializing or deserializing data."""
-
-    pass
-
-
-class ApiResponseError(BaseApiError):
-    """Raised when the API returns an error response."""
-
-    def __init__(self, message: str, error_type: str, response: Dict[str, Any]):
-        self.error_type = error_type
-        super().__init__(message, response)
-
-
-class NetworkError(BaseApiError):
-    """Raised when there's a network-related error."""
-
-    pass
-
-
-class UnexpectedResponseError(BaseApiError):
-    """Raised when the API returns an unexpected response."""
-
-    pass
 
 
 class APIConfig(ABC):
@@ -113,12 +79,14 @@ class ApiBase:
     @rate_limitted()
     async def _fetch(self, path: str, method="GET", **kwargs):
         url = self.config.get_base_url() + path
-        del kwargs["context_override"]
+        context_override = kwargs.pop("context_override", {})
 
         try:
             async with httpx.AsyncClient() as client:
                 builder = RequestBuilder(RequestStrategy(), JsonResponseAdapter())
-                response = await builder.execute(client, url, method, **kwargs)
+                response = await builder.execute(
+                    client, url, method, **context_override
+                )
 
                 if isinstance(response, dict) and "errorType" in response:
                     raise ApiResponseError(
@@ -129,10 +97,8 @@ class ApiBase:
 
                 return response
         except httpx.NetworkError as e:
-            raise NetworkError(f"Network error occurred: {str(e)}")
-        except httpx.HTTPStatusError as e:
-            raise UnexpectedResponseError(
-                f"Unexpected HTTP status: {e.response.status_code}", e.response
-            )
+            raise httpx.NetworkError(f"Network error occurred: {str(e)}")
+        except httpx.HTTPStatusError:
+            raise
         except Exception as e:
             raise BaseApiError(f"An unexpected error occurred: {str(e)}")
