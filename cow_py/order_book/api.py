@@ -5,16 +5,19 @@ from cow_py.common.api.api_base import ApiBase, Context
 from cow_py.common.config import SupportedChainId
 from cow_py.order_book.config import OrderBookAPIConfigFactory
 from typing import Union
-from cow_py.order_book.generated.model import OrderQuoteSide2, OrderQuoteValidity2
+from cow_py.order_book.generated.model import (
+    OrderCancellations,
+    OrderQuoteSide2,
+    OrderQuoteValidity2,
+)
 
-from .generated.model import (
+from cow_py.order_book.generated.model import (
     UID,
     Address,
     AppDataHash,
     AppDataObject,
     NativePriceResponse,
     Order,
-    OrderCancellation,
     OrderCreation,
     OrderQuoteRequest,
     OrderQuoteResponse,
@@ -35,12 +38,10 @@ class OrderBookApi(ApiBase):
         self,
         config=OrderBookAPIConfigFactory.get_config("prod", SupportedChainId.MAINNET),
     ):
-        self.config = config
+        super().__init__(config)
 
-    async def get_version(self, context_override: Context = {}) -> str:
-        return await self._fetch(
-            path="/api/v1/version", context_override=context_override
-        )
+    async def get_version(self, context_override: Context = {}):
+        return await self._fetch("/api/v1/version", context_override=context_override)
 
     async def get_trades_by_owner(
         self, owner: Address, context_override: Context = {}
@@ -163,6 +164,7 @@ class OrderBookApi(ApiBase):
             context_override=context_override,
             method="POST",
         )
+
         return OrderQuoteResponse(**response)
 
     async def post_order(self, order: OrderCreation, context_override: Context = {}):
@@ -176,15 +178,16 @@ class OrderBookApi(ApiBase):
 
     async def delete_order(
         self,
-        orders_cancelation: OrderCancellation,
+        orders_cancelation: OrderCancellations,
         context_override: Context = {},
     ):
         response = await self._fetch(
             path="/api/v1/orders",
-            json=orders_cancelation.model_dump_json(),
+            json=json.loads(orders_cancelation.model_dump_json()),
             context_override=context_override,
             method="DELETE",
         )
+
         return UID(response)
 
     async def put_app_data(
