@@ -18,7 +18,7 @@ NETWORK_SUBGRAPH_IDS_MAP = {
 
 
 def build_subgraph_url(
-    chain: Chain = Chain.MAINNET,
+    chain: Chain = Chain.SEPOLIA,
     env: SubgraphEnvironment = SubgraphEnvironment.PRODUCTION,
     subgraph_api_key: str = "",
 ) -> str:
