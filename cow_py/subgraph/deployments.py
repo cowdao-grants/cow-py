@@ -20,17 +20,17 @@ NETWORK_SUBGRAPH_IDS_MAP = {
 def build_subgraph_url(
     chain: Chain = Chain.SEPOLIA,
     env: SubgraphEnvironment = SubgraphEnvironment.PRODUCTION,
-    subgraph_api_key: str = "",
+    subgraph_api_key: str = None,
 ) -> str:
     base_url = NETWORK_SUBGRAPH_IDS_MAP[chain]
 
     if env == SubgraphEnvironment.STAGING:
         raise NotImplementedError("Staging subgraph URLs are not yet implemented")
 
-    url = base_url.format(SUBGRAPH_API_KEY=subgraph_api_key)
-
-    if "{SUBGRAPH_API_KEY}" in url:
+    if "{SUBGRAPH_API_KEY}" in base_url and not subgraph_api_key:
         raise ValueError("Subgraph API key is required for this subgraph")
+
+    url = base_url.format(SUBGRAPH_API_KEY=subgraph_api_key)
 
     return url
 
