@@ -10,10 +10,10 @@ class SubgraphEnvironment(Enum):
 
 
 NETWORK_SUBGRAPH_IDS_MAP = {
-    Chain.MAINNET: "https://gateway.thegraph.com/api/{SUBGRAPH_API_KEY}/subgraphs/id/8mdwJG7YCSwqfxUbhCypZvoubeZcFVpCHb4zmHhvuKTD",
+    Chain.MAINNET: "https://api.studio.thegraph.com/query/49707/cow-subgraph-mainnet/version/latest",
     Chain.SEPOLIA: "https://api.studio.thegraph.com/query/49707/cow-subgraph-sepolia/version/latest",
-    Chain.GNOSIS: "https://gateway.thegraph.com/api/{SUBGRAPH_API_KEY}/subgraphs/id/HTQcP2gLuAy235CMNE8ApN4cbzpLVjjNxtCAUfpzRubq",
-    Chain.ARBITRUM: "https://gateway.thegraph.com/api/{SUBGRAPH_API_KEY}/subgraphs/id/CQ8g2uJCjdAkUSNkVbd9oqqRP2GALKu1jJCD3fyY5tdc",
+    Chain.GNOSIS: "https://api.studio.thegraph.com/query/49707/cow-subgraph-gnosis/version/latest",
+    Chain.ARBITRUM: "https://api.studio.thegraph.com/query/49707/cow-subgraph-arb/version/latest",
 }
 
 
