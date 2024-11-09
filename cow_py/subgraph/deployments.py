@@ -9,22 +9,30 @@ class SubgraphEnvironment(Enum):
     STAGING = "staging"
 
 
-SUBGRAPH_BASE_URL = "https://api.thegraph.com/subgraph/name/cowprotocol"
+NETWORK_SUBGRAPH_IDS_MAP = {
+    Chain.MAINNET: "https://api.studio.thegraph.com/query/49707/cow-subgraph-mainnet/version/latest",
+    Chain.SEPOLIA: "https://api.studio.thegraph.com/query/49707/cow-subgraph-sepolia/version/latest",
+    Chain.GNOSIS: "https://api.studio.thegraph.com/query/49707/cow-subgraph-gnosis/version/latest",
+    Chain.ARBITRUM: "https://api.studio.thegraph.com/query/49707/cow-subgraph-arb/version/latest",
+}
 
 
 def build_subgraph_url(
     chain: Chain = Chain.MAINNET,
     env: SubgraphEnvironment = SubgraphEnvironment.PRODUCTION,
+    subgraph_api_key: str = None,
 ) -> str:
-    base_url = SUBGRAPH_BASE_URL
+    base_url = NETWORK_SUBGRAPH_IDS_MAP[chain]
 
-    network_suffix = "" if chain == Chain.MAINNET else "-gc"
-    env_suffix = "-" + env.value if env == SubgraphEnvironment.STAGING else ""
+    if env == SubgraphEnvironment.STAGING:
+        raise NotImplementedError("Staging subgraph URLs are not yet implemented")
 
-    if chain == Chain.SEPOLIA:
-        raise ValueError(f"Unsupported chain: {chain}")
+    if "{SUBGRAPH_API_KEY}" in base_url and not subgraph_api_key:
+        raise ValueError("Subgraph API key is required for this subgraph")
 
-    return f"{base_url}/cow{network_suffix}{env_suffix}"
+    url = base_url.format(SUBGRAPH_API_KEY=subgraph_api_key)
+
+    return url
 
 
 @dataclass

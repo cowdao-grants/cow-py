@@ -53,10 +53,13 @@ print(orders)
 
 Using the built-in GraphQL client, you can query the CoW Protocol's Subgraph to get real-time data on the CoW Protocol. You can query the Subgraph by using the `SubgraphClient` class and passing in the URL of the Subgraph.
 
+NOTE: To query `mainnet`, `gnosis`, or `arbitrum` subgraphs, you'll need to add SUBGRAPH_API_KEY to your .env. You can get one from [Subgraph Studio](https://thegraph.com/studio/apikeys/) directly.
+
 ```python
 from cow_py.subgraph.client import SubgraphClient
+from cow_py.subgraph.deployments import build_subgraph_url
 
-url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
+url = build_subgraph_url() # Default network is Chain.SEPOLIA and env SubgraphEnvironment.PRODUCTION
 client = SubgraphClient(url=url)
 
 # Fetch the total supply of the CoW Protocol, defined in a query in cow_py/subgraph/queries
@@ -69,8 +72,9 @@ Or you can leverage `SubgraphClient` to use a custom query and get the results a
 ```python
 from pprint import pprint
 from cow_py.subgraph.client import SubgraphClient
+from cow_py.subgraph.deployments import build_subgraph_url
 
-url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
+url = build_subgraph_url() # Default network is Chain.SEPOLIA and env SubgraphEnvironment.PRODUCTION
 client = SubgraphClient(url=url)
 
 response = await client.execute(query="""
@@ -92,8 +96,9 @@ Or you can leverage `SubgraphClient` to use a custom query and get the results a
 ```python
 from pprint import pprint
 from cow_py.subgraph.client import SubgraphClient
+from cow_py.subgraph.deployments import build_subgraph_url
 
-url = build_subgraph_url() # Default network is Chain.MAINNET and env SubgraphEnvironment.PRODUCTION
+url = build_subgraph_url() # Default network is Chain.SEPOLIA and env SubgraphEnvironment.PRODUCTION
 client = SubgraphClient(url=url)
 
 response = await client.execute(query="""
@@ -190,7 +195,6 @@ Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook 
 ```bash
 make codegen
 ```
-
 
 ## 🐄 Contributing to the Herd
 
