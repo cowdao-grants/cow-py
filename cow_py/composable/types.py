@@ -1,32 +1,28 @@
-from typing import TypedDict, Literal, Union, Dict, Any
+from dataclasses import dataclass
+from typing import ClassVar, List, Optional, Any, Union, Literal
 from enum import Enum
-from typing import List, Optional
 from eth_typing import HexStr
+from web3 import AsyncWeb3
+from web3.types import BlockData
+
+from cow_py.common.chains import Chain
+from cow_py.contracts.order import Order
+from cow_py.order_book.api import OrderBookApi
 
 
-class PollParams(TypedDict):
+@dataclass
+class OwnerParams:
     owner: str
-    chainId: int
-    provider: Any
-    orderBookApi: Any
-    offchainInput: str
-    proof: List[str]
-    blockInfo: Dict[str, int]
+    chain: Chain
+    provider: AsyncWeb3
 
 
-class GPv2OrderStruct(TypedDict):
-    sellToken: str
-    buyToken: str
-    receiver: str
-    sellAmount: int
-    buyAmount: int
-    validTo: int
-    appData: str
-    feeAmount: int
-    kind: str
-    partiallyFillable: bool
-    sellTokenBalance: str
-    buyTokenBalance: str
+@dataclass
+class PollParams(OwnerParams):
+    order_book_api: OrderBookApi
+    proof: ClassVar[List[str]] = []
+    block_info: Optional[BlockData] = None
+    off_chain_input: str = "0x"
 
 
 class ProofLocation(Enum):
@@ -38,23 +34,33 @@ class ProofLocation(Enum):
     IPFS = 5
 
 
-class ContextFactory(TypedDict):
+@dataclass
+class FactoryArgs:
+    args: List[Any]
+    args_type: List[str]
+
+
+@dataclass
+class ContextFactory:
     address: str
-    factory_args: Optional[dict]
+    factory_args: Optional[FactoryArgs] = None
 
 
-class ConditionalOrderParams(TypedDict):
-    handler: str
+@dataclass
+class ConditionalOrderParams:
+    handler: HexStr
     salt: HexStr
     static_input: HexStr
 
 
-class ProofStruct(TypedDict):
+@dataclass
+class ProofStruct:
     location: ProofLocation
     data: Union[str, HexStr]
 
 
-class ProofWithParams(TypedDict):
+@dataclass
+class ProofWithParams:
     proof: List[str]
     params: ConditionalOrderParams
 
@@ -68,22 +74,21 @@ class PollResultCode(Enum):
     DONT_TRY_AGAIN = "DONT_TRY_AGAIN"
 
 
-class IsValidResult(TypedDict):
+@dataclass
+class IsValidResult:
     is_valid: bool
-    reason: Optional[str]
+    reason: Optional[str] = None
 
 
-OrderKind = Literal["sell", "buy"]
-OrderBalance = Literal["erc20", "external", "internal"]
-
-
-class PollResultSuccess(TypedDict):
+@dataclass
+class PollResultSuccess:
     result: Literal[PollResultCode.SUCCESS]
-    order: Dict[str, Any]
+    order: Order
     signature: str
 
 
-class PollResultError(TypedDict):
+@dataclass
+class PollResultError:
     result: Literal[
         PollResultCode.UNEXPECTED_ERROR,
         PollResultCode.TRY_NEXT_BLOCK,
@@ -92,9 +97,9 @@ class PollResultError(TypedDict):
         PollResultCode.DONT_TRY_AGAIN,
     ]
     reason: str
-    error: Optional[Exception]
-    epoch: Optional[int]
-    blockNumber: Optional[int]
+    error: Optional[Exception] = None
+    epoch: Optional[int] = None
+    block_number: Optional[int] = None
 
 
 PollResult = Union[PollResultSuccess, PollResultError]

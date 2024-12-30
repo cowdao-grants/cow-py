@@ -2,14 +2,30 @@ from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
 from typing import Dict, Any, Optional
-from web3 import Web3
+from eth_typing import HexStr
+from web3 import AsyncWeb3, Web3
+from web3.types import BlockData
+
+from cow_py.contracts.order import Order
+
 
 from ..conditional_order import ConditionalOrder
-from ..types import IsValidResult, PollParams, PollResultCode, GPv2OrderStruct
+from ..types import (
+    ContextFactory,
+    IsValidResult,
+    PollParams,
+    PollResultCode,
+    PollResultError,
+)
 from ..utils import format_epoch
 
-TWAP_ADDRESS = "0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5"
+TWAP_ADDRESS = HexStr("0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5")
 CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS = "0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc"
+
+
+TWAP_STRUCT_ABI = [
+    "tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)",
+]
 
 
 class DurationType(Enum):
@@ -51,15 +67,15 @@ class TwapStruct:
 
 
 class Twap(ConditionalOrder[TwapData, TwapStruct]):
-    def __init__(self, handler: str, data: TwapData, salt: Optional[str] = None):
+    def __init__(self, handler: HexStr, data: TwapData, salt: Optional[HexStr] = None):
         if handler != TWAP_ADDRESS:
             raise ValueError(
                 f"InvalidHandler: Expected: {TWAP_ADDRESS}, provided: {handler}"
             )
         super().__init__(
             handler,
-            salt or Web3.keccak(text=Web3.to_hex(Web3.random.randbytes(32))).hex(),
             data,
+            salt,
         )
 
     @property
@@ -71,14 +87,14 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         return "twap"
 
     @property
-    def context(self) -> Optional[Dict[str, Any]]:
+    def context(self) -> Optional[ContextFactory]:
         if self.static_input.t0 > 0:
             return super().context
         else:
-            return {
-                "address": CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS,
-                "factory_args": None,
-            }
+            return ContextFactory(
+                address=CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS,
+                factory_args=None,
+            )
 
     def is_valid(self) -> IsValidResult:
         data = self.data
@@ -118,21 +134,35 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
                 error = "InvalidData"
 
         return (
-            {"is_valid": not bool(error), "reason": error}
+            IsValidResult(is_valid=False, reason=error)
             if error
-            else {"is_valid": True}
+            else IsValidResult(is_valid=True)
         )
 
-    def serialize(self) -> str:
+    def serialize(self) -> HexStr:
         return Web3.to_hex(Web3.keccak(text=str(self.data)))
 
-    def encode_static_input(self) -> str:
+    def encode_static_input(self) -> HexStr:
         return Web3.to_hex(Web3.keccak(text=str(self.static_input)))
 
-    @classmethod
-    def deserialize(cls, twap_serialized: str) -> "Twap":
-        # Implement deserialize logic here
-        pass
+    @staticmethod
+    def deserialize(twap_serialized: HexStr) -> "Twap":
+        return Twap.deserialize_helper(
+            twap_serialized, TWAP_ADDRESS, TWAP_STRUCT_ABI, Twap.deserialize_callback
+        )
+
+    async def get_block_timestamp(self, params: PollParams) -> int:
+        block_info = params.block_info or await params.provider.eth.get_block("latest")
+        block_timestamp = block_info.get("timestamp")
+        if not block_timestamp:
+            raise ValueError("Block timestamp not found")
+        return int(block_timestamp) & 0xFFFFFFFF
+
+    @staticmethod
+    def deserialize_callback(twapStruct: TwapStruct, salt: HexStr) -> "Twap":
+        return Twap(
+            TWAP_ADDRESS, Twap._static_transform_struct_to_data(twapStruct), salt
+        )
 
     def to_string(self, token_formatter=None) -> str:
         data = self.data
@@ -162,166 +192,123 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
 
         return f"{self.order_type} ({self.id}): {str(details)}"
 
-    def transform_data_to_struct(self, data: TwapData) -> TwapStruct:
-        sell_amount = Decimal(data.sell_amount)
-        buy_amount = Decimal(data.buy_amount)
-        number_of_parts = Decimal(data.number_of_parts)
+    def transform_data_to_struct(self, params: TwapData) -> TwapStruct:
+        sell_amount = Decimal(params.sell_amount)
+        buy_amount = Decimal(params.buy_amount)
+        number_of_parts = Decimal(params.number_of_parts)
 
         part_sell_amount = sell_amount // number_of_parts
         min_part_limit = buy_amount // number_of_parts
 
         span = (
             0
-            if data.duration_of_part["durationType"] == DurationType.AUTO.value
-            else data.duration_of_part["duration"]
+            if params.duration_of_part["durationType"] == DurationType.AUTO.value
+            else params.duration_of_part["duration"]
         )
         t0 = (
             0
-            if data.start_time["startType"] == StartTimeValue.AT_MINING_TIME.value
-            else data.start_time["epoch"]
+            if params.start_time["startType"] == StartTimeValue.AT_MINING_TIME.value
+            else params.start_time["epoch"]
         )
 
         return TwapStruct(
-            sell_token=data.sell_token,
-            buy_token=data.buy_token,
-            receiver=data.receiver,
+            sell_token=params.sell_token,
+            buy_token=params.buy_token,
+            receiver=params.receiver,
             part_sell_amount=int(part_sell_amount),
             min_part_limit=int(min_part_limit),
             t0=int(t0),
-            n=int(data.number_of_parts),
-            t=int(data.time_between_parts),
+            n=int(params.number_of_parts),
+            t=int(params.time_between_parts),
             span=int(span),
-            app_data=data.app_data,
+            app_data=params.app_data,
         )
 
-    def transform_struct_to_data(self, struct: TwapStruct) -> TwapData:
-        number_of_parts = Decimal(struct.n)
-        sell_amount = Decimal(struct.part_sell_amount) * number_of_parts
-        buy_amount = Decimal(struct.min_part_limit) * number_of_parts
+    def transform_struct_to_data(self, params: TwapStruct) -> TwapData:
+        return self._static_transform_struct_to_data(params)
+
+    @staticmethod
+    def _static_transform_struct_to_data(params: TwapStruct) -> TwapData:
+        number_of_parts = Decimal(params.n)
+        sell_amount = Decimal(params.part_sell_amount) * number_of_parts
+        buy_amount = Decimal(params.min_part_limit) * number_of_parts
 
         duration_of_part = (
             {"durationType": DurationType.AUTO.value}
-            if struct.span == 0
+            if params.span == 0
             else {
                 "durationType": DurationType.LIMIT_DURATION.value,
-                "duration": struct.span,
+                "duration": params.span,
             }
         )
 
         start_time = (
             {"startType": StartTimeValue.AT_MINING_TIME.value}
-            if struct.t0 == 0
-            else {"startType": StartTimeValue.AT_EPOCH.value, "epoch": struct.t0}
+            if params.t0 == 0
+            else {"startType": StartTimeValue.AT_EPOCH.value, "epoch": params.t0}
         )
 
         return TwapData(
-            sell_token=struct.sell_token,
-            buy_token=struct.buy_token,
-            receiver=struct.receiver,
+            sell_token=params.sell_token,
+            buy_token=params.buy_token,
+            receiver=params.receiver,
             sell_amount=int(sell_amount),
             buy_amount=int(buy_amount),
             start_time=start_time,
             number_of_parts=int(number_of_parts),
-            time_between_parts=struct.t,
+            time_between_parts=params.t,
             duration_of_part=duration_of_part,
-            app_data=struct.app_data,
+            app_data=params.app_data,
         )
 
-    async def poll_validate(self, params: PollParams) -> Optional[Dict[str, Any]]:
-        block_info = params.get("block_info") or await self.get_block_info(
-            params["provider"]
-        )
-        block_timestamp = block_info["block_timestamp"]
+    async def poll_validate(self, params: PollParams) -> Optional[PollResultError]:
+        block_timestamp = await self.get_block_timestamp(params)
 
         try:
             start_timestamp = await self.start_timestamp(params)
 
             if start_timestamp > block_timestamp:
-                return {
-                    "result": PollResultCode.TRY_AT_EPOCH,
-                    "epoch": start_timestamp,
-                    "reason": f"TWAP hasn't started yet. Starts at {start_timestamp} ({format_epoch(start_timestamp)})",
-                }
+                return PollResultError(
+                    result=PollResultCode.TRY_AT_EPOCH,
+                    epoch=start_timestamp,
+                    reason=f"TWAP hasn't started yet. Starts at {start_timestamp} ({format_epoch(start_timestamp)})",
+                )
 
             expiration_timestamp = self.end_timestamp(start_timestamp)
             if block_timestamp >= expiration_timestamp:
-                return {
-                    "result": PollResultCode.DONT_TRY_AGAIN,
-                    "reason": f"TWAP has expired. Expired at {expiration_timestamp} ({format_epoch(expiration_timestamp)})",
-                }
+                return PollResultError(
+                    result=PollResultCode.DONT_TRY_AGAIN,
+                    reason=f"TWAP has expired. Expired at {expiration_timestamp} ({format_epoch(expiration_timestamp)})",
+                )
 
             return None
         except Exception as err:
             if "Cabinet is not set" in str(err):
-                return {
-                    "result": PollResultCode.DONT_TRY_AGAIN,
-                    "reason": f"{str(err)}. User likely removed the order.",
-                }
+                return PollResultError(
+                    result=PollResultCode.DONT_TRY_AGAIN,
+                    reason="Cabinet is not set. Required for TWAP orders that start at mining time.",
+                    error=err,
+                )
+
             elif "Cabinet epoch out of range" in str(err):
-                return {
-                    "result": PollResultCode.DONT_TRY_AGAIN,
-                    "reason": str(err),
-                }
+                return PollResultError(
+                    result=PollResultCode.DONT_TRY_AGAIN, reason=str(err)
+                )
 
-            return {
-                "result": PollResultCode.UNEXPECTED_ERROR,
-                "reason": f"Unexpected error: {str(err)}",
-                "error": err,
-            }
+            return PollResultError(
+                result=PollResultCode.UNEXPECTED_ERROR,
+                reason=f"Unexpected error: {str(err)}",
+                error=err,
+            )
 
-    async def handle_poll_failed_already_present(
-        self, order_uid: str, order: GPv2OrderStruct, params: PollParams
-    ) -> Optional[Dict[str, Any]]:
-        block_info = params.get("block_info") or await self.get_block_info(
-            params["provider"]
-        )
-        block_timestamp = block_info["block_timestamp"]
-
-        time_between_parts = self.data.time_between_parts
-        number_of_parts = self.data.number_of_parts
-        start_timestamp = await self.start_timestamp(params)
-
-        if block_timestamp < start_timestamp:
-            return {
-                "result": PollResultCode.UNEXPECTED_ERROR,
-                "reason": f"TWAP part hasn't started. First TWAP part starts at {start_timestamp} ({format_epoch(start_timestamp)})",
-                "error": None,
-            }
-
-        expire_time = number_of_parts * time_between_parts + start_timestamp
-        if block_timestamp >= expire_time:
-            return {
-                "result": PollResultCode.UNEXPECTED_ERROR,
-                "reason": f"TWAP is expired. Expired at {expire_time} ({format_epoch(expire_time)})",
-                "error": None,
-            }
-
-        current_part_number = (block_timestamp - start_timestamp) // time_between_parts
-
-        if current_part_number == number_of_parts - 1:
-            return {
-                "result": PollResultCode.DONT_TRY_AGAIN,
-                "reason": f"Current active TWAP part ({current_part_number + 1}/{number_of_parts}) is already in the Order Book. This was the last TWAP part, no more orders need to be placed",
-            }
-
-        next_part_start_time = (
-            start_timestamp + (current_part_number + 1) * time_between_parts
-        )
-
-        return {
-            "result": PollResultCode.TRY_AT_EPOCH,
-            "epoch": next_part_start_time,
-            "reason": f"Current active TWAP part ({current_part_number + 1}/{number_of_parts}) is already in the Order Book. TWAP part {current_part_number + 2} doesn't start until {next_part_start_time} ({format_epoch(next_part_start_time)})",
-        }
-
-    async def start_timestamp(self, params: Dict[str, Any]) -> int:
+    async def start_timestamp(self, params: PollParams) -> int:
         start_time = self.data.start_time
 
         if start_time["startType"] == StartTimeValue.AT_EPOCH.value:
             return int(start_time["epoch"])
 
         cabinet = await self.cabinet(params)
-        raw_cabinet_epoch = Web3.to_int(hexstr=cabinet)
+        raw_cabinet_epoch = Web3.to_int(text=cabinet)
 
         if raw_cabinet_epoch > 2**32 - 1:
             raise ValueError(f"Cabinet epoch out of range: {raw_cabinet_epoch}")
@@ -349,10 +336,41 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
 
         return start_timestamp + number_of_parts * time_between_parts
 
-    @staticmethod
-    async def get_block_info(provider: Any) -> Dict[str, int]:
-        latest_block = await provider.eth.get_block("latest")
-        return {
-            "block_number": latest_block["number"],
-            "block_timestamp": latest_block["timestamp"],
-        }
+    async def handle_poll_failed_already_present(
+        self, order_uid: str, order: Order, params: PollParams
+    ) -> Optional[PollResultError]:
+        block_timestamp = await self.get_block_timestamp(params)
+        time_between_parts = self.data.time_between_parts
+        number_of_parts = self.data.number_of_parts
+        start_timestamp = await self.start_timestamp(params)
+
+        if block_timestamp < start_timestamp:
+            return PollResultError(
+                result=PollResultCode.UNEXPECTED_ERROR,
+                reason=f"TWAP hasn't started yet. Starts at {start_timestamp} ({format_epoch(start_timestamp)})",
+            )
+
+        expire_time = number_of_parts * time_between_parts + start_timestamp
+        if block_timestamp >= expire_time:
+            return PollResultError(
+                result=PollResultCode.UNEXPECTED_ERROR,
+                reason=f"TWAP is expired. Expired at {expire_time} ({format_epoch(expire_time)})",
+            )
+
+        current_part_number = (block_timestamp - start_timestamp) // time_between_parts
+
+        if current_part_number == number_of_parts - 1:
+            return PollResultError(
+                result=PollResultCode.DONT_TRY_AGAIN,
+                reason=f"Current active TWAP part ({current_part_number + 1}/{number_of_parts}) is already in the Order Book. This was the last TWAP part, no more orders need to be placed",
+            )
+
+        next_part_start_time = (
+            start_timestamp + (current_part_number + 1) * time_between_parts
+        )
+
+        return PollResultError(
+            result=PollResultCode.TRY_AT_EPOCH,
+            epoch=next_part_start_time,
+            reason=f"Current active TWAP part ({current_part_number + 1}/{number_of_parts}) is already in the Order Book. TWAP part {current_part_number + 2} doesn't start until {next_part_start_time} ({format_epoch(next_part_start_time)})",
+        )

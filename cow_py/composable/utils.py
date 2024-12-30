@@ -1,20 +1,42 @@
 from typing import List, Any, Dict
+from eth_typing import HexStr
+from hexbytes import HexBytes
 from web3 import Web3
-from eth_abi import encode, decode
+from eth_abi.abi import encode, decode
 
 
-def encode_params(params: Dict[str, Any]) -> str:
+from cow_py.common.chains import Chain
+from cow_py.common.constants import (
+    EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_CHAIN_ADDRESS_MAP,
+)
+from cow_py.codegen.__generated__.ExtensibleFallbackHandler import (
+    ExtensibleFallbackHandler,
+)
+from cow_py.composable.types import ConditionalOrderParams
+
+
+def encode_params(params: ConditionalOrderParams) -> HexStr:
     return Web3.to_hex(
         encode(
-            ["address", "bytes32", "bytes"],
-            [params["handler"], params["salt"], params["staticInput"]],
+            ["(address,bytes32,bytes)"],
+            [
+                [
+                    params.handler,
+                    HexBytes(params.salt),
+                    HexBytes(params.static_input),
+                ]
+            ],
         )
     )
 
 
-def decode_params(encoded: str) -> Dict[str, Any]:
-    decoded = decode(["address", "bytes32", "bytes"], Web3.to_bytes(hexstr=encoded))
-    return {"handler": decoded[0], "salt": decoded[1], "staticInput": decoded[2]}
+def decode_params(encoded: HexStr) -> ConditionalOrderParams:
+    [decoded] = decode(["(address,bytes32,bytes)"], HexBytes(encoded))
+    return ConditionalOrderParams(
+        handler=decoded[0],
+        salt=Web3.to_hex(decoded[1]),
+        static_input=Web3.to_hex(decoded[2]),
+    )
 
 
 def is_valid_abi(types: List[str], values: List[Any]) -> bool:
@@ -178,11 +200,23 @@ def kind_to_string(kind: str) -> str:
         raise ValueError(f"Unknown kind: {kind}")
 
 
-def get_domain_verifier(safe: str, domain: str, chain_id: int, provider: Any) -> str:
-    # Implement get_domain_verifier logic here
-    pass
+async def get_domain_verifier(safe: str, domain: HexBytes, chain: Chain) -> str:
+    contract = ExtensibleFallbackHandler(
+        chain=chain,
+        address=EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_CHAIN_ADDRESS_MAP[
+            chain.chain_id
+        ].value,
+    )
+
+    return contract.domain_verifiers(safe, domain)
 
 
-def create_set_domain_verifier_tx(domain: str, verifier: str) -> str:
-    # Implement create_set_domain_verifier_tx logic here
-    pass
+def create_set_domain_verifier_tx(domain: str, verifier: str, chain: Chain) -> str:
+    contract = ExtensibleFallbackHandler(
+        chain=chain,
+        address=EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_CHAIN_ADDRESS_MAP[
+            chain.chain_id
+        ].value,
+    )
+
+    return contract.build_tx_data("setDomainVerifier", domain, verifier)
