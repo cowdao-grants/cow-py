@@ -1,7 +1,8 @@
-from typing import List, Tuple
+from typing import List, Tuple, Any
 from hexbytes import HexBytes
 from cow_py.common.chains import Chain
 from dataclasses import dataclass
+from enum import Enum
 from cow_py.codegen.components import (
     BaseMixin,
     BaseContract,
@@ -41,24 +42,24 @@ class GPv2Order_Data:
 
 
 class ComposableCowMixin(BaseMixin):
-    def cabinet(self, str_arg_0: str, hexbytes_arg_0: HexBytes) -> HexBytes:
-        return self.call_contract_method("cabinet", str_arg_0, hexbytes_arg_0)
+    async def cabinet(self, str_arg_0: str, hexbytes_arg_0: HexBytes) -> HexBytes:
+        return await self.call_contract_method("cabinet", str_arg_0, hexbytes_arg_0)
 
-    def create(
+    async def create(
         self, params: IConditionalOrder_ConditionalOrderParams, dispatch: bool
     ) -> None:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "create", (params.handler, params.salt, params.staticInput), dispatch
         )
 
-    def create_with_context(
+    async def create_with_context(
         self,
         params: IConditionalOrder_ConditionalOrderParams,
         factory: str,
         data: HexBytes,
         dispatch: bool,
     ) -> None:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "createWithContext",
             (params.handler, params.salt, params.staticInput),
             factory,
@@ -66,17 +67,17 @@ class ComposableCowMixin(BaseMixin):
             dispatch,
         )
 
-    def domain_separator(self) -> HexBytes:
-        return self.call_contract_method("domainSeparator")
+    async def domain_separator(self) -> HexBytes:
+        return await self.call_contract_method("domainSeparator")
 
-    def get_tradeable_order_with_signature(
+    async def get_tradeable_order_with_signature(
         self,
         owner: str,
         params: IConditionalOrder_ConditionalOrderParams,
         offchain_input: HexBytes,
         proof: List[HexBytes],
     ) -> Tuple[GPv2Order_Data, HexBytes]:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "getTradeableOrderWithSignature",
             owner,
             (params.handler, params.salt, params.staticInput),
@@ -84,12 +85,12 @@ class ComposableCowMixin(BaseMixin):
             proof,
         )
 
-    def hash(self, params: IConditionalOrder_ConditionalOrderParams) -> HexBytes:
-        return self.call_contract_method(
+    async def hash(self, params: IConditionalOrder_ConditionalOrderParams) -> HexBytes:
+        return await self.call_contract_method(
             "hash", (params.handler, params.salt, params.staticInput)
         )
 
-    def is_valid_safe_signature(
+    async def is_valid_safe_signature(
         self,
         safe: str,
         sender: str,
@@ -99,7 +100,7 @@ class ComposableCowMixin(BaseMixin):
         encode_data: HexBytes,
         payload: HexBytes,
     ) -> HexBytes:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "isValidSafeSignature",
             safe,
             sender,
@@ -110,30 +111,34 @@ class ComposableCowMixin(BaseMixin):
             payload,
         )
 
-    def remove(self, single_order_hash: HexBytes) -> None:
-        return self.call_contract_method("remove", single_order_hash)
+    async def remove(self, single_order_hash: HexBytes) -> None:
+        return await self.call_contract_method("remove", single_order_hash)
 
-    def roots(self, str_arg_0: str) -> HexBytes:
-        return self.call_contract_method("roots", str_arg_0)
+    async def roots(self, str_arg_0: str) -> HexBytes:
+        return await self.call_contract_method("roots", str_arg_0)
 
-    def set_root(self, root: HexBytes, proof: ComposableCoW_Proof) -> None:
-        return self.call_contract_method("setRoot", root, (proof.location, proof.data))
+    async def set_root(self, root: HexBytes, proof: ComposableCoW_Proof) -> None:
+        return await self.call_contract_method(
+            "setRoot", root, (proof.location, proof.data)
+        )
 
-    def set_root_with_context(
+    async def set_root_with_context(
         self, root: HexBytes, proof: ComposableCoW_Proof, factory: str, data: HexBytes
     ) -> None:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "setRootWithContext", root, (proof.location, proof.data), factory, data
         )
 
-    def set_swap_guard(self, swap_guard: str) -> None:
-        return self.call_contract_method("setSwapGuard", swap_guard)
+    async def set_swap_guard(self, swap_guard: str) -> None:
+        return await self.call_contract_method("setSwapGuard", swap_guard)
 
-    def single_orders(self, str_arg_0: str, hexbytes_arg_0: HexBytes) -> bool:
-        return self.call_contract_method("singleOrders", str_arg_0, hexbytes_arg_0)
+    async def single_orders(self, str_arg_0: str, hexbytes_arg_0: HexBytes) -> bool:
+        return await self.call_contract_method(
+            "singleOrders", str_arg_0, hexbytes_arg_0
+        )
 
-    def swap_guards(self, str_arg_0: str) -> str:
-        return self.call_contract_method("swapGuards", str_arg_0)
+    async def swap_guards(self, str_arg_0: str) -> str:
+        return await self.call_contract_method("swapGuards", str_arg_0)
 
 
 class ComposableCow(BaseContract, ComposableCowMixin):

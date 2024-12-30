@@ -1,5 +1,8 @@
+from typing import List, Tuple, Any
 from hexbytes import HexBytes
 from cow_py.common.chains import Chain
+from dataclasses import dataclass
+from enum import Enum
 from cow_py.codegen.components import (
     BaseMixin,
     BaseContract,
@@ -10,10 +13,10 @@ from cow_py.codegen.components import (
 
 
 class MilkmanMixin(BaseMixin):
-    def domain_separator(self) -> HexBytes:
-        return self.call_contract_method("DOMAIN_SEPARATOR")
+    async def domain_separator(self) -> HexBytes:
+        return await self.call_contract_method("DOMAIN_SEPARATOR")
 
-    def cancel_swap(
+    async def cancel_swap(
         self,
         amount_in: int,
         from_token: str,
@@ -22,7 +25,7 @@ class MilkmanMixin(BaseMixin):
         price_checker: str,
         price_checker_data: HexBytes,
     ) -> None:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "cancelSwap",
             amount_in,
             from_token,
@@ -32,17 +35,17 @@ class MilkmanMixin(BaseMixin):
             price_checker_data,
         )
 
-    def initialize(self, from_token: str, _swap_hash: HexBytes) -> None:
-        return self.call_contract_method("initialize", from_token, _swap_hash)
+    async def initialize(self, from_token: str, _swap_hash: HexBytes) -> None:
+        return await self.call_contract_method("initialize", from_token, _swap_hash)
 
-    def is_valid_signature(
+    async def is_valid_signature(
         self, order_digest: HexBytes, encoded_order: HexBytes
     ) -> HexBytes:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "isValidSignature", order_digest, encoded_order
         )
 
-    def request_swap_exact_tokens_for_tokens(
+    async def request_swap_exact_tokens_for_tokens(
         self,
         amount_in: int,
         from_token: str,
@@ -51,7 +54,7 @@ class MilkmanMixin(BaseMixin):
         price_checker: str,
         price_checker_data: HexBytes,
     ) -> None:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "requestSwapExactTokensForTokens",
             amount_in,
             from_token,
@@ -61,8 +64,8 @@ class MilkmanMixin(BaseMixin):
             price_checker_data,
         )
 
-    def swap_hash(self) -> HexBytes:
-        return self.call_contract_method("swapHash")
+    async def swap_hash(self) -> HexBytes:
+        return await self.call_contract_method("swapHash")
 
 
 class Milkman(BaseContract, MilkmanMixin):
