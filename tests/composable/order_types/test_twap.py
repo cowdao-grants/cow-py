@@ -1,10 +1,8 @@
 from dataclasses import asdict
-import json
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, Mock
 from web3 import Web3
 from eth_typing import HexStr
-from decimal import Decimal
 
 
 from cow_py.common.chains import Chain
@@ -17,7 +15,6 @@ from cow_py.composable.order_types.twap import (
 )
 from cow_py.contracts.order import Order
 from cow_py.composable.types import PollParams, PollResultCode, PollResultError
-from cow_py.composable.utils import format_epoch
 
 # Constants
 OWNER = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
@@ -117,7 +114,7 @@ class TestTwapId:
 
 class TestTwapValidate:
     def test_valid_twap(self):
-        assert Twap.from_data(TWAP_PARAMS_TEST).is_valid().is_valid == True
+        assert Twap.from_data(TWAP_PARAMS_TEST).is_valid().is_valid
 
     def test_invalid_twap_same_token(self):
         test_data = TwapData(

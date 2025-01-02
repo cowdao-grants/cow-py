@@ -193,7 +193,7 @@ class ConditionalOrder(abc.ABC, Generic[D, S]):
             "static_input": self.static_input,
         }
 
-        if self.context == None:
+        if self.context is None:
             return self.composableCow.build_calldata(
                 "create",
                 params_struct,
@@ -414,7 +414,7 @@ class ConditionalOrder(abc.ABC, Generic[D, S]):
         Returns:
             HexStr | None: The encoded context data, or None if no factory args are present.
         """
-        if context.factory_args == None:
+        if context.factory_args is None:
             return HexStr("0x")
 
         return Web3.to_hex(
@@ -596,7 +596,8 @@ class ConditionalOrder(abc.ABC, Generic[D, S]):
         try:
             await order_book_api.get_order_by_uid(UID(order_uid))
             return True
-        except:
+
+        except:  # noqa: E722
             return False
 
     @staticmethod

@@ -1,8 +1,4 @@
 import pytest
-from unittest.mock import AsyncMock, patch
-from web3 import Web3
-from eth_typing import HexStr
-from hexbytes import HexBytes
 
 from cow_py.common.chains import Chain
 from cow_py.composable.multiplexer import Multiplexer

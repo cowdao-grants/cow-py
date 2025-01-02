@@ -6,15 +6,11 @@ from eth_typing import HexStr
 from web3 import AsyncWeb3
 
 from cow_py.composable.conditional_order import ConditionalOrder
-from cow_py.composable.order_types.twap import (
-    Twap,
-)
 from cow_py.composable.types import (
     IsValidResult,
     PollResultCode,
     PollParams,
     PollResultError,
-    PollResultSuccess,
     OwnerParams,
 )
 from cow_py.common.chains import Chain

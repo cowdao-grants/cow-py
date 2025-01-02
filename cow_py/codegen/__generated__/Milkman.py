@@ -1,8 +1,5 @@
-from typing import List, Tuple, Any
 from hexbytes import HexBytes
 from cow_py.common.chains import Chain
-from dataclasses import dataclass
-from enum import Enum
 from cow_py.codegen.components import (
     BaseMixin,
     BaseContract,

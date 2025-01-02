@@ -1,7 +1,7 @@
 from dataclasses import asdict
 import json
 
-from typing import Awaitable, Callable, Dict, Any, Optional, List, Tuple
+from typing import Awaitable, Callable, Dict, Optional, List, Tuple
 from eth_typing import HexStr
 from hexbytes import HexBytes
 from web3 import Web3
@@ -36,10 +36,10 @@ class Multiplexer:
         self.tree: Optional[MerkleTree] = None
         self.ctx: Optional[str] = None
 
-        if orders != None and len(orders) == 0:
+        if orders is not None and len(orders) == 0:
             raise ValueError("orders must have non-zero length")
 
-        if (orders != None and not root) or (orders == None and root):
+        if (orders is not None and not root) or (orders is None and root):
             raise ValueError("orders cannot have undefined root")
 
         for order in self.orders.values():
