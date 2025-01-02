@@ -85,7 +85,7 @@ def sign_order(
     )
     return EcdsaSignature(
         scheme=scheme,
-        data=signed_data.signature.hex(),
+        data=to_hex(signed_data.signature),
     )
 
 
@@ -109,7 +109,7 @@ def sign_order_cancellations(
 
     signed_data = ecdsa_sign_typed_data(owner, domain, types, data)
 
-    return EcdsaSignature(scheme=scheme, data=signed_data.signature.hex())
+    return EcdsaSignature(scheme=scheme, data=to_hex(signed_data.signature))
 
 
 def encode_eip1271_signature_data(verifier: ChecksumAddress, signature: str) -> bytes:
