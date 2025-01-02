@@ -35,4 +35,4 @@ class BaseMixin(ABC):
         :return: Hex string of the encoded function call data.
         """
         method = self._get_method(method_name)
-        return method(*args).encode_input()
+        return method(*args).build_transaction()

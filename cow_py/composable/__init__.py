@@ -15,7 +15,7 @@ from .utils import (
     hash_order_cancellation,
     hash_order_cancellations,
 )
-from .order_types.twap import Twap, TwapData, DurationType, StartTimeValue
+from .order_types.twap import Twap, TwapData, DurationType, StartType
 
 Multiplexer.register_order_type("twap", Twap)
 
@@ -36,5 +36,5 @@ __all__ = [
     "Twap",
     "TwapData",
     "DurationType",
-    "StartTimeValue",
+    "StartType",
 ]

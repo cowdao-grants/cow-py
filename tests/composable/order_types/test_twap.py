@@ -4,7 +4,7 @@ from cow_py.composable.order_types.twap import (
     Twap,
     TwapData,
     DurationType,
-    StartTimeValue,
+    StartType,
     TWAP_ADDRESS,
 )
 
@@ -21,10 +21,10 @@ def sample_twap_data():
         receiver=Web3.to_checksum_address("0x3333333333333333333333333333333333333333"),
         sell_amount=1000000000000000000,  # 1 ETH
         buy_amount=1000000000,  # 1 USDC
-        start_time={"startType": StartTimeValue.AT_MINING_TIME.value},
+        start_type=StartType.AT_MINING_TIME,
         number_of_parts=10,
         time_between_parts=3600,
-        duration_of_part={"durationType": DurationType.AUTO.value},
+        duration_type=DurationType.AUTO,
         app_data="0x0000000000000000000000000000000000000000000000000000000000000000",
     )
 

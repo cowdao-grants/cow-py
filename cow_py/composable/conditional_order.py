@@ -10,7 +10,6 @@ from enum import Enum
 
 from cow_py.common.chains import Chain
 from cow_py.common.constants import (
-    COMPOSABLE_COW_CONTRACT_CHAIN_ADDRESS_MAP,
     COW_PROTOCOL_SETTLEMENT_CONTRACT_CHAIN_ADDRESS_MAP,
 )
 from cow_py.composable.types import (
@@ -23,6 +22,7 @@ from cow_py.composable.utils import (
     convert_composable_cow_tradable_order_to_order_type,
     decode_params,
     encode_params,
+    getComposableCoW,
 )
 from cow_py.codegen.__generated__.ComposableCow import (
     ComposableCow,
@@ -136,10 +136,7 @@ class ConditionalOrder(abc.ABC, Generic[D, S]):
 
     @property
     def composableCow(self) -> ComposableCow:
-        chain = self.chain
-        return ComposableCow(
-            chain, COMPOSABLE_COW_CONTRACT_CHAIN_ADDRESS_MAP[chain.chain_id].value
-        )  # type: ignore
+        return getComposableCoW(self.chain)
 
     @property
     @abc.abstractmethod
@@ -468,7 +465,7 @@ class ConditionalOrder(abc.ABC, Generic[D, S]):
         cabinet_bytes = await self.composableCow.cabinet(
             params.owner, HexBytes(self.ctx)
         )
-        return cabinet_bytes.to_0x_hex()[2:]
+        return Web3.to_hex(cabinet_bytes)[2:]
 
     @abc.abstractmethod
     def to_string(self, token_formatter: Optional[Callable] = None) -> str:

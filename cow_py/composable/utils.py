@@ -1,3 +1,5 @@
+from decimal import Decimal
+import json
 from typing import List, Any, Dict
 from eth_typing import HexStr
 from hexbytes import HexBytes
@@ -7,12 +9,15 @@ from eth_abi.abi import encode, decode
 
 from cow_py.common.chains import Chain
 from cow_py.common.constants import (
+    COMPOSABLE_COW_CONTRACT_CHAIN_ADDRESS_MAP,
     EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_CHAIN_ADDRESS_MAP,
 )
 from cow_py.codegen.__generated__.ExtensibleFallbackHandler import (
     ExtensibleFallbackHandler,
 )
 from cow_py.composable.types import ConditionalOrderParams
+from cow_py.contracts.order import Order, bytes32_to_balance_kind, bytes32_to_order_kind
+from cow_py.codegen.__generated__.ComposableCow import GPv2Order_Data, ComposableCow
 
 
 def encode_params(params: ConditionalOrderParams) -> HexStr:
@@ -220,3 +225,28 @@ def create_set_domain_verifier_tx(domain: str, verifier: str, chain: Chain) -> s
     )
 
     return contract.build_tx_data("setDomainVerifier", domain, verifier)
+
+
+def convert_composable_cow_tradable_order_to_order_type(
+    tradable_order: GPv2Order_Data,
+) -> Order:
+    return Order(
+        kind=bytes32_to_order_kind(tradable_order.kind),
+        sell_amount=tradable_order.sellAmount,
+        buy_amount=tradable_order.buyAmount,
+        sell_token=tradable_order.sellToken,
+        buy_token=tradable_order.buyToken,
+        receiver=tradable_order.receiver,
+        valid_to=tradable_order.validTo,
+        app_data=tradable_order.appData.hex(),
+        fee_amount=tradable_order.feeAmount,
+        partially_fillable=tradable_order.partiallyFillable,
+        sell_token_balance=bytes32_to_balance_kind(tradable_order.sellTokenBalance),
+        buy_token_balance=bytes32_to_balance_kind(tradable_order.buyTokenBalance),
+    )
+
+
+def getComposableCoW(chain: Chain) -> ComposableCow:
+    return ComposableCow(
+        chain, COMPOSABLE_COW_CONTRACT_CHAIN_ADDRESS_MAP[chain.chain_id].value
+    )  # type: ignore

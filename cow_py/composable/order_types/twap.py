@@ -33,7 +33,7 @@ class DurationType(Enum):
     LIMIT_DURATION = "LIMIT_DURATION"
 
 
-class StartTimeValue(Enum):
+class StartType(Enum):
     AT_MINING_TIME = "AT_MINING_TIME"
     AT_EPOCH = "AT_EPOCH"
 
@@ -45,11 +45,46 @@ class TwapData:
     receiver: str
     sell_amount: int
     buy_amount: int
-    start_time: Dict[str, Any]
+    start_type: StartType
     number_of_parts: int
     time_between_parts: int
-    duration_of_part: Dict[str, Any]
+    duration_type: DurationType
     app_data: str
+    start_time_epoch: int = 0
+    duration_of_part: int = 0
+
+    def to_dict(self) -> Dict[str, Any]:
+        return {
+            "sellToken": self.sell_token,
+            "buyToken": self.buy_token,
+            "receiver": self.receiver,
+            "sellAmount": self.sell_amount,
+            "buyAmount": self.buy_amount,
+            "startType": self.start_type.value,
+            "numberOfParts": self.number_of_parts,
+            "timeBetweenParts": self.time_between_parts,
+            "durationType": self.duration_type.value,
+            "appData": self.app_data,
+            "startTimeEpoch": self.start_time_epoch,
+            "durationOfPart": self.duration_of_part,
+        }
+
+    @staticmethod
+    def from_dict(d: Dict[str, Any]) -> "TwapData":
+        return TwapData(
+            sell_token=d["sellToken"],
+            buy_token=d["buyToken"],
+            receiver=d["receiver"],
+            sell_amount=d["sellAmount"],
+            buy_amount=d["buyAmount"],
+            start_type=StartType(d["startType"]),
+            number_of_parts=d["numberOfParts"],
+            time_between_parts=d["timeBetweenParts"],
+            duration_type=DurationType(d["durationType"]),
+            app_data=d["appData"],
+            start_time_epoch=d["startTimeEpoch"],
+            duration_of_part=d["durationOfPart"],
+        )
 
 
 @dataclass
@@ -77,6 +112,14 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             data,
             salt,
         )
+
+    @staticmethod
+    def from_data_dict(data: Dict[str, Any]) -> "Twap":
+        return Twap.from_data(TwapData.from_dict(data))
+
+    @staticmethod
+    def from_data(data: TwapData) -> "Twap":
+        return Twap(TWAP_ADDRESS, data)
 
     @property
     def is_single_order(self) -> bool:
@@ -112,19 +155,16 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             error = "InvalidSellAmount"
         elif not data.buy_amount > 0:
             error = "InvalidMinBuyAmount"
-        elif data.start_time.get("startType") == StartTimeValue.AT_EPOCH.value:
-            t0 = data.start_time["epoch"]
+        elif data.start_type == StartType.AT_EPOCH.value:
+            t0 = data.start_time_epoch
             if not (0 <= t0 < 2**32):
                 error = "InvalidStartTime"
         elif not (1 < data.number_of_parts <= 2**32):
             error = "InvalidNumParts"
         elif not (0 < data.time_between_parts <= 365 * 24 * 60 * 60):
             error = "InvalidFrequency"
-        elif (
-            data.duration_of_part.get("durationType")
-            == DurationType.LIMIT_DURATION.value
-        ):
-            if not data.duration_of_part["duration"] <= data.time_between_parts:
+        elif data.duration_type == DurationType.LIMIT_DURATION.value:
+            if not data.duration_of_part <= data.time_between_parts:
                 error = "InvalidSpan"
 
         if not error:
@@ -168,13 +208,13 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         data = self.data
         start_time = (
             "AT_MINING_TIME"
-            if data.start_time["startType"] == StartTimeValue.AT_MINING_TIME.value
-            else data.start_time["epoch"]
+            if data.start_type == StartType.AT_MINING_TIME.value
+            else data.start_time_epoch
         )
         duration_of_part = (
             "AUTO"
-            if data.duration_of_part["durationType"] == DurationType.AUTO.value
-            else data.duration_of_part["duration"]
+            if data.duration_type == DurationType.AUTO.value
+            else data.duration_of_part
         )
 
         details = {
@@ -202,13 +242,13 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
 
         span = (
             0
-            if params.duration_of_part["durationType"] == DurationType.AUTO.value
-            else params.duration_of_part["duration"]
+            if params.duration_type == DurationType.AUTO.value
+            else params.duration_of_part
         )
         t0 = (
             0
-            if params.start_time["startType"] == StartTimeValue.AT_MINING_TIME.value
-            else params.start_time["epoch"]
+            if params.start_type == StartType.AT_MINING_TIME.value
+            else params.start_time_epoch
         )
 
         return TwapStruct(
@@ -234,7 +274,7 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         buy_amount = Decimal(params.min_part_limit) * number_of_parts
 
         duration_of_part = (
-            {"durationType": DurationType.AUTO.value}
+            {"durationType": DurationType.AUTO.value, "duration": 0}
             if params.span == 0
             else {
                 "durationType": DurationType.LIMIT_DURATION.value,
@@ -243,9 +283,9 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         )
 
         start_time = (
-            {"startType": StartTimeValue.AT_MINING_TIME.value}
+            {"type": StartType.AT_MINING_TIME.value, "epoch": 0}
             if params.t0 == 0
-            else {"startType": StartTimeValue.AT_EPOCH.value, "epoch": params.t0}
+            else {"type": StartType.AT_EPOCH.value, "epoch": params.t0}
         )
 
         return TwapData(
@@ -254,11 +294,13 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             receiver=params.receiver,
             sell_amount=int(sell_amount),
             buy_amount=int(buy_amount),
-            start_time=start_time,
             number_of_parts=int(number_of_parts),
             time_between_parts=params.t,
-            duration_of_part=duration_of_part,
             app_data=params.app_data,
+            duration_of_part=duration_of_part["duration"],
+            start_type=start_time["type"],
+            duration_type=duration_of_part["type"],
+            start_time_epoch=start_time["epoch"],
         )
 
     async def poll_validate(self, params: PollParams) -> Optional[PollResultError]:
@@ -302,10 +344,10 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             )
 
     async def start_timestamp(self, params: PollParams) -> int:
-        start_time = self.data.start_time
+        start_type = self.data.start_type
 
-        if start_time["startType"] == StartTimeValue.AT_EPOCH.value:
-            return int(start_time["epoch"])
+        if start_type == StartType.AT_EPOCH.value:
+            return self.data.start_time_epoch
 
         cabinet = await self.cabinet(params)
         raw_cabinet_epoch = Web3.to_int(text=cabinet)
@@ -325,13 +367,14 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
     def end_timestamp(self, start_timestamp: int) -> int:
         number_of_parts = self.data.number_of_parts
         time_between_parts = self.data.time_between_parts
+        duration_type = self.data.duration_type
         duration_of_part = self.data.duration_of_part
 
-        if duration_of_part["durationType"] == DurationType.LIMIT_DURATION.value:
+        if duration_type == DurationType.LIMIT_DURATION.value:
             return (
                 start_timestamp
                 + (number_of_parts - 1) * time_between_parts
-                + duration_of_part["duration"]
+                + duration_of_part
             )
 
         return start_timestamp + number_of_parts * time_between_parts

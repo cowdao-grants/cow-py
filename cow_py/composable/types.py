@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import ClassVar, List, Optional, Any, Union, Literal
 from enum import Enum
 from eth_typing import HexStr
+from pymerkle import MerkleProof
 from web3 import AsyncWeb3
 from web3.types import BlockData
 
@@ -61,7 +62,7 @@ class ProofStruct:
 
 @dataclass
 class ProofWithParams:
-    proof: List[str]
+    proof: MerkleProof
     params: ConditionalOrderParams
 
 

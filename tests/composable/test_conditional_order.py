@@ -1,7 +1,7 @@
 from typing import Optional
 from hexbytes import HexBytes
 import pytest
-from unittest.mock import AsyncMock, Mock, patch
+from unittest.mock import AsyncMock, patch
 from eth_typing import HexStr
 from web3 import AsyncWeb3
 
@@ -148,7 +148,7 @@ class TestCabinet:
             "0000000000000000000000000000000000000000000000000000000064f0b353"
         )
         cabinet_value = HexBytes(cabinet_value_str)
-        with patch("cow_py.composable.conditional_order.ComposableCow") as mock_cow:
+        with patch("cow_py.composable.utils.ComposableCow") as mock_cow:
             mock_cabinet = AsyncMock()
             mock_cabinet.return_value = cabinet_value
             mock_cow.return_value.cabinet = mock_cabinet
