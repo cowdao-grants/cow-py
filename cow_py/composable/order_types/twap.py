@@ -1,10 +1,12 @@
 from dataclasses import dataclass
 from decimal import Decimal
 from enum import Enum
-from typing import Dict, Any, Optional
+import json
+from typing import Dict, Any, Optional, Tuple
 from eth_typing import HexStr
-from web3 import AsyncWeb3, Web3
-from web3.types import BlockData
+from hexbytes import HexBytes
+from web3 import Web3
+from eth_abi.abi import encode
 
 from cow_py.contracts.order import Order
 
@@ -17,15 +19,17 @@ from ..types import (
     PollResultCode,
     PollResultError,
 )
-from ..utils import format_epoch
+from ..utils import encode_params, format_epoch
 
 TWAP_ADDRESS = HexStr("0x6cF1e9cA41f7611dEf408122793c358a3d11E5a5")
 CURRENT_BLOCK_TIMESTAMP_FACTORY_ADDRESS = "0x52eD56Da04309Aca4c3FECC595298d80C2f16BAc"
 
 
 TWAP_STRUCT_ABI = [
-    "tuple(address sellToken, address buyToken, address receiver, uint256 partSellAmount, uint256 minPartLimit, uint256 t0, uint256 n, uint256 t, uint256 span, bytes32 appData)",
+    "(address,address,address,uint256,uint256,uint256,uint256,uint256,uint256,bytes32)"
 ]
+
+TWAP_STRUCT_TYPE = Tuple[str, str, str, int, int, int, int, int, int, bytes]
 
 
 class DurationType(Enum):
@@ -115,11 +119,11 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
 
     @staticmethod
     def from_data_dict(data: Dict[str, Any]) -> "Twap":
-        return Twap.from_data(TwapData.from_dict(data))
+        return Twap.from_data(TwapData.from_dict(data), salt=HexStr(data["salt"]))
 
     @staticmethod
-    def from_data(data: TwapData) -> "Twap":
-        return Twap(TWAP_ADDRESS, data)
+    def from_data(data: TwapData, salt: Optional[HexStr] = None) -> "Twap":
+        return Twap(TWAP_ADDRESS, data, salt)
 
     @property
     def is_single_order(self) -> bool:
@@ -155,7 +159,7 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             error = "InvalidSellAmount"
         elif not data.buy_amount > 0:
             error = "InvalidMinBuyAmount"
-        elif data.start_type == StartType.AT_EPOCH.value:
+        elif data.start_type == StartType.AT_EPOCH:
             t0 = data.start_time_epoch
             if not (0 <= t0 < 2**32):
                 error = "InvalidStartTime"
@@ -163,7 +167,7 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             error = "InvalidNumParts"
         elif not (0 < data.time_between_parts <= 365 * 24 * 60 * 60):
             error = "InvalidFrequency"
-        elif data.duration_type == DurationType.LIMIT_DURATION.value:
+        elif data.duration_type == DurationType.LIMIT_DURATION:
             if not data.duration_of_part <= data.time_between_parts:
                 error = "InvalidSpan"
 
@@ -180,10 +184,28 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         )
 
     def serialize(self) -> HexStr:
-        return Web3.to_hex(Web3.keccak(text=str(self.data)))
+        return encode_params(self.leaf)
 
     def encode_static_input(self) -> HexStr:
-        return Web3.to_hex(Web3.keccak(text=str(self.static_input)))
+        return Web3.to_hex(
+            encode(
+                TWAP_STRUCT_ABI,
+                [
+                    [
+                        self.static_input.sell_token,
+                        self.static_input.buy_token,
+                        self.static_input.receiver,
+                        self.static_input.part_sell_amount,
+                        self.static_input.min_part_limit,
+                        self.static_input.t0,
+                        self.static_input.n,
+                        self.static_input.t,
+                        self.static_input.span,
+                        HexBytes(self.static_input.app_data),
+                    ]
+                ],
+            )
+        )
 
     @staticmethod
     def deserialize(twap_serialized: HexStr) -> "Twap":
@@ -199,10 +221,8 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         return int(block_timestamp) & 0xFFFFFFFF
 
     @staticmethod
-    def deserialize_callback(twapStruct: TwapStruct, salt: HexStr) -> "Twap":
-        return Twap(
-            TWAP_ADDRESS, Twap._static_transform_struct_to_data(twapStruct), salt
-        )
+    def deserialize_callback(twapStruct: TWAP_STRUCT_TYPE, salt: HexStr) -> "Twap":
+        return Twap(TWAP_ADDRESS, static_transform_tuple_to_data(twapStruct), salt)
 
     def to_string(self, token_formatter=None) -> str:
         data = self.data
@@ -230,15 +250,15 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             "appData": data.app_data,
         }
 
-        return f"{self.order_type} ({self.id}): {str(details)}"
+        return f"{self.order_type} ({self.id}): {json.dumps(details)}"
 
     def transform_data_to_struct(self, params: TwapData) -> TwapStruct:
         sell_amount = Decimal(params.sell_amount)
         buy_amount = Decimal(params.buy_amount)
         number_of_parts = Decimal(params.number_of_parts)
 
-        part_sell_amount = sell_amount // number_of_parts
-        min_part_limit = buy_amount // number_of_parts
+        part_sell_amount = sell_amount // number_of_parts if number_of_parts > 0 else 0
+        min_part_limit = buy_amount // number_of_parts if number_of_parts > 0 else 0
 
         span = (
             0
@@ -265,46 +285,11 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         )
 
     def transform_struct_to_data(self, params: TwapStruct) -> TwapData:
-        return self._static_transform_struct_to_data(params)
-
-    @staticmethod
-    def _static_transform_struct_to_data(params: TwapStruct) -> TwapData:
-        number_of_parts = Decimal(params.n)
-        sell_amount = Decimal(params.part_sell_amount) * number_of_parts
-        buy_amount = Decimal(params.min_part_limit) * number_of_parts
-
-        duration_of_part = (
-            {"durationType": DurationType.AUTO.value, "duration": 0}
-            if params.span == 0
-            else {
-                "durationType": DurationType.LIMIT_DURATION.value,
-                "duration": params.span,
-            }
-        )
-
-        start_time = (
-            {"type": StartType.AT_MINING_TIME.value, "epoch": 0}
-            if params.t0 == 0
-            else {"type": StartType.AT_EPOCH.value, "epoch": params.t0}
-        )
-
-        return TwapData(
-            sell_token=params.sell_token,
-            buy_token=params.buy_token,
-            receiver=params.receiver,
-            sell_amount=int(sell_amount),
-            buy_amount=int(buy_amount),
-            number_of_parts=int(number_of_parts),
-            time_between_parts=params.t,
-            app_data=params.app_data,
-            duration_of_part=duration_of_part["duration"],
-            start_type=start_time["type"],
-            duration_type=duration_of_part["type"],
-            start_time_epoch=start_time["epoch"],
-        )
+        return static_transform_struct_to_data(params)
 
     async def poll_validate(self, params: PollParams) -> Optional[PollResultError]:
         block_timestamp = await self.get_block_timestamp(params)
+        print(block_timestamp)
 
         try:
             start_timestamp = await self.start_timestamp(params)
@@ -328,7 +313,7 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             if "Cabinet is not set" in str(err):
                 return PollResultError(
                     result=PollResultCode.DONT_TRY_AGAIN,
-                    reason="Cabinet is not set. Required for TWAP orders that start at mining time.",
+                    reason=f"${str(err)}. User likely removed the order.",
                     error=err,
                 )
 
@@ -350,7 +335,7 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             return self.data.start_time_epoch
 
         cabinet = await self.cabinet(params)
-        raw_cabinet_epoch = Web3.to_int(text=cabinet)
+        raw_cabinet_epoch = Web3.to_int(hexstr=HexStr("0x" + cabinet))
 
         if raw_cabinet_epoch > 2**32 - 1:
             raise ValueError(f"Cabinet epoch out of range: {raw_cabinet_epoch}")
@@ -417,3 +402,60 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
             epoch=next_part_start_time,
             reason=f"Current active TWAP part ({current_part_number + 1}/{number_of_parts}) is already in the Order Book. TWAP part {current_part_number + 2} doesn't start until {next_part_start_time} ({format_epoch(next_part_start_time)})",
         )
+
+
+def static_transform_tuple_to_struct(
+    params: Tuple[str, str, str, int, int, int, int, int, int, bytes]
+) -> TwapStruct:
+    return TwapStruct(
+        sell_token=params[0],
+        buy_token=params[1],
+        receiver=params[2],
+        part_sell_amount=params[3],
+        min_part_limit=params[4],
+        t0=params[5],
+        n=params[6],
+        t=params[7],
+        span=params[8],
+        app_data=Web3.to_hex(params[9]),
+    )
+
+
+def static_transform_struct_to_data(
+    params: TwapStruct,
+) -> TwapData:
+    duration_of_part = (
+        {"type": DurationType.AUTO.value, "duration": 0}
+        if params.span == 0
+        else {
+            "type": DurationType.LIMIT_DURATION.value,
+            "duration": params.span,
+        }
+    )
+
+    start_time = (
+        {"type": StartType.AT_MINING_TIME.value, "epoch": 0}
+        if params.t0 == 0
+        else {"type": StartType.AT_EPOCH.value, "epoch": params.t0}
+    )
+
+    return TwapData(
+        sell_token=params.sell_token,
+        buy_token=params.buy_token,
+        receiver=params.receiver,
+        sell_amount=params.part_sell_amount * params.n,
+        buy_amount=params.min_part_limit * params.n,
+        number_of_parts=params.n,
+        time_between_parts=params.t,
+        app_data=params.app_data,
+        duration_of_part=duration_of_part["duration"],
+        start_type=start_time["type"],
+        duration_type=duration_of_part["type"],
+        start_time_epoch=start_time["epoch"],
+    )
+
+
+def static_transform_tuple_to_data(
+    params: Tuple[str, str, str, int, int, int, int, int, int, bytes]
+) -> TwapData:
+    return static_transform_struct_to_data(static_transform_tuple_to_struct(params))

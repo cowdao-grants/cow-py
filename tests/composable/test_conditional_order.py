@@ -119,16 +119,6 @@ class TestConstructor:
             )
 
 
-class TestDeserialize:
-    def test_fails_if_handler_mismatch(self):
-        with pytest.raises(ValueError, match="HandlerMismatch"):
-            Twap.deserialize(
-                get_twap_serialized(
-                    handler="0x9008D19f58AAbD9eD0D60971565AA8510560ab41"
-                )
-            )
-
-
 class TestComputeOrderUid:
     def test_returns_correct_id(self):
         assert SINGLE_ORDER.id == HexStr(

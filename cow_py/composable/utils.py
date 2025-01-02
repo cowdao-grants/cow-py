@@ -1,5 +1,3 @@
-from decimal import Decimal
-import json
 from typing import List, Any, Dict
 from eth_typing import HexStr
 from hexbytes import HexBytes

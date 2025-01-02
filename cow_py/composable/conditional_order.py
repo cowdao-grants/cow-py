@@ -43,8 +43,6 @@ from cow_py.composable.types import (
 from cow_py.contracts.domain import domain
 from cow_py.contracts.order import (
     Order,
-    bytes32_to_balance_kind,
-    bytes32_to_order_kind,
     compute_order_uid,
 )
 from cow_py.order_book.api import OrderBookApi
@@ -625,23 +623,17 @@ class ConditionalOrder(abc.ABC, Generic[D, S]):
             ValueError: If the handler doesn't match ("HandlerMismatch") or if the encoded data
                        is invalid ("InvalidSerializedConditionalOrder").
         """
-        try:
-            decoded_params = decode_params(encoded_data)
+        decoded_params = decode_params(encoded_data)
 
-            recovered_handler = Web3.to_checksum_address(decoded_params.handler)
-            if recovered_handler.lower() != handler.lower():
-                raise ValueError("HandlerMismatch")
+        recovered_handler = Web3.to_checksum_address(decoded_params.handler)
+        if recovered_handler.lower() != handler.lower():
+            raise ValueError("HandlerMismatch")
 
-            decoded_data = decode(
-                order_data_types, Web3.to_bytes(hexstr=decoded_params.static_input)
-            )[0]
+        decoded_data = decode(
+            order_data_types, Web3.to_bytes(hexstr=decoded_params.static_input)
+        )[0]
 
-            return callback(decoded_data, HexStr(decoded_params.salt))
-
-        except ValueError as e:
-            if str(e) == "HandlerMismatch":
-                raise
-            raise ValueError("InvalidSerializedConditionalOrder") from e
+        return callback(decoded_data, HexStr(decoded_params.salt))
 
 
 class ConditionalOrderFactory:

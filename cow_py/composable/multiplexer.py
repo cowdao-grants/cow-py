@@ -80,6 +80,7 @@ class Multiplexer:
         if self.tree is None:
             self.tree = MerkleTree(hash_type="keccak_256")
             for order in self.orders.values():
+                print(order.serialize().encode())
                 self.tree.append_entry(order.serialize().encode())
         return self.tree
 
@@ -135,7 +136,11 @@ class Multiplexer:
             "root": str(self.root),
             "location": self.location.value,
             "orders": {
-                order_id: {"orderType": order.order_type, **order.data.to_dict()}
+                order_id: {
+                    "orderType": order.order_type,
+                    "salt": order.salt,
+                    **order.data.to_dict(),
+                }
                 for order_id, order in self.orders.items()
             },
         }
