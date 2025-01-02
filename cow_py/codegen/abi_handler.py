@@ -69,16 +69,7 @@ class ABIHandlerError(Exception):
 class ABIHandler:
     """
     Handles the generation of Python classes and methods from Ethereum contract ABIs.
-
-    This class reads the ABI of a contract, processes its contents, and generates Python code that mirrors
-    the contract's functions and data structures.
-
-    Attributes:
-        contract_name (str): Name of the contract, used for generating class names.
-        abi_file_path (str): Path to the ABI JSON file of the contract.
-
-    Methods:
-        generate: Main method to generate Python code from the ABI..
+    Now generates async methods for contract interactions.
     """
 
     def __init__(self, contract_name: str, abi_file_path: str):
@@ -87,17 +78,7 @@ class ABIHandler:
 
     def generate(self) -> str:
         """
-        Generates Python code representing the contract's ABI.
-
-        This method processes the ABI file, extracting information about functions,
-        input/output arguments, enums, and data structures. It then uses this information
-        to generate corresponding Python classes and methods.
-
-        Returns:
-            str: The generated Python code as a string.
-
-        Raises:
-            ABIHandlerError: If an error occurs during ABI processing or code generation.
+        Generates Python code representing the contract's ABI with async methods.
         """
         try:
             template_data = self._prepare_template_data()
@@ -108,15 +89,7 @@ class ABIHandler:
     def _prepare_template_data(self) -> Dict[str, Any]:
         """
         Prepares data for the template rendering based on the contract's ABI.
-
-        This method processes the ABI to extract relevant information for generating
-        Python code, such as methods, data classes, and enums.
-
-        Returns:
-            Dict[str, Any]: A dictionary containing the structured data for rendering.
-
-        Raises:
-            ABIHandlerError: If an error occurs during ABI processing.
+        Modified to support async method generation.
         """
         try:
             methods, data_classes, enums = [], [], []
@@ -151,6 +124,7 @@ class ABIHandler:
                 "methods": methods,
                 "dataClasses": data_classes,
                 "enums": enums,
+                "async": True,  # Flag to indicate async method generation
             }
         except Exception as e:
             raise ABIHandlerError(f"Error preparing template data: {str(e)}") from e
@@ -195,9 +169,11 @@ class ABIHandler:
         output_str = (
             "None"
             if not output_types
-            else output_types[0]
-            if len(output_types) == 1
-            else f'Tuple[{", ".join(output_types)}]'
+            else (
+                output_types[0]
+                if len(output_types) == 1
+                else f'Tuple[{", ".join(output_types)}]'
+            )
         )
 
         return {
@@ -205,25 +181,24 @@ class ABIHandler:
             "inputs": input_types,
             "outputType": output_str,
             "originalName": original_name,
+            "isAsync": True,
         }
 
     def _generate_function_input_args_with_types(
         self, function_item: Dict[str, Any]
     ) -> List[Dict[str, Any]]:
         input_args = []
-        unnamed_arg_counters = {}  # Track unnamed arguments of each type
+        unnamed_arg_counters = {}
 
         for input_item in function_item.get("inputs", []):
             input_type = SolidityConverter.convert_type(
                 input_item["type"], input_item.get("internalType")
             )
 
-            # Regex to transform type names like 'list[int]' into 'int_list'
             base_name = re.sub(r"list\[(\w+)\]", r"\1_list", input_type.lower())
 
             input_name = input_item.get("name")
             if not input_name:
-                # If the argument is unnamed, use the base_name with a counter to create a unique name
                 unnamed_arg_counters[base_name] = (
                     unnamed_arg_counters.get(base_name, -1) + 1
                 )

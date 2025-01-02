@@ -25,7 +25,7 @@ def patched_sign_message_builder(account: LocalAccount):
 
         # Hash and sign the message
         message_hash = Web3.solidity_keccak(["bytes"], [message_to_hash])
-        signature = account.signHash(message_hash)
+        signature = account.sign_message(message_hash)
         r, s, v = signature["r"], signature["s"], signature["v"]
 
         # Concatenate the signature components into a hex string

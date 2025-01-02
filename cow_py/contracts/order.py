@@ -4,10 +4,17 @@ from typing import Any, Dict, Literal, Optional, Union
 
 from eth_account.messages import _hash_eip191_message, encode_typed_data
 from eth_typing import Hash32, HexStr
+from eth_abi.packed import encode_packed
+
 from eth_utils.conversions import to_bytes, to_hex
+from hexbytes import HexBytes
 from web3.constants import ADDRESS_ZERO
+from web3 import Web3
 
 from cow_py.contracts.domain import TypedDataDomain
+
+# The byte length of an order UID.
+ORDER_UID_LENGTH = 56
 
 
 @dataclass
@@ -103,6 +110,16 @@ class OrderBalance(Enum):
     EXTERNAL = "external"
     # Use Balancer Vault internal balances.
     INTERNAL = "internal"
+
+
+@dataclass
+class OrderUidParams:
+    # The EIP-712 order struct hash.
+    order_digest: str = field(metadata={"alias": "orderDigest"})
+    # The owner of the order.
+    owner: str
+    # The timestamp this order is valid until.
+    validTo: int
 
 
 # /**
@@ -246,15 +263,77 @@ def hash_order_cancellations(
     ).hex()
 
 
-# The byte length of an order UID.
-ORDER_UID_LENGTH = 56
+def pack_order_uid_params(params: OrderUidParams) -> str:
+    """
+    Compute the unique identifier describing a user order in the settlement contract.
+
+    Args:
+        params (OrderUidParams): The parameters used for computing the order's unique identifier.
+            - order_digest: bytes32 hash of the order
+            - owner: Ethereum address of the order owner
+            - validTo: Order validity timestamp
+
+    Returns:
+        str: A hex string that unequivocally identifies the order of the user.
+    """
+    # Convert valid_to to uint32
+    valid_to_uint32 = params.validTo & 0xFFFFFFFF
+
+    # Pack the parameters using eth_abi.encode_packed
+    packed = encode_packed(
+        ["bytes32", "address", "uint32"],
+        [
+            Web3.to_bytes(hexstr=HexStr(params.order_digest)),
+            Web3.to_checksum_address(params.owner),
+            valid_to_uint32,
+        ],
+    )
+
+    return Web3.to_hex(packed)
 
 
-@dataclass
-class OrderUidParams:
-    # The EIP-712 order struct hash.
-    order_digest: str = field(metadata={"alias": "orderDigest"})
-    # The owner of the order.
-    owner: str
-    # The timestamp this order is valid until.
-    validTo: int
+def compute_order_uid(domain: TypedDataDomain, order: Order, owner: str) -> str:
+    order_hash = hash_order(domain, order)
+    # Computes the order UID for an order and the given owner.
+    return pack_order_uid_params(
+        OrderUidParams(
+            order_digest=Web3.to_hex(order_hash),
+            owner=owner,
+            validTo=order.valid_to,
+        )
+    )
+
+
+def bytes32_to_order_kind(kind_bytes: HexBytes) -> str:
+    KIND_SELL = HexBytes(
+        "0xf3b277728b3fee749481eb3e0b3b48980dbbab78658fc419025cb16eee346775"
+    )
+    KIND_BUY = HexBytes(
+        "0x6ed88e868af0a1983e3886d5f3e95a2fafbd6c3450bc229e27342283dc429ccc"
+    )
+
+    if kind_bytes == KIND_SELL:
+        return "sell"
+    elif kind_bytes == KIND_BUY:
+        return "buy"
+    raise ValueError(f"Invalid order kind: {kind_bytes.hex()}")
+
+
+def bytes32_to_balance_kind(balance_bytes: HexBytes) -> str:
+    BALANCE_ERC20 = HexBytes(
+        "0x5a28e9363bb942b639270062aa6bb295f434bcdfc42c97267bf003f272060dc9"
+    )
+    BALANCE_EXTERNAL = HexBytes(
+        "0xabee3b73373acd583a130924aad6dc38cfdc44ba0555ba94ce2ff63980ea0632"
+    )
+    BALANCE_INTERNAL = HexBytes(
+        "0x4ac99ace14ee0a5ef932dc609df0943ab7ac16b7583634612f8dc35a4289a6ce"
+    )
+
+    if balance_bytes == BALANCE_ERC20:
+        return "erc20"
+    elif balance_bytes == BALANCE_EXTERNAL:
+        return "external"
+    elif balance_bytes == BALANCE_INTERNAL:
+        return "internal"
+    raise ValueError(f"Invalid balance kind: {balance_bytes.hex()}")
