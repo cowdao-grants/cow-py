@@ -10,6 +10,7 @@ class Chain(Enum):
     GNOSIS = (100, "gnosis", "https://gnosisscan.io")
     ARBITRUM = (42161, "arbitrum", "https://arbiscan.io")
     SEPOLIA = (11155111, "sepolia", "https://sepolia.etherscan.io")
+    BASE = (8453, "base", "https://basescan.org/")
 
     def __init__(self, id: int, network_name: str, explorer_url: str) -> None:
         self.id = id
