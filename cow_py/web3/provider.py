@@ -5,7 +5,7 @@ import web3
 from cow_py.common.chains import Chain
 
 DEFAULT_PROVIDER_NETWORK_MAPPING = {
-    Chain.MAINNET: "https://eth.llamarpc.com",
+    Chain.MAINNET: "https://rpc.mevblocker.io",
     Chain.GNOSIS: "https://gnosis.publicnode.com",
     Chain.SEPOLIA: "https://ethereum-sepolia.publicnode.com",
 }
