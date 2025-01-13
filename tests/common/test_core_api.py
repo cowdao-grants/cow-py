@@ -1,6 +1,6 @@
 import pytest
 
-from cow_py.common import chains, config, constants, cow_error
+from cowdao_cowpy.common import chains, config, constants, cow_error
 
 
 @pytest.mark.parametrize("module", [constants, cow_error, chains, config])

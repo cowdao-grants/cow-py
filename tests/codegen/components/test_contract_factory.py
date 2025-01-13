@@ -1,7 +1,10 @@
 import unittest
 from unittest.mock import MagicMock, patch
-from cow_py.codegen.components.contract_factory import ContractFactory, BaseContract
-from cow_py.common.chains import Chain
+from cowdao_cowpy.codegen.components.contract_factory import (
+    ContractFactory,
+    BaseContract,
+)
+from cowdao_cowpy.common.chains import Chain
 
 
 class TestContractFactory(unittest.TestCase):
@@ -16,7 +19,7 @@ class TestContractFactory(unittest.TestCase):
 
     def test_contract_factory_get_contract_class(self):
         with patch.dict(
-            "cow_py.codegen.components.contract_factory.ContractFactory._contract_classes",
+            "cowdao_cowpy.codegen.components.contract_factory.ContractFactory._contract_classes",
             clear=True,
         ):
             first_class = ContractFactory.get_contract_class(
@@ -31,7 +34,7 @@ class TestContractFactory(unittest.TestCase):
 
     def test_contract_factory_create(self):
         with patch.dict(
-            "cow_py.codegen.components.contract_factory.ContractFactory._contract_classes",
+            "cowdao_cowpy.codegen.components.contract_factory.ContractFactory._contract_classes",
             clear=True,
         ):
             contract_instance = ContractFactory.create(

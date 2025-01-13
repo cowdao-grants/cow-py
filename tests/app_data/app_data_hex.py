@@ -1,8 +1,8 @@
 import httpx
 import pytest
 from unittest.mock import patch
-from cow_py.app_data.consts import MetaDataError
-from cow_py.app_data.app_data_hex import AppDataHex
+from cowdao_cowpy.app_data.consts import MetaDataError
+from cowdao_cowpy.app_data.app_data_hex import AppDataHex
 from .mocks import (
     APP_DATA_HEX,
     CID,

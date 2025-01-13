@@ -9,16 +9,16 @@ import os
 from dotenv import load_dotenv
 from web3 import Account
 
-from cow_py.common.chains import Chain
-from cow_py.common.config import SupportedChainId
-from cow_py.common.constants import CowContractAddress
-from cow_py.contracts.domain import domain
-from cow_py.contracts.order import Order
-from cow_py.contracts.sign import EcdsaSignature, SigningScheme
-from cow_py.contracts.sign import sign_order as _sign_order
-from cow_py.order_book.api import OrderBookApi
-from cow_py.order_book.config import OrderBookAPIConfigFactory
-from cow_py.order_book.generated.model import (
+from cowdao_cowpy.common.chains import Chain
+from cowdao_cowpy.common.config import SupportedChainId
+from cowdao_cowpy.common.constants import CowContractAddress
+from cowdao_cowpy.contracts.domain import domain
+from cowdao_cowpy.contracts.order import Order
+from cowdao_cowpy.contracts.sign import EcdsaSignature, SigningScheme
+from cowdao_cowpy.contracts.sign import sign_order as _sign_order
+from cowdao_cowpy.order_book.api import OrderBookApi
+from cowdao_cowpy.order_book.config import OrderBookAPIConfigFactory
+from cowdao_cowpy.order_book.generated.model import (
     OrderQuoteSideKindSell,
     OrderQuoteSide1,
     OrderCreation,
