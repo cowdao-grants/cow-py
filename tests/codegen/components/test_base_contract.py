@@ -1,12 +1,12 @@
 import pytest
 from unittest.mock import patch, Mock
-from cow_py.codegen.components.base_contract import (
+from cowdao_cowpy.codegen.components.base_contract import (
     BaseContract,
     Chain,
 )
 
 
-@patch("cow_py.codegen.components.base_contract.ContractLoader")
+@patch("cowdao_cowpy.codegen.components.base_contract.ContractLoader")
 def test_base_contract_singleton(mock_loader):
     address = "0x123"
     chain = Chain.MAINNET
@@ -32,7 +32,9 @@ def contract_with_abi():
         {"type": "function", "name": "balanceOf"},
         {"type": "event", "name": "Transfer"},
     ]
-    with patch("cow_py.codegen.components.base_contract.ContractLoader") as mock_loader:
+    with patch(
+        "cowdao_cowpy.codegen.components.base_contract.ContractLoader"
+    ) as mock_loader:
         mock_contract = MockWithoutAttributes()
         mock_contract.abi = abi
         mock_contract.functions = Mock(

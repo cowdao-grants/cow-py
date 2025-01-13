@@ -1,4 +1,4 @@
-from cow_py.common.cow_error import CowError
+from cowdao_cowpy.common.cow_error import CowError
 
 
 def test_cow_error_inheritance():

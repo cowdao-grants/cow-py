@@ -4,10 +4,10 @@ codegen: web3_codegen orderbook_codegen
 # codegen: web3_codegen orderbook_codegen subgraph_codegen
 
 web3_codegen:
-	poetry run python -m cow_py.codegen.main
+	poetry run python -m cowdao_cowpy.codegen.main
 
 orderbook_codegen:
-	poetry run datamodel-codegen --url="https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml" --output cow_py/order_book/generated/model.py --target-python-version 3.12 --output-model-type pydantic_v2.BaseModel --input-file-type openapi
+	poetry run datamodel-codegen --url="https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml" --output cowdao_cowpy/order_book/generated/model.py --target-python-version 3.12 --output-model-type pydantic_v2.BaseModel --input-file-type openapi
 
 subgraph_codegen:
 	poetry run ariadne-codegen

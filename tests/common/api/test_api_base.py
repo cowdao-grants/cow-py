@@ -3,9 +3,9 @@ from unittest.mock import AsyncMock, Mock, patch
 import httpx
 import pytest
 
-from cow_py.common.api.api_base import ApiBase, APIConfig
-from cow_py.common.api.decorators import DEFAULT_BACKOFF_OPTIONS
-from cow_py.common.config import SupportedChainId
+from cowdao_cowpy.common.api.api_base import ApiBase, APIConfig
+from cowdao_cowpy.common.api.decorators import DEFAULT_BACKOFF_OPTIONS
+from cowdao_cowpy.common.config import SupportedChainId
 from httpx import Request
 
 ERROR_MESSAGE = "💣💥 Booom!"
