@@ -1,6 +1,10 @@
+[project]
+name = "cowdao_cowpy"
+version = "1.0.0pre"
+
 [tool.poetry]
-name = "cow-py"
-version = "0.1.0"
+name = "cowdao_cowpy"
+version = "1.0.0pre"
 description = ""
 authors = ["José Ribeiro <jose@bleu.studio>"]
 readme = "README.md"
