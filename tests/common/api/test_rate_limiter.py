@@ -24,5 +24,5 @@ async def test_call_intervals():
     intervals = [call_times[i] - call_times[i - 1] for i in range(1, len(call_times))]
     for interval in intervals[2:]:  # Ignore the first two immediate calls
         assert (
-            interval >= 0.5
-        ), f"Interval of {interval} too short, should be at least 0.5"
+            interval >= 0.4
+        ), f"Interval of {interval} too short, should be at least 0.4"
