@@ -1,17 +1,17 @@
 import pytest
 from pytest_httpx import HTTPXMock
 
-from cow_py.subgraph.client import SubgraphClient
-from cow_py.subgraph.client.exceptions import GraphQLClientGraphQLMultiError
-from cow_py.subgraph.client.last_days_volume import (
+from cowdao_cowpy.subgraph.client import SubgraphClient
+from cowdao_cowpy.subgraph.client.exceptions import GraphQLClientGraphQLMultiError
+from cowdao_cowpy.subgraph.client.last_days_volume import (
     LastDaysVolume,
     LastDaysVolumeDailyTotals,
 )
-from cow_py.subgraph.client.last_hours_volume import (
+from cowdao_cowpy.subgraph.client.last_hours_volume import (
     LastHoursVolume,
     LastHoursVolumeHourlyTotals,
 )
-from cow_py.subgraph.client.totals import Totals, TotalsTotals
+from cowdao_cowpy.subgraph.client.totals import Totals, TotalsTotals
 
 
 @pytest.mark.asyncio

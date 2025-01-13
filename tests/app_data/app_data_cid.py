@@ -1,8 +1,8 @@
 import httpx
 import pytest
 from unittest.mock import patch
-from cow_py.app_data.app_data_cid import AppDataCid
-from cow_py.app_data.consts import DEFAULT_IPFS_READ_URI
+from cowdao_cowpy.app_data.app_data_cid import AppDataCid
+from cowdao_cowpy.app_data.consts import DEFAULT_IPFS_READ_URI
 from .mocks import APP_DATA_HEX, CID, APP_DATA_HEX_2, CID_2
 
 

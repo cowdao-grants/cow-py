@@ -1,10 +1,10 @@
 # test_order_book_api.py
 from unittest.mock import AsyncMock, Mock, patch
 import pytest
-from cow_py.order_book.api import OrderBookApi
-from cow_py.order_book.config import OrderBookAPIConfigFactory
-from cow_py.common.config import SupportedChainId
-from cow_py.order_book.generated.model import (
+from cowdao_cowpy.order_book.api import OrderBookApi
+from cowdao_cowpy.order_book.config import OrderBookAPIConfigFactory
+from cowdao_cowpy.common.config import SupportedChainId
+from cowdao_cowpy.order_book.generated.model import (
     Address,
     OrderQuoteRequest,
     OrderQuoteSide1,

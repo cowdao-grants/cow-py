@@ -1,6 +1,6 @@
 import pytest
 
-from cow_py.codegen.abi_handler import (
+from cowdao_cowpy.codegen.abi_handler import (
     to_python_conventional_name,
     get_filename_without_extension,
     _get_template_file,
@@ -66,15 +66,15 @@ def test_abi_handler_generate(mocker, abi_handler):
         {"type": "function", "name": "doSomething", "inputs": [], "outputs": []}
     ]
     mocker.patch(
-        "cow_py.codegen.abi_handler.FileAbiLoader.load_abi",
+        "cowdao_cowpy.codegen.abi_handler.FileAbiLoader.load_abi",
         return_value=mocked_abi_data,
     )
     mocker.patch(
-        "cow_py.codegen.abi_handler.ABIHandler._prepare_template_data",
+        "cowdao_cowpy.codegen.abi_handler.ABIHandler._prepare_template_data",
         return_value={"methods": []},
     )
     mocker.patch(
-        "cow_py.codegen.abi_handler.ABIHandler._render_template",
+        "cowdao_cowpy.codegen.abi_handler.ABIHandler._render_template",
         return_value="class MyContract:\n    pass",
     )
 

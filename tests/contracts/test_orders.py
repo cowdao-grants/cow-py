@@ -1,6 +1,6 @@
 import pytest
 
-from cow_py.contracts.order import (
+from cowdao_cowpy.contracts.order import (
     Order,
     hashify,
     normalize_buy_token_balance,

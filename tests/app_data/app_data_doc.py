@@ -1,4 +1,4 @@
-from cow_py.app_data.app_data_doc import AppDataDoc
+from cowdao_cowpy.app_data.app_data_doc import AppDataDoc
 from .mocks import (
     APP_DATA_2,
     APP_DATA_DOC,

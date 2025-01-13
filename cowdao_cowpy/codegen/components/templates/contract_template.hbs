@@ -1,0 +1,14 @@
+{{! Import statements }}
+from typing import List, Tuple, Any
+from hexbytes import HexBytes
+from cowdao_cowpy.common.chains import Chain
+from dataclasses import dataclass
+from enum import Enum
+from cowdao_cowpy.codegen.components import BaseMixin, BaseContract, FileAbiLoader, ContractFactory, get_abi_file
+
+{{>enums}}
+{{>dataclasses}}
+
+{{>contract_mixin}}
+
+{{>contract_class}}

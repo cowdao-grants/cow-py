@@ -1,4 +1,4 @@
-from cow_py.app_data.utils import stringify_deterministic
+from cowdao_cowpy.app_data.utils import stringify_deterministic
 
 
 def test_stringify_deterministic_simple_object():

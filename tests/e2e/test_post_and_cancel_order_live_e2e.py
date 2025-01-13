@@ -9,16 +9,20 @@ import pytest
 from eth_account import Account
 from eth_typing import Address
 
-from cow_py.codegen.abi_handler import dict_keys_to_camel_case
-from cow_py.common.chains import Chain
-from cow_py.common.config import SupportedChainId
-from cow_py.common.constants import CowContractAddress
-from cow_py.contracts.domain import domain
-from cow_py.contracts.order import Order
-from cow_py.contracts.sign import SigningScheme, sign_order, sign_order_cancellation
-from cow_py.order_book.api import OrderBookApi
-from cow_py.order_book.config import OrderBookAPIConfigFactory
-from cow_py.order_book.generated.model import (
+from cowdao_cowpy.codegen.abi_handler import dict_keys_to_camel_case
+from cowdao_cowpy.common.chains import Chain
+from cowdao_cowpy.common.config import SupportedChainId
+from cowdao_cowpy.common.constants import CowContractAddress
+from cowdao_cowpy.contracts.domain import domain
+from cowdao_cowpy.contracts.order import Order
+from cowdao_cowpy.contracts.sign import (
+    SigningScheme,
+    sign_order,
+    sign_order_cancellation,
+)
+from cowdao_cowpy.order_book.api import OrderBookApi
+from cowdao_cowpy.order_book.config import OrderBookAPIConfigFactory
+from cowdao_cowpy.order_book.generated.model import (
     EcdsaSignature,
     EcdsaSigningScheme,
     OrderCancellations,
