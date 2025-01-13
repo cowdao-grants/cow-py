@@ -7,7 +7,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
-httpx = "^0.27.0"
+httpx = ">=0.25.0,<1.0.0"
 web3 = "^6.15.1"
 pybars3 = "^0.9.7"
 pydantic = "^2.7.0"
