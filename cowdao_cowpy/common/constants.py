@@ -1,7 +1,7 @@
 from enum import Enum
 from typing import Dict
 
-from cow_py.common.config import SupportedChainId
+from cowdao_cowpy.common.config import SupportedChainId
 
 from .chains import Chain
 

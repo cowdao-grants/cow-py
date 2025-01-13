@@ -1,6 +1,6 @@
 from enum import Enum
 
-from cow_py.common.config import SupportedChainId
+from cowdao_cowpy.common.config import SupportedChainId
 
 
 class Chain(Enum):
