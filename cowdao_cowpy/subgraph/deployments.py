@@ -13,7 +13,8 @@ NETWORK_SUBGRAPH_IDS_MAP = {
     Chain.MAINNET: "https://api.studio.thegraph.com/query/49707/cow-subgraph-mainnet/version/latest",
     Chain.SEPOLIA: "https://api.studio.thegraph.com/query/49707/cow-subgraph-sepolia/version/latest",
     Chain.GNOSIS: "https://api.studio.thegraph.com/query/49707/cow-subgraph-gnosis/version/latest",
-    Chain.ARBITRUM: "https://api.studio.thegraph.com/query/49707/cow-subgraph-arb/version/latest",
+    Chain.ARBITRUM_ONE: "https://api.studio.thegraph.com/query/49707/cow-subgraph-arb/version/latest",
+    Chain.BASE: "https://api.studio.thegraph.com/query/49707/cow-subgraph-base/version/latest",
 }
 
 

@@ -53,8 +53,6 @@ print(orders)
 
 Using the built-in GraphQL client, you can query the CoW Protocol's Subgraph to get real-time data on the CoW Protocol. You can query the Subgraph by using the `SubgraphClient` class and passing in the URL of the Subgraph.
 
-NOTE: To query `mainnet`, `gnosis`, or `arbitrum` subgraphs, you'll need to add SUBGRAPH_API_KEY to your .env. You can get one from [Subgraph Studio](https://thegraph.com/studio/apikeys/) directly.
-
 ```python
 from cowdao_cowpy.subgraph.client import SubgraphClient
 from cowdao_cowpy.subgraph.deployments import build_subgraph_url

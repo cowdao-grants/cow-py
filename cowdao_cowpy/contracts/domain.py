@@ -30,6 +30,6 @@ def domain(chain: Chain, verifying_contract: str) -> TypedDataDomain:
     return TypedDataDomain(
         name="Gnosis Protocol",
         version="v2",
-        chainId=chain.chain_id,
+        chainId=chain.chain_id.value,
         verifyingContract=verifying_contract,
     )

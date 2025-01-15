@@ -1,17 +1,26 @@
 from enum import Enum
 
+from cowdao_cowpy.common.config import SupportedChainId
+
 
 class Chain(Enum):
     """
     Supported chains and their respective `chainId` for the SDK.
     """
 
-    MAINNET = (1, "ethereum", "https://etherscan.io")
-    GNOSIS = (100, "gnosis", "https://gnosisscan.io")
-    ARBITRUM = (42161, "arbitrum", "https://arbiscan.io")
-    SEPOLIA = (11155111, "sepolia", "https://sepolia.etherscan.io")
+    MAINNET = (SupportedChainId.MAINNET, "ethereum", "https://etherscan.io")
+    SEPOLIA = (SupportedChainId.SEPOLIA, "sepolia", "https://sepolia.etherscan.io")
+    GNOSIS = (SupportedChainId.GNOSIS_CHAIN, "gnosis", "https://gnosisscan.io")
+    ARBITRUM_ONE = (
+        SupportedChainId.ARBITRUM_ONE,
+        "arbitrum_one",
+        "https://arbiscan.io",
+    )
+    BASE = (SupportedChainId.BASE, "base", "https://basescan.org/")
 
-    def __init__(self, id: int, network_name: str, explorer_url: str) -> None:
+    def __init__(
+        self, id: SupportedChainId, network_name: str, explorer_url: str
+    ) -> None:
         self.id = id
         self.network_name = network_name
         self.explorer_url = explorer_url
@@ -25,7 +34,7 @@ class Chain(Enum):
         return self.explorer_url
 
     @property
-    def chain_id(self) -> int:
+    def chain_id(self) -> SupportedChainId:
         return self.id
 
 

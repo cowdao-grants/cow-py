@@ -5,9 +5,11 @@ import web3
 from cowdao_cowpy.common.chains import Chain
 
 DEFAULT_PROVIDER_NETWORK_MAPPING = {
-    Chain.MAINNET: "https://eth.llamarpc.com",
+    Chain.MAINNET: "https://rpc.mevblocker.io",
     Chain.GNOSIS: "https://gnosis.publicnode.com",
     Chain.SEPOLIA: "https://ethereum-sepolia.publicnode.com",
+    Chain.ARBITRUM_ONE: "https://arbitrum.llamarpc.com",
+    Chain.BASE: "https://base.llamarpc.com",
 }
 
 
