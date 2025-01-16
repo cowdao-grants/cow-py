@@ -7,7 +7,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, RootModel, confloat
+from pydantic import BaseModel, Field, RootModel, confloat, ConfigDict
 
 
 class TransactionHash(RootModel[str]):
@@ -572,6 +572,8 @@ class OrderQuoteSide(
 
 
 class OrderQuoteRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     sellToken: Address = Field(..., description="ERC-20 token to be sold")
     buyToken: Address = Field(..., description="ERC-20 token to be bought")
     receiver: Optional[Address] = Field(
@@ -598,6 +600,8 @@ class OrderQuoteRequest(BaseModel):
 
 
 class OrderQuoteResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     quote: OrderParameters
     from_: Optional[Address] = Field(None, alias="from")
     expiration: str = Field(
@@ -636,6 +640,8 @@ class SolverCompetitionResponse(BaseModel):
 
 
 class OrderCreation(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     sellToken: Address = Field(..., description="see `OrderParameters::sellToken`")
     buyToken: Address = Field(..., description="see `OrderParameters::buyToken`")
     receiver: Optional[Address] = Field(
