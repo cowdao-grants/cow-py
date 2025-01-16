@@ -2,8 +2,9 @@ from eth_utils.conversions import to_hex
 from eth_utils.crypto import keccak
 from eth_utils.currency import to_wei
 
-from cow_py.contracts.domain import TypedDataDomain
-from cow_py.contracts.order import Order
+from cowdao_cowpy.common.config import SupportedChainId
+from cowdao_cowpy.contracts.domain import TypedDataDomain
+from cowdao_cowpy.contracts.order import Order
 
 
 def fill_bytes(count, byte):
@@ -42,6 +43,6 @@ SAMPLE_ORDER = Order(
 SAMPLE_DOMAIN = TypedDataDomain(
     name="Gnosis Protocol",
     version="v2",
-    chainId=1,
+    chainId=SupportedChainId.MAINNET.value,
     verifyingContract="0x9008D19f58AAbD9eD0D60971565AA8510560ab41",
 )

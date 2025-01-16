@@ -4,9 +4,13 @@ from eth_account.signers.local import LocalAccount
 from eth_utils.conversions import to_hex
 from web3 import EthereumTesterProvider, Web3
 
-from cow_py.contracts.order import hash_order_cancellation
+from cowdao_cowpy.contracts.order import hash_order_cancellation
 
-from cow_py.contracts.sign import SigningScheme, sign_order, sign_order_cancellation
+from cowdao_cowpy.contracts.sign import (
+    SigningScheme,
+    sign_order,
+    sign_order_cancellation,
+)
 
 from .conftest import SAMPLE_DOMAIN, SAMPLE_ORDER
 

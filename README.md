@@ -4,7 +4,7 @@
 
 ## 🐄 Introduction
 
-Welcome to the CoW Protocol Python SDK (cow_py), a developer-friendly Python library for interacting with the CoW Protocol. This SDK provides tools for querying on-chain data, managing orders, and integrating with the CoW Protocol's smart contracts. Whether you're building a DeFi application, a solver, or just exploring the CoW Protocol, this SDK aims to make your development journey smoother and more enjoyable. 🚀
+Welcome to the CoW Protocol Python SDK (cowdao_cowpy), a developer-friendly Python library for interacting with the CoW Protocol. This SDK provides tools for querying on-chain data, managing orders, and integrating with the CoW Protocol's smart contracts. Whether you're building a DeFi application, a solver, or just exploring the CoW Protocol, this SDK aims to make your development journey smoother and more enjoyable. 🚀
 
 ## 🐄 Features
 
@@ -16,10 +16,10 @@ Welcome to the CoW Protocol Python SDK (cow_py), a developer-friendly Python lib
 
 ## 🐄 Installation
 
-Get started by installing `cow_py`:
+Get started by installing `cowdao_cowpy`:
 
 ```bash
-pip install cow_py
+pip install cowdao_cowpy
 ```
 
 ## 🐄 Getting Started
@@ -28,7 +28,7 @@ Here's a simple example to get your hooves dirty:
 
 ```python
 
-from cow_py.order_book.api import OrderBookApi, UID
+from cowdao_cowpy.order_book.api import OrderBookApi, UID
 
 # Initialize the OrderBookApi
 order_book_api = OrderBookApi()
@@ -53,26 +53,24 @@ print(orders)
 
 Using the built-in GraphQL client, you can query the CoW Protocol's Subgraph to get real-time data on the CoW Protocol. You can query the Subgraph by using the `SubgraphClient` class and passing in the URL of the Subgraph.
 
-NOTE: To query `mainnet`, `gnosis`, or `arbitrum` subgraphs, you'll need to add SUBGRAPH_API_KEY to your .env. You can get one from [Subgraph Studio](https://thegraph.com/studio/apikeys/) directly.
-
 ```python
-from cow_py.subgraph.client import SubgraphClient
-from cow_py.subgraph.deployments import build_subgraph_url
+from cowdao_cowpy.subgraph.client import SubgraphClient
+from cowdao_cowpy.subgraph.deployments import build_subgraph_url
 
 url = build_subgraph_url() # Default network is Chain.SEPOLIA and env SubgraphEnvironment.PRODUCTION
 client = SubgraphClient(url=url)
 
-# Fetch the total supply of the CoW Protocol, defined in a query in cow_py/subgraph/queries
+# Fetch the total supply of the CoW Protocol, defined in a query in cowdao_cowpy/subgraph/queries
 totals = await client.totals()
-print(totals) # Pydantic model, defined in cow_py/subgraph/graphql_client/{query_name}.py
+print(totals) # Pydantic model, defined in cowdao_cowpy/subgraph/graphql_client/{query_name}.py
 ```
 
 Or you can leverage `SubgraphClient` to use a custom query and get the results as JSON:
 
 ```python
 from pprint import pprint
-from cow_py.subgraph.client import SubgraphClient
-from cow_py.subgraph.deployments import build_subgraph_url
+from cowdao_cowpy.subgraph.client import SubgraphClient
+from cowdao_cowpy.subgraph.deployments import build_subgraph_url
 
 url = build_subgraph_url() # Default network is Chain.SEPOLIA and env SubgraphEnvironment.PRODUCTION
 client = SubgraphClient(url=url)
@@ -95,8 +93,8 @@ Or you can leverage `SubgraphClient` to use a custom query and get the results a
 
 ```python
 from pprint import pprint
-from cow_py.subgraph.client import SubgraphClient
-from cow_py.subgraph.deployments import build_subgraph_url
+from cowdao_cowpy.subgraph.client import SubgraphClient
+from cowdao_cowpy.subgraph.deployments import build_subgraph_url
 
 url = build_subgraph_url() # Default network is Chain.SEPOLIA and env SubgraphEnvironment.PRODUCTION
 client = SubgraphClient(url=url)
@@ -219,7 +217,7 @@ Got questions, bug reports, or feature requests? Open an issue in our [GitHub re
 
 ## 🐄 License
 
-`cow_py` is released under the GNU License. For more details, check out the [LICENSE](LICENSE) file.
+`cowdao_cowpy` is released under the GNU License. For more details, check out the [LICENSE](LICENSE) file.
 
 ---
 

@@ -1,6 +1,9 @@
 import pytest
 
-from cow_py.codegen.solidity_converter import SolidityConverter, SolidityConverterError
+from cowdao_cowpy.codegen.solidity_converter import (
+    SolidityConverter,
+    SolidityConverterError,
+)
 
 
 def test_solidity_converter_get_struct_name():

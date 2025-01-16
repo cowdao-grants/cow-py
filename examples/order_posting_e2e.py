@@ -7,8 +7,8 @@ import asyncio
 from dotenv import load_dotenv
 from web3 import Account, Web3
 from web3.types import Wei
-from cow_py.cow.swap import swap_tokens
-from cow_py.common.chains import Chain
+from cowdao_cowpy.cow.swap import swap_tokens
+from cowdao_cowpy.common.chains import Chain
 
 BUY_TOKEN = Web3.to_checksum_address(
     "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"
