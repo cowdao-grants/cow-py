@@ -57,13 +57,11 @@ async def test_post_and_cancel_order_live_e2e():
     )
 
     mock_order_quote_request = OrderQuoteRequest(
-        **{
-            "sellToken": WXDAI_GNOSIS_MAINNET_ADDRESS,
-            "buyToken": COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
-            "receiver": E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,
-            "from": E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,
-            "onchainOrder": False,
-        }
+        sellToken=WXDAI_GNOSIS_MAINNET_ADDRESS,
+        buyToken=COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
+        receiver=E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,
+        from_=E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
+        onchainOrder=False,
     )
 
     mock_order_quote_side = OrderQuoteSide1(

@@ -658,10 +658,10 @@ class OrderCreation(BaseModel):
         ..., description="see `OrderParameters::partiallyFillable`"
     )
     sellTokenBalance: Optional[SellTokenSource] = Field(
-        "erc20", description="see `OrderParameters::sellTokenBalance`"
+        default="erc20", description="see `OrderParameters::sellTokenBalance`"
     )
     buyTokenBalance: Optional[BuyTokenDestination] = Field(
-        "erc20", description="see `OrderParameters::buyTokenBalance`"
+        default="erc20", description="see `OrderParameters::buyTokenBalance`"
     )
     signingScheme: SigningScheme
     signature: Signature
