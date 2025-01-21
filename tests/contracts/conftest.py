@@ -26,18 +26,16 @@ def ceil_div(p, q):
 ORDER_KIND_SELL = "SELL"
 
 SAMPLE_ORDER = Order(
-    **{
-        "sell_token": fill_bytes(20, 0x01),
-        "buy_token": fill_bytes(20, 0x02),
-        "receiver": fill_bytes(20, 0x03),
-        "sell_amount": to_wei("42", "ether"),
-        "buy_amount": to_wei("13.37", "ether"),
-        "valid_to": 0xFFFFFFFF,
-        "app_data": keccak(text="")[0:20],
-        "fee_amount": to_wei("1.0", "ether"),
-        "kind": ORDER_KIND_SELL,
-        "partially_fillable": False,
-    }
+    sell_token=fill_bytes(20, 0x01),
+    buy_token=fill_bytes(20, 0x02),
+    receiver=fill_bytes(20, 0x03),
+    sell_amount=to_wei("42", "ether"),
+    buy_amount=to_wei("13.37", "ether"),
+    valid_to=0xFFFFFFFF,
+    app_data=str(keccak(text="")[0:20]),
+    fee_amount=to_wei("1.0", "ether"),
+    kind=ORDER_KIND_SELL,
+    partially_fillable=False,
 )
 
 SAMPLE_DOMAIN = TypedDataDomain(
