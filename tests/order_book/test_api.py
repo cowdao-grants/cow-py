@@ -65,17 +65,15 @@ async def test_get_trades_by_order_uid(order_book_api):
 @pytest.mark.asyncio
 async def test_post_quote(order_book_api):
     mock_order_quote_request = OrderQuoteRequest(
-        **{
-            "sellToken": "0x",
-            "buyToken": "0x",
-            "receiver": "0x",
-            "appData": "app_data_object",
-            "appDataHash": "0x",
-            "from": "0x",
-            "priceQuality": "verified",
-            "signingScheme": "eip712",
-            "onchainOrder": False,
-        }
+        sellToken="0x",
+        buyToken="0x",
+        receiver="0x",
+        appData="app_data_object",
+        appDataHash="0x",
+        from_="0x",  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
+        priceQuality="verified",
+        signingScheme="eip712",
+        onchainOrder=False,
     )
 
     mock_order_quote_side = OrderQuoteSide1(
@@ -118,25 +116,23 @@ async def test_post_quote(order_book_api):
 async def test_post_order(order_book_api):
     mock_uid = "mock_uid"
     mock_order_creation = OrderCreation(
-        **{
-            "sellToken": "0x",
-            "buyToken": "0x",
-            "sellAmount": "0",
-            "buyAmount": "0",
-            "validTo": 0,
-            "feeAmount": "0",
-            "kind": "buy",
-            "partiallyFillable": True,
-            "appData": "0x",
-            "signingScheme": "eip712",
-            "signature": "0x",
-            "receiver": "0x",
-            "sellTokenBalance": "erc20",
-            "buyTokenBalance": "erc20",
-            "quoteId": 0,
-            "appDataHash": "0x",
-            "from": "0x",
-        }
+        sellToken="0x",
+        buyToken="0x",
+        sellAmount="0",
+        buyAmount="0",
+        validTo=0,
+        feeAmount="0",
+        kind="buy",
+        partiallyFillable=True,
+        appData="0x",
+        signingScheme="eip712",
+        signature="0x",
+        receiver="0x",
+        sellTokenBalance="erc20",
+        buyTokenBalance="erc20",
+        quoteId=0,
+        appDataHash="0x",
+        from_="0x",  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
     )
     with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
         mock_request.return_value.text = mock_uid

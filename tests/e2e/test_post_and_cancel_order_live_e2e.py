@@ -57,13 +57,11 @@ async def test_post_and_cancel_order_live_e2e():
     )
 
     mock_order_quote_request = OrderQuoteRequest(
-        **{
-            "sellToken": WXDAI_GNOSIS_MAINNET_ADDRESS,
-            "buyToken": COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
-            "receiver": E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,
-            "from": E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,
-            "onchainOrder": False,
-        }
+        sellToken=WXDAI_GNOSIS_MAINNET_ADDRESS,
+        buyToken=COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
+        receiver=E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,
+        from_=E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
+        onchainOrder=False,
     )
 
     mock_order_quote_side = OrderQuoteSide1(
@@ -76,20 +74,18 @@ async def test_post_and_cancel_order_live_e2e():
     )
 
     order = Order(
-        **{
-            "sell_token": WXDAI_GNOSIS_MAINNET_ADDRESS,
-            "buy_token": COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
-            "receiver": E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,
-            "sell_amount": (10**15).__str__(),
-            "buy_amount": (10**20).__str__(),
-            "valid_to": quote.quote.validTo,
-            "fee_amount": "0",
-            "kind": "sell",
-            "partially_fillable": False,
-            "sell_token_balance": "erc20",
-            "buy_token_balance": "erc20",
-            "app_data": "0x0000000000000000000000000000000000000000000000000000000000000000",
-        }
+        sell_token=WXDAI_GNOSIS_MAINNET_ADDRESS,
+        buy_token=COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
+        receiver=str(E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS),
+        sell_amount=10**15,
+        buy_amount=10**20,
+        valid_to=quote.quote.validTo,
+        fee_amount=0,
+        kind="sell",
+        partially_fillable=False,
+        sell_token_balance="erc20",
+        buy_token_balance="erc20",
+        app_data="0x0000000000000000000000000000000000000000000000000000000000000000",
     )
 
     order_domain = domain(

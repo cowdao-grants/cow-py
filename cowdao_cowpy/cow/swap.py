@@ -44,12 +44,10 @@ async def swap_tokens(
     chain_id = SupportedChainId(chain.value[0])
     order_book_api = OrderBookApi(OrderBookAPIConfigFactory.get_config(env, chain_id))
 
-    order_quote_request = OrderQuoteRequest.model_validate(
-        {
-            "sellToken": sell_token,
-            "buyToken": buy_token,
-            "from": account._address,
-        }
+    order_quote_request = OrderQuoteRequest(
+        sellToken=sell_token,
+        buyToken=buy_token,
+        from_=account._address,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
     )
     order_side = OrderQuoteSide1(
         kind=OrderQuoteSideKindSell.sell,
@@ -102,21 +100,19 @@ async def post_order(
     signature: EcdsaSignature,
     order_book_api: OrderBookApi,
 ) -> UID:
-    order_creation = OrderCreation.model_validate(
-        {
-            "from": account.address,
-            "sellToken": order.sellToken,
-            "buyToken": order.buyToken,
-            "sellAmount": str(order.sellAmount),
-            "feeAmount": str(order.feeAmount),
-            "buyAmount": str(order.buyAmount),
-            "validTo": order.validTo,
-            "kind": order.kind,
-            "partiallyFillable": order.partiallyFillable,
-            "appData": order.appData,
-            "signature": signature.data,
-            "signingScheme": "eip712",
-            "receiver": order.receiver,
-        }
+    order_creation = OrderCreation(
+        from_=account.address,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
+        sellToken=order.sellToken,
+        buyToken=order.buyToken,
+        sellAmount=str(order.sellAmount),
+        feeAmount=str(order.feeAmount),
+        buyAmount=str(order.buyAmount),
+        validTo=order.validTo,
+        kind=order.kind,
+        partiallyFillable=order.partiallyFillable,
+        appData=order.appData,
+        signature=signature.data,
+        signingScheme="eip712",
+        receiver=order.receiver,
     )
     return await order_book_api.post_order(order_creation)

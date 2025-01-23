@@ -7,7 +7,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 
-from pydantic import BaseModel, Field, RootModel, confloat
+from pydantic import BaseModel, Field, RootModel, confloat, ConfigDict
 
 
 class TransactionHash(RootModel[str]):
@@ -572,18 +572,20 @@ class OrderQuoteSide(
 
 
 class OrderQuoteRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     sellToken: Address = Field(..., description="ERC-20 token to be sold")
     buyToken: Address = Field(..., description="ERC-20 token to be bought")
     receiver: Optional[Address] = Field(
-        None,
+        default=None,
         description="An optional address to receive the proceeds of the trade instead of the\n`owner` (i.e. the order signer).\n",
     )
     appData: Optional[Union[AppData, AppDataHash]] = Field(
-        None,
+        default=None,
         description="AppData which will be assigned to the order.\nExpects either a string JSON doc as defined on [AppData](https://github.com/cowprotocol/app-data) or a\nhex encoded string for backwards compatibility.\nWhen the first format is used, it's possible to provide the derived appDataHash field.\n",
     )
     appDataHash: Optional[AppDataHash] = Field(
-        None,
+        default=None,
         description="The hash of the stringified JSON appData doc.\nIf present, `appData` field must be set with the aforementioned data where this hash is derived from.\nIn case they differ, the call will fail.\n",
     )
     sellTokenBalance: Optional[SellTokenSource] = "erc20"
@@ -592,12 +594,14 @@ class OrderQuoteRequest(BaseModel):
     priceQuality: Optional[PriceQuality] = "verified"
     signingScheme: Optional[SigningScheme] = "eip712"
     onchainOrder: Optional[Any] = Field(
-        False,
+        default=False,
         description='Flag to signal whether the order is intended for on-chain order placement. Only valid\nfor non ECDSA-signed orders."\n',
     )
 
 
 class OrderQuoteResponse(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     quote: OrderParameters
     from_: Optional[Address] = Field(None, alias="from")
     expiration: str = Field(
@@ -636,10 +640,12 @@ class SolverCompetitionResponse(BaseModel):
 
 
 class OrderCreation(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     sellToken: Address = Field(..., description="see `OrderParameters::sellToken`")
     buyToken: Address = Field(..., description="see `OrderParameters::buyToken`")
     receiver: Optional[Address] = Field(
-        None, description="see `OrderParameters::receiver`"
+        default=None, description="see `OrderParameters::receiver`"
     )
     sellAmount: TokenAmount = Field(
         ..., description="see `OrderParameters::sellAmount`"
@@ -652,20 +658,20 @@ class OrderCreation(BaseModel):
         ..., description="see `OrderParameters::partiallyFillable`"
     )
     sellTokenBalance: Optional[SellTokenSource] = Field(
-        "erc20", description="see `OrderParameters::sellTokenBalance`"
+        default="erc20", description="see `OrderParameters::sellTokenBalance`"
     )
     buyTokenBalance: Optional[BuyTokenDestination] = Field(
-        "erc20", description="see `OrderParameters::buyTokenBalance`"
+        default="erc20", description="see `OrderParameters::buyTokenBalance`"
     )
     signingScheme: SigningScheme
     signature: Signature
     from_: Optional[Address] = Field(
-        None,
+        default=None,
         alias="from",
         description="If set, the backend enforces that this address matches what is decoded as the *signer* of\nthe signature. This helps catch errors with invalid signature encodings as the backend\nmight otherwise silently work with an unexpected address that for example does not have\nany balance.\n",
     )
     quoteId: Optional[int] = Field(
-        None,
+        default=None,
         description="Orders can optionally include a quote ID. This way the order can be linked to a quote\nand enable providing more metadata when analysing order slippage.\n",
     )
     appData: Union[AppData, AppDataHash] = Field(
@@ -673,7 +679,7 @@ class OrderCreation(BaseModel):
         description="This field comes in two forms for backward compatibility. The hash form will eventually \nstop being accepted.\n",
     )
     appDataHash: Optional[AppDataHash] = Field(
-        None,
+        default=None,
         description="May be set for debugging purposes. If set, this field is compared to what the backend\ninternally calculates as the app data hash based on the contents of `appData`. If the\nhash does not match, an error is returned. If this field is set, then `appData` **MUST** be\na string encoding of a JSON object.\n",
     )
 
