@@ -5,6 +5,7 @@ import pytest
 from cowdao_cowpy.common.api.decorators import rate_limitted
 
 
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_call_intervals():
     async def test_function():
