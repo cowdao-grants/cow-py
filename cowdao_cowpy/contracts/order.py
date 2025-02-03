@@ -26,7 +26,7 @@ class Order:
     # amount represents the maximum sell amount that can be executed. For partial
     # fill orders, this represents a component of the limit price fraction.
     #
-    sell_amount: int = field(metadata={"alias": "sellAmount"})
+    sell_amount: str = field(metadata={"alias": "sellAmount"})
     # The order buy amount.
     #
     # For fill or kill sell orders, this amount represents the minimum buy amount
@@ -34,7 +34,7 @@ class Order:
     # represents the exact buy amount that will be executed. For partial fill
     # orders, this represents a component of the limit price fraction.
     #
-    buy_amount: int = field(metadata={"alias": "buyAmount"})
+    buy_amount: str = field(metadata={"alias": "buyAmount"})
     # The timestamp this order is valid until
     valid_to: int = field(metadata={"alias": "validTo"})
     # Arbitrary application specific data that can be added to an order. This can
@@ -42,7 +42,7 @@ class Order:
     # exact same parameters.
     app_data: str = field(metadata={"alias": "appData"})
     # Fee to give to the protocol.
-    fee_amount: int = field(metadata={"alias": "feeAmount"})
+    fee_amount: str = field(metadata={"alias": "feeAmount"})
     # The order kind.
     kind: str
     # Specifies whether or not the order is partially fillable.
