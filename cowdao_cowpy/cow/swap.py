@@ -61,11 +61,13 @@ async def swap_tokens(
         receiver=account.address,
         valid_to=order_quote.quote.validTo,
         app_data=app_data,
-        sell_amount=amount,  # Since it is a sell order, the sellAmountBeforeFee is the same as the sellAmount.
-        buy_amount=int(
-            int(order_quote.quote.buyAmount.root) * (1.0 - slippage_tolerance)
+        sell_amount=str(
+            amount
+        ),  # Since it is a sell order, the sellAmountBeforeFee is the same as the sellAmount.
+        buy_amount=str(
+            int(int(order_quote.quote.buyAmount.root) * (1.0 - slippage_tolerance))
         ),
-        fee_amount=0,  # CoW Swap does not charge fees.
+        fee_amount="0",  # CoW Swap does not charge fees.
         kind=OrderQuoteSideKindSell.sell.value,
         sell_token_balance="erc20",
         buy_token_balance="erc20",

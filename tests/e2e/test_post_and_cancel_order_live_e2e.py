@@ -48,6 +48,7 @@ E2E_GNOSIS_MAINNET_TESTING_EOA = Account.from_key(
 E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS: Address = E2E_GNOSIS_MAINNET_TESTING_EOA.address
 
 
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_post_and_cancel_order_live_e2e():
     order_book_api = OrderBookApi(
@@ -77,10 +78,10 @@ async def test_post_and_cancel_order_live_e2e():
         sell_token=WXDAI_GNOSIS_MAINNET_ADDRESS,
         buy_token=COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
         receiver=str(E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS),
-        sell_amount=10**15,
-        buy_amount=10**20,
+        sell_amount=str(10**15),
+        buy_amount=str(10**20),
         valid_to=quote.quote.validTo,
-        fee_amount=0,
+        fee_amount="0",
         kind="sell",
         partially_fillable=False,
         sell_token_balance="erc20",

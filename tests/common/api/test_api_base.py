@@ -64,6 +64,7 @@ async def test_no_re_attempt_if_success(sut, mock_success_response):
         assert response["content"]["some"] == "data"
 
 
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_re_attempts_if_fails_then_succeeds(
     sut, mock_success_response, mock_http_status_error
@@ -81,6 +82,7 @@ async def test_re_attempts_if_fails_then_succeeds(
         assert mock_request.call_count == 4
 
 
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_succeeds_last_attempt(
     sut, mock_success_response, mock_http_status_error
@@ -98,6 +100,7 @@ async def test_succeeds_last_attempt(
         assert mock_send.call_count == 3
 
 
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_does_not_reattempt_after_max_failures(sut, mock_http_status_error):
     with patch(
@@ -109,6 +112,7 @@ async def test_does_not_reattempt_after_max_failures(sut, mock_http_status_error
         assert mock_call.call_count == 3
 
 
+@pytest.mark.slow
 @pytest.mark.asyncio
 async def test_backoff_uses_function_options_instead_of_default(
     sut, mock_http_status_error

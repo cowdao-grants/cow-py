@@ -1,5 +1,4 @@
 from eth_utils.conversions import to_hex
-from eth_utils.crypto import keccak
 from eth_utils.currency import to_wei
 
 from cowdao_cowpy.common.config import SupportedChainId
@@ -29,11 +28,11 @@ SAMPLE_ORDER = Order(
     sell_token=fill_bytes(20, 0x01),
     buy_token=fill_bytes(20, 0x02),
     receiver=fill_bytes(20, 0x03),
-    sell_amount=to_wei("42", "ether"),
-    buy_amount=to_wei("13.37", "ether"),
+    sell_amount=str(to_wei("42", "ether")),
+    buy_amount=str(to_wei("13.37", "ether")),
     valid_to=0xFFFFFFFF,
-    app_data=str(keccak(text="")[0:20]),
-    fee_amount=to_wei("1.0", "ether"),
+    app_data="0x",
+    fee_amount=str(to_wei("1.0", "ether")),
     kind=ORDER_KIND_SELL,
     partially_fillable=False,
 )

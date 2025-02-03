@@ -50,37 +50,8 @@ jobs:
         env:
           E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY: ${{ secrets.E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY }}
         run: |
-          poetry run pytest tests/
+          poetry run pytest tests/ --with-slow
 
       - name: Build sdist
         run: |
           poetry build -f sdist
-
-      - name: Archive production artifacts
-        uses: actions/upload-artifact@v3
-        with:
-          name: wheels
-          path: |
-            dist
-
-      - name: Display structure of downloaded files
-        run: |
-          ls -R
-        working-directory: ./
-
-      - run: |
-          poetry config repositories.testpypi https://test.pypi.org/legacy/
-      - run: |
-          poetry config pypi-token.testpypi ${{ secrets.TEST_PYPI_TOKEN }}
-
-      - name: Publish package (test)
-        run: |
-          poetry publish --no-interaction --dry-run -r testpypi -vvv
-
-      - if: github.event_name == 'release'
-        run: poetry config pypi-token.pypi ${{ secrets.PYPI_TOKEN }}
-
-      - name: Publish package (prod)
-        if: github.event_name == 'release'
-        run: |
-          poetry publish --no-interaction -vvv
