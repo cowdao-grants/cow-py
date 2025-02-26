@@ -31,7 +31,7 @@ from cowdao_cowpy.order_book.generated.model import (
     OrderQuoteSide1,
     OrderQuoteSideKindSell,
     SigningScheme as ModelSigningScheme,
-    TokenAmount,
+    TokenAmount, UID,
 )
 
 
@@ -124,3 +124,13 @@ async def test_post_and_cancel_order_live_e2e():
     )
 
     assert cancellation_result == "Cancelled"
+
+@pytest.mark.asyncio
+async def test_get_order_multi_env():
+    config = OrderBookAPIConfigFactory.get_config(
+        "prod", SupportedChainId.MAINNET
+    )
+    order_book = OrderBookApi(config)
+    staging_order_id: UID = "0xa130262be8ef33fa9ba9e5a9a2dd416be2eaf28fc2727bb4e0e8ea4d8ac5b3798d99f8b2710e6a3b94d9bf465a98e5273069acbd6197b574"
+    result = await order_book.get_order_multi_env(staging_order_id)
+    assert result is not None
