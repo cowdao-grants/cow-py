@@ -26,7 +26,6 @@ from cowdao_cowpy.order_book.generated.model import (
 from eth_account.signers.local import LocalAccount
 from pydantic import BaseModel
 from eth_typing.evm import ChecksumAddress
-from cowdao_cowpy.common.constants import ZERO_APP_DATA
 
 
 class CompletedOrder(BaseModel):
