@@ -48,6 +48,7 @@ async def swap_tokens(
         sellToken=sell_token,
         buyToken=buy_token,
         from_=account._address,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
+        appData=app_data,
     )
     order_side = OrderQuoteSide1(
         kind=OrderQuoteSideKindSell.sell,
@@ -75,8 +76,7 @@ async def swap_tokens(
 
     signature = sign_order(chain, account, order)
     order_uid = await post_order(account, order, signature, order_book_api)
-    order_link = order_book_api.get_order_link(order_uid)
-
+    order_link = f"https://explorer.cow.fi/{chain.name.lower()}/orders/{str(order_uid.root)}".lower()
     return CompletedOrder(uid=order_uid, url=order_link)
 
 
@@ -93,7 +93,11 @@ def sign_order(chain: Chain, account: LocalAccount, order: Order) -> EcdsaSignat
         chain=chain, verifying_contract=CowContractAddress.SETTLEMENT_CONTRACT.value
     )
 
-    return _sign_order(order_domain, order, account, SigningScheme.EIP712)
+    sig = _sign_order(order_domain, order, account, SigningScheme.EIP712)
+    if not sig.data.startswith("0x"):
+        sig.data = "0x" + sig.data
+    return sig
+
 
 
 async def post_order(
