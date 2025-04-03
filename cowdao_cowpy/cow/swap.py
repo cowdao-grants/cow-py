@@ -28,6 +28,15 @@ class CompletedOrder(BaseModel):
     url: str
 
 
+CHAIN_TO_EXPLORER = {
+    SupportedChainId.MAINNET: "https://explorer.cow.fi/ethereum",
+    SupportedChainId.ARBITRUM_ONE: "https://explorer.cow.fi/arb1",
+    SupportedChainId.BASE: "https://explorer.cow.fi/base",
+    SupportedChainId.GNOSIS_CHAIN: "https://explorer.cow.fi/gc",
+    SupportedChainId.SEPOLIA: "https://explorer.cow.fi/sepolia",
+}
+
+
 async def swap_tokens(
     amount: Wei,
     account: LocalAccount,
@@ -76,7 +85,8 @@ async def swap_tokens(
 
     signature = sign_order(chain, account, order)
     order_uid = await post_order(account, order, signature, order_book_api)
-    order_link = f"https://explorer.cow.fi/{chain.name.lower()}/orders/{str(order_uid.root)}".lower()
+    base_url = CHAIN_TO_EXPLORER.get(chain_id, "https://explorer.cow.fi")
+    order_link = f"{base_url}/orders/{str(order_uid.root)}".lower()
     return CompletedOrder(uid=order_uid, url=order_link)
 
 
