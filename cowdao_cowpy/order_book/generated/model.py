@@ -436,6 +436,10 @@ class OrderMetaData(BaseModel):
     class_: OrderClass = Field(..., alias="class")
     owner: Address
     uid: UID
+    settlementContract: Optional[Address] = Field(
+        None,
+        description="The address of the settlement contract that will be used to settle the order.\n",
+    )
     availableBalance: Optional[TokenAmount] = Field(
         None,
         description="Unused field that is currently always set to `null` and will be removed in the future.\n",
