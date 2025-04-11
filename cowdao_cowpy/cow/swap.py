@@ -90,7 +90,6 @@ async def swap_tokens(
     )
 
     base_url = CHAIN_TO_EXPLORER.get(chain_id, "https://explorer.cow.fi")
-    order_link = f"{base_url}/orders/{str(order_uid.root)}".lower()
     signature = (
         PreSignSignature(
             scheme=SigningScheme.PRESIGN,
@@ -102,6 +101,7 @@ async def swap_tokens(
     order_uid = await post_order(
         account, safe_address, order, signature, order_book_api
     )
+    order_link = f"{base_url}/orders/{str(order_uid.root)}".lower()
     order_link = order_book_api.get_order_link(order_uid)
     return CompletedOrder(uid=order_uid, url=order_link)
 
@@ -118,12 +118,8 @@ def sign_order(chain: Chain, account: LocalAccount, order: Order) -> EcdsaSignat
     order_domain = domain(
         chain=chain, verifying_contract=CowContractAddress.SETTLEMENT_CONTRACT.value
     )
-
     sig = _sign_order(order_domain, order, account, SigningScheme.EIP712)
-    if not sig.data.startswith("0x"):
-        sig.data = "0x" + sig.data
     return sig
-
 
 
 async def post_order(
@@ -133,6 +129,7 @@ async def post_order(
     signature: Signature,
     order_book_api: OrderBookApi,
 ) -> UID:
+    
     order_creation = OrderCreation(
         from_=safe_address if safe_address is not None else account.address,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
         sellToken=order.sellToken,
