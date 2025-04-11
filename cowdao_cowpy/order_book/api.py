@@ -77,7 +77,7 @@ class OrderBookApi(ApiBase):
         self, order_uid: UID, context_override: Context = {}
     ) -> Order:
         return await self._fetch(
-            path=f"/api/v1/orders/{order_uid}",
+            path=f"/api/v1/orders/{order_uid.root}",
             context_override=context_override,
             response_model=Order,
         )
