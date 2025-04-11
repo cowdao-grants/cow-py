@@ -129,7 +129,8 @@ async def post_order(
     signature: Signature,
     order_book_api: OrderBookApi,
 ) -> UID:
-    
+    signature_data = signature.to_string()
+
     order_creation = OrderCreation(
         from_=safe_address if safe_address is not None else account.address,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
         sellToken=order.sellToken,
@@ -141,7 +142,7 @@ async def post_order(
         kind=order.kind,
         partiallyFillable=order.partiallyFillable,
         appData=order.appData,
-        signature=signature.data if signature.data.startswith("0x") else f"0x{signature.data}",
+        signature=signature_data,
         signingScheme=signature.scheme.name.lower(),
         receiver=order.receiver,
     )

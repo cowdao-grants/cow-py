@@ -43,11 +43,17 @@ class EcdsaSignature:
     scheme: SigningScheme
     data: str
 
+    def to_string(self) -> str:
+        return self.data
+
 
 @dataclass
 class Eip1271SignatureData:
     verifier: str
     signature: bytes
+
+    def to_string(self) -> str:
+        return str(self.signature.hex())
 
 
 @dataclass
@@ -55,11 +61,17 @@ class Eip1271Signature:
     scheme: SigningScheme
     data: Eip1271SignatureData
 
+    def to_string(self) -> str:
+        return self.data.to_string()
+
 
 @dataclass
 class PreSignSignature:
     scheme: SigningScheme
     data: str
+
+    def to_string(self) -> str:
+        return self.data
 
 
 Signature = Union[EcdsaSignature, Eip1271Signature, PreSignSignature]
