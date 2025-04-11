@@ -43,11 +43,18 @@ class EcdsaSignature:
     scheme: SigningScheme
     data: str
 
+    def to_string(self) -> str:
+        return self.data if self.data.startswith("0x") else f"0x{self.data}"
+
 
 @dataclass
 class Eip1271SignatureData:
     verifier: str
     signature: bytes
+
+    def to_string(self) -> str:
+        hex_data = str(self.signature.hex())
+        return hex_data if hex_data.startswith("0x") else f"0x{hex_data}"
 
 
 @dataclass
@@ -55,11 +62,17 @@ class Eip1271Signature:
     scheme: SigningScheme
     data: Eip1271SignatureData
 
+    def to_string(self) -> str:
+        return self.data.to_string()
+
 
 @dataclass
 class PreSignSignature:
     scheme: SigningScheme
     data: str
+
+    def to_string(self) -> str:
+        return self.data if self.data.startswith("0x") else f"0x{self.data}"
 
 
 Signature = Union[EcdsaSignature, Eip1271Signature, PreSignSignature]
