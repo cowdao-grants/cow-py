@@ -140,9 +140,7 @@ async def post_order(
         kind=order.kind,
         partiallyFillable=order.partiallyFillable,
         appData=order.appData,
-        signature=signature.data
-        if signature.data.startswith("0x")
-        else f"0x{signature.data}",
+        signature=signature.to_string(),
         signingScheme=signature.scheme.name.lower(),
         receiver=order.receiver,
     )
