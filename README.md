@@ -211,6 +211,14 @@ make codegen
 make test
 ```
 
+Integration Tests can be run by providing a private key for the E2E testing account. This is required to run the integration tests against the CoW Protocol's mainnet.
+
+```bash
+export E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY=0x123...
+poetry run pytest tests/ --with-slow --integration
+```
+
+
 ## 🐄 Need Help?
 
 Got questions, bug reports, or feature requests? Open an issue in our [GitHub repository](https://github.com/cowdao-grants/cow-py/issues).

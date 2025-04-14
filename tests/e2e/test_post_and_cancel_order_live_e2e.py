@@ -50,6 +50,7 @@ E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS: Address = E2E_GNOSIS_MAINNET_TESTING_EOA
 
 @pytest.mark.slow
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_post_and_cancel_order_live_e2e():
     order_book_api = OrderBookApi(
         config=OrderBookAPIConfigFactory.get_config(
