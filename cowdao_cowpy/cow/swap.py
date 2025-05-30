@@ -33,6 +33,15 @@ class CompletedOrder(BaseModel):
     url: str
 
 
+CHAIN_TO_EXPLORER = {
+    SupportedChainId.MAINNET: "https://explorer.cow.fi/ethereum",
+    SupportedChainId.ARBITRUM_ONE: "https://explorer.cow.fi/arb1",
+    SupportedChainId.BASE: "https://explorer.cow.fi/base",
+    SupportedChainId.GNOSIS_CHAIN: "https://explorer.cow.fi/gc",
+    SupportedChainId.SEPOLIA: "https://explorer.cow.fi/sepolia",
+}
+
+
 async def swap_tokens(
     amount: Wei,
     account: LocalAccount,
@@ -54,6 +63,7 @@ async def swap_tokens(
         sellToken=sell_token,
         buyToken=buy_token,
         from_=safe_address if safe_address is not None else account._address,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
+        appData=app_data,
     )
     order_side = OrderQuoteSide1(
         kind=OrderQuoteSideKindSell.sell,
@@ -79,6 +89,7 @@ async def swap_tokens(
         buy_token_balance="erc20",
     )
 
+    base_url = CHAIN_TO_EXPLORER.get(chain_id, "https://explorer.cow.fi")
     signature = (
         PreSignSignature(
             scheme=SigningScheme.PRESIGN,
@@ -90,8 +101,8 @@ async def swap_tokens(
     order_uid = await post_order(
         account, safe_address, order, signature, order_book_api
     )
+    order_link = f"{base_url}/orders/{str(order_uid.root)}".lower()
     order_link = order_book_api.get_order_link(order_uid)
-
     return CompletedOrder(uid=order_uid, url=order_link)
 
 
@@ -107,8 +118,8 @@ def sign_order(chain: Chain, account: LocalAccount, order: Order) -> EcdsaSignat
     order_domain = domain(
         chain=chain, verifying_contract=CowContractAddress.SETTLEMENT_CONTRACT.value
     )
-
-    return _sign_order(order_domain, order, account, SigningScheme.EIP712)
+    sig = _sign_order(order_domain, order, account, SigningScheme.EIP712)
+    return sig
 
 
 async def post_order(
@@ -129,7 +140,7 @@ async def post_order(
         kind=order.kind,
         partiallyFillable=order.partiallyFillable,
         appData=order.appData,
-        signature=signature.data,
+        signature=signature.to_string(),
         signingScheme=signature.scheme.name.lower(),
         receiver=order.receiver,
     )
