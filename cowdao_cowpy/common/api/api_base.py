@@ -119,9 +119,7 @@ class ApiBase:
                 except Exception as e:
                     errors.append((item, str(e)))
             if errors:
-                raise ValueError(
-                    f"Failed to deserialize some items: {errors}"
-                )
+                raise ValueError(f"Failed to deserialize some items: {errors}")
             return results
         if isinstance(data, dict):
             return model_class(**data)
