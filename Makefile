@@ -32,4 +32,4 @@ remove_unused_imports:
 	poetry run pycln --all .
 
 typecheck:
-	poetry run pyright
+	poetry run pyright examples tests cowdao_cowpy

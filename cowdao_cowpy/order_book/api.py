@@ -148,8 +148,8 @@ class OrderBookApi(ApiBase):
     ) -> OrderQuoteResponse:
         json_data = {
             **self.serialize_model(request),
-            **self.serialize_model(side),
-            **self.serialize_model(validity),
+            **self.serialize_model(side),  # type: ignore
+            **self.serialize_model(validity),  # type: ignore
         }
         return await self._fetch(
             path="/api/v1/quote",
