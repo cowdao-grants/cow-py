@@ -218,6 +218,13 @@ export E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY=0x123...
 poetry run pytest tests/ --with-slow --integration
 ```
 
+## 🐄 Release Flow
+
+```bash
+tbump current-version
+tbump NEW_VERSION
+```
+
 
 ## 🐄 Need Help?
 
