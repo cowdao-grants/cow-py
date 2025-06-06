@@ -111,7 +111,16 @@ class ApiBase:
             return model_class(data)  # type: ignore
         if isinstance(data, list):
             model_class, *_ = get_args(model_class)
-            return [model_class(**item) for item in data]
+            errors = []
+            results = []
+            for item in data:
+                try:
+                    results.append(model_class(**item))
+                except Exception as e:
+                    errors.append((item, str(e)))
+            if errors:
+                raise ValueError(f"Failed to deserialize some items: {errors}")
+            return results
         if isinstance(data, dict):
             return model_class(**data)
         raise ValueError(f"Unsupported data type for deserialization: {type(data)}")
@@ -134,7 +143,6 @@ class ApiBase:
         try:
             async with httpx.AsyncClient() as client:
                 data = await self.request_builder.execute(client, url, method, **kwargs)
-
                 if isinstance(data, dict) and "errorType" in data:
                     raise ApiResponseError(
                         f"API returned an error: {data.get('description', 'No description')}",

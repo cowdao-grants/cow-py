@@ -3,6 +3,7 @@
 ##################################################################
 
 # Byte-compiled / optimized / DLL files
+.nix-venv
 __pycache__/
 *.py[cod]
 *$py.class

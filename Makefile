@@ -7,7 +7,14 @@ web3_codegen:
 	poetry run python -m cowdao_cowpy.codegen.main
 
 orderbook_codegen:
-	poetry run datamodel-codegen --url="https://raw.githubusercontent.com/cowprotocol/services/main/crates/orderbook/openapi.yml" --output cowdao_cowpy/order_book/generated/model.py --target-python-version 3.12 --output-model-type pydantic_v2.BaseModel --input-file-type openapi
+	poetry run datamodel-codegen \
+  		--url="https://raw.githubusercontent.com/cowprotocol/services/refs/heads/main/crates/orderbook/openapi.yml" \
+  		--output cowdao_cowpy/order_book/generated/model.py \
+  		--target-python-version 3.12 \
+  		--output-model-type pydantic_v2.BaseModel \
+  		--base-class cowdao_cowpy.order_book.base.BaseModel \
+  		--input-file-type openapi
+
 
 subgraph_codegen:
 	poetry run ariadne-codegen
@@ -25,4 +32,8 @@ remove_unused_imports:
 	poetry run pycln --all .
 
 typecheck:
-	poetry run pyright
+	poetry run pyright examples tests cowdao_cowpy
+
+all: 
+	make format lint typecheck test
+

@@ -148,8 +148,8 @@ class OrderBookApi(ApiBase):
     ) -> OrderQuoteResponse:
         json_data = {
             **self.serialize_model(request),
-            **self.serialize_model(side),
-            **self.serialize_model(validity),
+            **self.serialize_model(side),  # type: ignore
+            **self.serialize_model(validity),  # type: ignore
         }
         return await self._fetch(
             path="/api/v1/quote",
@@ -177,6 +177,14 @@ class OrderBookApi(ApiBase):
             path="/api/v1/orders",
             method="DELETE",
             json=orders_cancelation,
+            context_override=context_override,
+        )
+
+    async def get_order_status(
+        self, order_uid: UID, context_override: Context = {}
+    ) -> Order:
+        return await self._fetch(
+            path=f"/api/v1/orders/{order_uid}/status",
             context_override=context_override,
         )
 
