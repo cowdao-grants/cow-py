@@ -1,6 +1,6 @@
 from abc import ABC
 import json
-from typing import Any, Dict, List, Optional, Type, TypeVar, Union, get_args
+from typing import Any, Dict, List, Literal, Optional, Type, TypeVar, Union, get_args
 
 import httpx
 
@@ -12,7 +12,10 @@ from cowdao_cowpy.common.api.errors import (
     UnexpectedResponseError,
 )
 from cowdao_cowpy.common.config import SupportedChainId
+
 from cowdao_cowpy.order_book.generated.model import BaseModel
+
+Envs = Literal["prod", "staging"]
 
 T = TypeVar("T")
 Context = dict[str, Any]
@@ -36,6 +39,19 @@ class APIConfig(ABC):
 
     def get_context(self) -> Context:
         return {"base_url": self.get_base_url(), **self.context}
+
+    def with_env(self, env: Envs) -> "APIConfig":
+        """
+        Create a new config instance for the specified environment.
+        The default implementation just returns self.
+
+        Args:
+            env: The environment to switch to
+
+        Returns:
+            A new APIConfig instance for the specified environment
+        """
+        return self
 
 
 class RequestStrategy:
@@ -111,7 +127,16 @@ class ApiBase:
             return model_class(data)  # type: ignore
         if isinstance(data, list):
             model_class, *_ = get_args(model_class)
-            return [model_class(**item) for item in data]
+            errors = []
+            results = []
+            for item in data:
+                try:
+                    results.append(model_class(**item))
+                except Exception as e:
+                    errors.append((item, str(e)))
+            if errors:
+                raise ValueError(f"Failed to deserialize some items: {errors}")
+            return results
         if isinstance(data, dict):
             return model_class(**data)
         raise ValueError(f"Unsupported data type for deserialization: {type(data)}")
@@ -125,7 +150,39 @@ class ApiBase:
         response_model: Optional[Type[T]] = None,
         **kwargs,
     ) -> Union[T, Any]:
-        url = self.config.get_base_url() + path
+        """
+        Makes an API request with backoff and rate limiting applied.
+
+        Args:
+            path: The API endpoint path to request
+            method: HTTP method to use (GET, POST, etc.)
+            response_model: Optional Pydantic model to deserialize the response into
+            **kwargs: Additional arguments to pass to the HTTP client
+                - context_override: Dict with request-specific configuration:
+                    - env: Override the environment for this request ("prod", "staging")
+                    - backoff_opts: Custom backoff options
+                    - Any other httpx client parameters
+
+        Returns:
+            The API response, deserialized into response_model if provided
+        """
+        context_override = kwargs.get("context_override", {})
+        url_override = None
+
+        # Handle environment override
+        if "env" in context_override:
+            env = context_override.pop("env")  # Remove to avoid passing to httpx
+            try:
+                # Use the config's with_env method to get a config for the desired environment
+                temp_config = self.config.with_env(env)
+                url_override = temp_config.get_base_url() + path
+            except Exception as e:
+                # Log the error but continue with the default URL
+                print(f"Error switching environment: {e}")
+
+        # Use the overridden URL or the default one
+        url = url_override or self.config.get_base_url() + path
+
         kwargs = {k: v for k, v in kwargs.items() if k != "context_override"}
 
         if "json" in kwargs:
@@ -134,7 +191,6 @@ class ApiBase:
         try:
             async with httpx.AsyncClient() as client:
                 data = await self.request_builder.execute(client, url, method, **kwargs)
-
                 if isinstance(data, dict) and "errorType" in data:
                     raise ApiResponseError(
                         f"API returned an error: {data.get('description', 'No description')}",
