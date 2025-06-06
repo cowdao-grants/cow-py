@@ -34,24 +34,31 @@ from cowdao_cowpy.order_book.generated.model import (
     TokenAmount,
 )
 
-
-E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY = os.getenv(
-    "E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY", ""
-)
-
 COW_TOKEN_GNOSIS_MAINNET_ADDRESS = "0x177127622c4A00F3d409B75571e12cB3c8973d3c"
 WXDAI_GNOSIS_MAINNET_ADDRESS = "0xe91D153E0b41518A2Ce8Dd3D7944Fa863463a97d"
 
-E2E_GNOSIS_MAINNET_TESTING_EOA = Account.from_key(
-    E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY
-)
-E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS: Address = E2E_GNOSIS_MAINNET_TESTING_EOA.address
+
+@pytest.fixture
+def e2e_gnosis_mainnet_testing_eoa():
+    """
+    Fixture to provide the E2E Gnosis Mainnet Testing EOA account.
+    This is used to create orders and cancel them in the test.
+    """
+    return Account.from_key(os.getenv("E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY", ""))
 
 
 @pytest.mark.slow
 @pytest.mark.asyncio
 @pytest.mark.integration
-async def test_post_and_cancel_order_live_e2e():
+async def test_post_and_cancel_order_live_e2e(e2e_gnosis_mainnet_testing_eoa):
+    """
+    Test to post an order and cancel it live on the Gnosis chain.
+    This test requires a funded account and will interact with the live CoW Swap API.
+    """
+    e2e_gnosis_mainnet_testing_eoa_address: Address = (
+        e2e_gnosis_mainnet_testing_eoa.address
+    )
+
     order_book_api = OrderBookApi(
         config=OrderBookAPIConfigFactory.get_config(
             "prod", SupportedChainId.GNOSIS_CHAIN
@@ -61,8 +68,8 @@ async def test_post_and_cancel_order_live_e2e():
     mock_order_quote_request = OrderQuoteRequest(
         sellToken=WXDAI_GNOSIS_MAINNET_ADDRESS,
         buyToken=COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
-        receiver=E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,
-        from_=E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
+        receiver=e2e_gnosis_mainnet_testing_eoa_address,
+        from_=e2e_gnosis_mainnet_testing_eoa_address,  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
         onchainOrder=False,
     )
 
@@ -78,7 +85,7 @@ async def test_post_and_cancel_order_live_e2e():
     order = Order(
         sell_token=WXDAI_GNOSIS_MAINNET_ADDRESS,
         buy_token=COW_TOKEN_GNOSIS_MAINNET_ADDRESS,
-        receiver=str(E2E_GNOSIS_MAINNET_TESTING_EOA_ADDRESS),
+        receiver=str(e2e_gnosis_mainnet_testing_eoa_address),
         sell_amount=str(10**15),
         buy_amount=str(10**20),
         valid_to=quote.quote.validTo,
@@ -96,7 +103,7 @@ async def test_post_and_cancel_order_live_e2e():
     )
 
     signature = sign_order(
-        order_domain, order, E2E_GNOSIS_MAINNET_TESTING_EOA, SigningScheme.EIP712
+        order_domain, order, e2e_gnosis_mainnet_testing_eoa, SigningScheme.EIP712
     )
 
     order_uid = await order_book_api.post_order(
@@ -112,7 +119,7 @@ async def test_post_and_cancel_order_live_e2e():
     order_cancellation_signature = sign_order_cancellation(
         order_domain,
         order_uid.root,
-        E2E_GNOSIS_MAINNET_TESTING_EOA,
+        e2e_gnosis_mainnet_testing_eoa,
         SigningScheme.EIP712,
     )
 

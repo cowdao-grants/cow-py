@@ -33,3 +33,7 @@ remove_unused_imports:
 
 typecheck:
 	poetry run pyright examples tests cowdao_cowpy
+
+all: 
+	make format lint typecheck test
+
