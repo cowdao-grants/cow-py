@@ -1,10 +1,10 @@
 [project]
 name = "cowdao-cowpy"
-version = "1.0.0pre1"
+version = "0.0.1"
 
 [tool.poetry]
 name = "cowdao-cowpy"
-version = "1.0.0pre1"
+version = "0.0.1"
 description = ""
 authors = ["José Ribeiro <jose@bleu.studio>"]
 readme = "README.md"
