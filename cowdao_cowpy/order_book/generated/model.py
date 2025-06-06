@@ -2,6 +2,7 @@
 #   filename:  https://raw.githubusercontent.com/cowprotocol/services/refs/heads/main/crates/orderbook/openapi.yml
 #   timestamp: 2025-06-06T09:27:08+00:00
 
+
 from __future__ import annotations
 
 from enum import Enum
@@ -89,9 +90,10 @@ class OnchainOrderData(BaseModel):
 
 
 class EthflowData(BaseModel):
-    refundTxHash: TransactionHash = Field(
+    refundTxHash: Optional[TransactionHash] = Field(
         ...,
         description="Specifies in which transaction the order was refunded. If\nthis field is null the order was not yet refunded.\n",
+        optional=True,
     )
     userValidTo: int = Field(
         ...,
