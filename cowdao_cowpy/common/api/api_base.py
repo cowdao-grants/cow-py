@@ -143,7 +143,6 @@ class ApiBase:
         try:
             async with httpx.AsyncClient() as client:
                 data = await self.request_builder.execute(client, url, method, **kwargs)
-
                 if isinstance(data, dict) and "errorType" in data:
                     raise ApiResponseError(
                         f"API returned an error: {data.get('description', 'No description')}",

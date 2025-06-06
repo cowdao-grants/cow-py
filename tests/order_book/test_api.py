@@ -1,7 +1,7 @@
 # test_order_book_api.py
 from unittest.mock import AsyncMock, Mock, patch
 import pytest
-from cowdao_cowpy.order_book.api import OrderBookApi
+from cowdao_cowpy.order_book.api import Order, OrderBookApi
 from cowdao_cowpy.order_book.config import OrderBookAPIConfigFactory
 from cowdao_cowpy.common.config import SupportedChainId
 from cowdao_cowpy.order_book.generated.model import (
@@ -140,3 +140,42 @@ async def test_post_order(order_book_api):
         mock_request.assert_awaited_once()
         assert isinstance(response, UID)
         assert response.root == mock_uid
+
+
+@pytest.mark.asyncio
+async def test_order_status(order_book_api):
+    mock_uid = "mock_uid"
+    mock_order_creation = Order(
+        sellToken="0x",
+        buyToken="0x",
+        sellAmount="0",
+        buyAmount="0",
+        validTo=0,
+        feeAmount="0",
+        kind="buy",
+        partiallyFillable=True,
+        appData="0x",
+        signingScheme="eip712",
+        signature="0x",
+        receiver="0x",
+        sellTokenBalance="erc20",
+        buyTokenBalance="erc20",
+        quoteId=0,
+        appDataHash="0x",
+        from_="0x",  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
+        creationDate="2023-01-01T00:00:00Z",
+        uid=UID(mock_uid),
+        owner="0x",
+        executedSellAmount="0",
+        status="open",
+        invalidated=False,
+        executedBuyAmount="0",
+        executedSellAmountBeforeFees="0",
+        executedFeeAmount="0",
+        class_="market",  # type: ignore
+    )
+    with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
+        mock_request.return_value.text = mock_uid
+        response = await order_book_api.get_order_status(mock_order_creation)
+        mock_request.assert_awaited_once()
+        assert response == mock_uid
