@@ -1,4 +1,9 @@
-from cowdao_cowpy.app_data.utils import stringify_deterministic
+from cowdao_cowpy.app_data.utils import generate_app_data, stringify_deterministic
+from .mocks import (
+    APP_CODE,
+    PARTNER_FEE,
+    REFFER_ADDRESS,
+)
 
 
 def test_stringify_deterministic_simple_object():
@@ -48,3 +53,12 @@ def test_stringify_deterministic_array_with_empty_string():
     actual = stringify_deterministic(node)
     expected = '[1,""]'
     assert actual == expected
+
+
+def test_generate_app_data():
+    app_data = generate_app_data(
+        app_code=APP_CODE,
+        referrer_address=REFFER_ADDRESS,
+        partner_fee=PARTNER_FEE,
+    )
+    assert app_data

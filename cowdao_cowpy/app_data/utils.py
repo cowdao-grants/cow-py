@@ -1,9 +1,12 @@
 from typing import Any, Dict
+from cowdao_cowpy.order_book.generated.model import AppData, AppDataHash, AppDataObject
 import httpx
 from multiformats import CID
 from collections.abc import Mapping
 
+import sha3
 
+from dataclasses import asdict, dataclass
 import json
 
 from cowdao_cowpy.app_data.consts import DEFAULT_IPFS_READ_URI
@@ -31,9 +34,63 @@ def stringify_deterministic(obj):
     return json.dumps(sorted_dict, sort_keys=True, separators=(",", ":"))
 
 
+def keccak256(data: bytes) -> str:
+    return sha3.keccak_256(data).hexdigest()
+
+
 async def fetch_doc_from_cid(
     cid: str, ipfs_uri: str = DEFAULT_IPFS_READ_URI
 ) -> Dict[str, Any]:
     async with httpx.AsyncClient() as client:
         response = await client.get(f"{ipfs_uri}/{cid}")
         return response.json()
+
+
+@dataclass
+class CreateAppData:
+    app_data_object: AppDataObject
+    app_data_hash: AppDataHash
+
+
+@dataclass
+class PartnerFee:
+    bps: int
+    recipient: str
+
+
+@dataclass
+class QuoteFee:
+    slippageBips: int = 1
+    version: str = "0.2.0"
+
+
+def generate_app_data(
+    app_code: str,
+    partner_fee: PartnerFee = None,
+    referrer_address: str = None,
+    version: str = "1.3.0",
+    hooks_version: str = "0.1.0",
+) -> CreateAppData:
+    app_data_doc = {
+        "appCode": app_code,
+        "metadata": {
+            "hooks": {
+                "version": hooks_version,
+            },
+        },
+        "version": version,
+    }  # compact encoding to match JS behavior
+
+    if referrer_address:
+        app_data_doc["metadata"]["referrer"] = {
+            "address": referrer_address,
+        }
+    if partner_fee:
+        app_data_doc["metadata"]["partnerFee"] = (asdict(partner_fee),)
+
+    stringified_data = stringify_deterministic(app_data_doc)
+    app_data_hash = keccak256(stringified_data.encode("utf-8"))
+    return CreateAppData(
+        AppDataObject(fullAppData=AppData(stringified_data)),
+        AppDataHash(root=app_data_hash),
+    )

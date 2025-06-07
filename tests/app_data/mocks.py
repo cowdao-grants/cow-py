@@ -1,10 +1,15 @@
 from cowdao_cowpy.app_data.app_data_cid import AppDataCid
 from cowdao_cowpy.app_data.app_data_doc import AppDataDoc
 from cowdao_cowpy.app_data.app_data_hex import AppDataHex
+from cowdao_cowpy.app_data.utils import PartnerFee
 
 HTTP_STATUS_OK = 200
 HTTP_STATUS_INTERNAL_ERROR = 500
 
+
+REFFER_ADDRESS = "0x1f5B740436Fc5935622e92aa3b46818906F416E9"
+
+APP_CODE = "CoW Swap"
 APP_DATA_STRING = '{"appCode":"CoW Swap","metadata":{},"version":"0.7.0"}'
 APP_DATA_DOC = AppDataDoc(
     {
@@ -29,7 +34,7 @@ APP_DATA_DOC_CUSTOM_VALUES = {
     "environment": "test",
     "metadata": {
         "referrer": {
-            "address": "0x1f5B740436Fc5935622e92aa3b46818906F416E9",
+            "address": REFFER_ADDRESS,
             "version": "0.1.0",
         },
         "quote": {
@@ -54,6 +59,10 @@ APP_DATA_2 = AppDataDoc(
     APP_DATA_STRING_2,
 )
 
+PARTNER_FEE = PartnerFee(
+    bps=100,
+    recipient=REFFER_ADDRESS,
+)
 
 CID_2 = AppDataCid(
     "f01551b208af4e8c9973577b08ac21d17d331aade86c11ebcc5124744d621ca8365ec9424"
