@@ -8,7 +8,6 @@ from cowdao_cowpy.order_book.generated.model import (
     Address,
     AppDataHash,
     AppDataObject,
-    CompetitionOrderStatus,
     NativePriceResponse,
     Order,
     OrderCreation,
@@ -100,11 +99,11 @@ class OrderBookApi(ApiBase):
 
     async def get_order_competition_status(
         self, order_uid: UID, context_override: Context = {}
-    ) -> CompetitionOrderStatus:
+    ) -> Order:
         return await self._fetch(
             path=f"/api/v1/orders/{order_uid}/status",
             context_override=context_override,
-            response_model=CompetitionOrderStatus,
+            response_model=Order,
         )
 
     def get_order_link(self, order_uid: UID) -> str:
@@ -135,13 +134,6 @@ class OrderBookApi(ApiBase):
             path=f"/api/v1/users/{user}/total_surplus",
             context_override=context_override,
             response_model=TotalSurplus,
-        )
-
-    async def get_app_data(
-        self, app_data_hash: AppDataHash, context_override: Context = {}
-    ) -> Dict[str, Any]:
-        return await self._fetch(
-            path=f"/api/v1/app_data/{app_data_hash}", context_override=context_override
         )
 
     async def get_solver_competition(
@@ -205,18 +197,10 @@ class OrderBookApi(ApiBase):
             context_override=context_override,
         )
 
-    async def get_order_status(
-        self, order_uid: UID, context_override: Context = {}
-    ) -> Order:
-        return await self._fetch(
-            path=f"/api/v1/orders/{order_uid}/status",
-            context_override=context_override,
-        )
-
     async def put_app_data(
         self,
         app_data: AppDataObject,
-        app_data_hash: str = "",
+        app_data_hash: AppDataHash = None,
         context_override: Context = {},
     ) -> AppDataHash:
         app_data_hash_url = app_data_hash if app_data_hash else ""
@@ -225,5 +209,14 @@ class OrderBookApi(ApiBase):
             method="PUT",
             json=app_data,
             context_override=context_override,
+            response_model=AppDataHash,
         )
-        return AppDataHash(response)
+        return response
+
+    async def get_app_data(
+        self, app_data_hash: AppDataHash, context_override: Context = {}
+    ) -> Dict[str, Any]:
+        return await self._fetch(
+            path=f"/api/v1/app_data/{app_data_hash.root}",  #
+            context_override=context_override,
+        )
