@@ -2,7 +2,7 @@ name: release & publish workflow
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
@@ -37,7 +37,6 @@ jobs:
         run: >-
           poetry build
 
-
       - name: create github release
         id: create_release
         uses: softprops/action-gh-release@v1
@@ -49,9 +48,9 @@ jobs:
           draft: false
           prerelease: false
 
-      # - name: publish to PyPI
-      #   uses: pypa/gh-action-pypi-publish@release/v1
-      #   with:
-      #     user: __token__
-      #     password: ${{ secrets.PYPI_API_TOKEN }}
-      #     skip_existing: true
+      - name: publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
+          skip_existing: true
