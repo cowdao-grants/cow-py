@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Union
 from cowdao_cowpy.common.api.api_base import ApiBase, Context
-from cowdao_cowpy.common.config import SupportedChainId
+from cowdao_cowpy.common.api.errors import UnexpectedResponseError
+from cowdao_cowpy.common.config import SupportedChainId, ENVS_LIST
 from cowdao_cowpy.order_book.config import OrderBookAPIConfigFactory
 from cowdao_cowpy.order_book.generated.model import (
     UID,
@@ -78,6 +79,29 @@ class OrderBookApi(ApiBase):
     ) -> Order:
         return await self._fetch(
             path=f"/api/v1/orders/{order_uid.root}",
+            context_override=context_override,
+            response_model=Order,
+        )
+
+    async def get_order_multi_env(
+        self, order_uid: UID, context_override: Context = {}
+    ) -> Order | None:
+        for env in ENVS_LIST:
+            # TODO extract & exclude current env from loop.
+            try:
+                # TODO: context override does not appear to work as expected.
+                result = await self.get_order_by_uid(
+                    order_uid, {**context_override, "env": env.value}
+                )
+                return result
+            except UnexpectedResponseError:
+                pass
+
+    async def get_order_competition_status(
+        self, order_uid: UID, context_override: Context = {}
+    ) -> Order:
+        return await self._fetch(
+            path=f"/api/v1/orders/{order_uid}/status",
             context_override=context_override,
             response_model=Order,
         )
@@ -177,14 +201,6 @@ class OrderBookApi(ApiBase):
             path="/api/v1/orders",
             method="DELETE",
             json=orders_cancelation,
-            context_override=context_override,
-        )
-
-    async def get_order_status(
-        self, order_uid: UID, context_override: Context = {}
-    ) -> Order:
-        return await self._fetch(
-            path=f"/api/v1/orders/{order_uid}/status",
             context_override=context_override,
         )
 

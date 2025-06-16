@@ -1,4 +1,5 @@
 # test_order_book_api.py
+import json
 from unittest.mock import AsyncMock, Mock, patch
 import pytest
 from cowdao_cowpy.order_book.api import Order, OrderBookApi
@@ -175,7 +176,11 @@ async def test_order_status(order_book_api):
         class_="market",  # type: ignore
     )
     with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
-        mock_request.return_value.text = mock_uid
-        response = await order_book_api.get_order_status(mock_order_creation)
+        mock_request.return_value.text = json.loads(
+            mock_order_creation.model_dump_json()
+        )
+        response = await order_book_api.get_order_competition_status(
+            mock_order_creation
+        )
         mock_request.assert_awaited_once()
-        assert response == mock_uid
+        assert response.uid.root == mock_uid
