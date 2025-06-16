@@ -33,9 +33,15 @@ class APIConfig(ABC):
         self.context = base_context or {}
 
     def get_base_url(self) -> str:
-        return self.config_map.get(
-            self.chain_id, "default URL if chain_id is not found"
+        base_url = self.config_map.get(
+            self.chain_id,
         )
+        if not base_url:
+            raise ValueError(
+                f"No base URL configured for chain ID {self.chain_id}. "
+                "Please ensure the configuration is set up correctly."
+            )
+        return base_url
 
     def get_context(self) -> Context:
         return {"base_url": self.get_base_url(), **self.context}
