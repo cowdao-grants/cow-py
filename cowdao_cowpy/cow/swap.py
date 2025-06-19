@@ -50,6 +50,7 @@ async def swap_tokens(
     buy_token: ChecksumAddress,
     safe_address: ChecksumAddress | None = None,
     app_data: str = ZERO_APP_DATA,
+    valid_to: int | None = None,
     env: Envs = "prod",
     slippage_tolerance: float = 0.005,
 ) -> CompletedOrder:
@@ -71,11 +72,14 @@ async def swap_tokens(
     )
 
     order_quote = await get_order_quote(order_quote_request, order_side, order_book_api)
+
+    min_valid_to = order_quote.quote.validTo if valid_to is None else min(order_quote.quote.validTo, valid_to)
+
     order = Order(
         sell_token=sell_token,
         buy_token=buy_token,
         receiver=safe_address if safe_address is not None else account.address,
-        valid_to=order_quote.quote.validTo,
+        valid_to=min_valid_to,
         app_data=app_data,
         sell_amount=str(
             amount
@@ -89,7 +93,7 @@ async def swap_tokens(
         buy_token_balance="erc20",
     )
 
-    base_url = CHAIN_TO_EXPLORER.get(chain_id, "https://explorer.cow.fi")
+
     signature = (
         PreSignSignature(
             scheme=SigningScheme.PRESIGN,
@@ -101,7 +105,6 @@ async def swap_tokens(
     order_uid = await post_order(
         account, safe_address, order, signature, order_book_api
     )
-    order_link = f"{base_url}/orders/{str(order_uid.root)}".lower()
     order_link = order_book_api.get_order_link(order_uid)
     return CompletedOrder(uid=order_uid, url=order_link)
 
