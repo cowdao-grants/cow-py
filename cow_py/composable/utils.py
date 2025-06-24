@@ -237,14 +237,14 @@ def convert_composable_cow_tradable_order_to_order_type(
 ) -> Order:
     return Order(
         kind=bytes32_to_order_kind(tradable_order.kind),
-        sell_amount=tradable_order.sellAmount,
-        buy_amount=tradable_order.buyAmount,
+        sell_amount=str(tradable_order.sellAmount),
+        buy_amount=str(tradable_order.buyAmount),
         sell_token=tradable_order.sellToken,
         buy_token=tradable_order.buyToken,
         receiver=tradable_order.receiver,
         valid_to=tradable_order.validTo,
         app_data=tradable_order.appData.hex(),
-        fee_amount=tradable_order.feeAmount,
+        fee_amount=str(tradable_order.feeAmount),
         partially_fillable=tradable_order.partiallyFillable,
         sell_token_balance=bytes32_to_balance_kind(tradable_order.sellTokenBalance),
         buy_token_balance=bytes32_to_balance_kind(tradable_order.buyTokenBalance),
