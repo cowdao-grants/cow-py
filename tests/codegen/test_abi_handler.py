@@ -174,6 +174,7 @@ def test_abi_handler_process_function(abi_handler, mocker):
         "inputs": [{"name": "key", "type": "int", "isTuple": False}],
         "outputType": "int",
         "originalName": "getValue",
+        "isAsync": True,
     }
 
     assert result == expected_result
