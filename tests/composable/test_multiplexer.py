@@ -1,6 +1,6 @@
 import pytest
 
-from cow_py.common.chains import Chain
+from cowdao_cowpy.common.chains import Chain
 from cow_py.composable.multiplexer import Multiplexer
 from cow_py.composable.types import ProofLocation
 from cow_py.composable.order_types.twap import Twap

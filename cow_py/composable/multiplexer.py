@@ -8,13 +8,13 @@ from web3 import Web3
 from pymerkle import InmemoryTree as MerkleTree
 
 
-from cow_py.common.chains import Chain
+from cowdao_cowpy.common.chains import Chain
 from cow_py.composable.utils import (
     convert_composable_cow_tradable_order_to_order_type,
     getComposableCoW,
 )
-from cow_py.contracts.order import Order
-from cow_py.codegen.__generated__.ComposableCow import (
+from cowdao_cowpy.contracts.order import Order
+from cowdao_cowpy.codegen.__generated__.ComposableCow import (
     IConditionalOrder_ConditionalOrderParams,
 )
 
@@ -199,17 +199,18 @@ class Multiplexer:
         off_chain_input = (
             await off_chain_input_fn(owner, p.params) if off_chain_input_fn else "0x"
         )
-        tradable_order, signature = (
-            await composable_cow.get_tradeable_order_with_signature(
-                owner,
-                IConditionalOrder_ConditionalOrderParams(
-                    staticInput=HexBytes(p.params.static_input),
-                    handler=p.params.handler,
-                    salt=HexBytes(p.params.salt),
-                ),
-                HexBytes(off_chain_input),
-                [HexBytes(path) for path in p.proof.path],
-            )
+        (
+            tradable_order,
+            signature,
+        ) = await composable_cow.get_tradeable_order_with_signature(
+            owner,
+            IConditionalOrder_ConditionalOrderParams(
+                staticInput=HexBytes(p.params.static_input),
+                handler=p.params.handler,
+                salt=HexBytes(p.params.salt),
+            ),
+            HexBytes(off_chain_input),
+            [HexBytes(path) for path in p.proof.path],
         )
         return (
             convert_composable_cow_tradable_order_to_order_type(tradable_order),

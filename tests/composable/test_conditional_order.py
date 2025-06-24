@@ -13,9 +13,9 @@ from cow_py.composable.types import (
     PollResultError,
     OwnerParams,
 )
-from cow_py.common.chains import Chain
-from cow_py.contracts.order import Order
-from cow_py.order_book.api import OrderBookApi
+from cowdao_cowpy.common.chains import Chain
+from cowdao_cowpy.contracts.order import Order
+from cowdao_cowpy.order_book.api import OrderBookApi
 
 from .order_types.mock_conditional_order import (
     TestConditionalOrder,
@@ -31,15 +31,15 @@ DISCRETE_ORDER = Order(
     sell_token="0x6810e776880c02933d47db1b9fc05908e5386b96",
     buy_token="0x6810e776880c02933d47db1b9fc05908e5386b96",
     receiver="0x6810e776880c02933d47db1b9fc05908e5386b96",
-    sell_amount=1234567890,
-    buy_amount=1234567890,
+    sell_amount=str(1234567890),
+    buy_amount=str(1234567890),
     valid_to=0,
     app_data="0x0000000000000000000000000000000000000000000000000000000000000000",
     partially_fillable=True,
     sell_token_balance="erc20",
     buy_token_balance="erc20",
     kind="buy",
-    fee_amount=0,
+    fee_amount=str(0),
 )
 
 ERROR_REASON = "Not valid, because I say so!"
@@ -202,7 +202,6 @@ class TestPollSingleOrders:
         ), patch.object(
             SINGLE_ORDER, "is_order_in_orderbook", mock_is_order_in_orderbook
         ):
-
             # WHEN: we poll
             result = await SINGLE_ORDER.poll(param)
 
@@ -270,7 +269,6 @@ class TestPollSingleOrders:
         with patch.object(
             SINGLE_ORDER, "is_authorized", mock_is_authorized
         ), patch.object(SINGLE_ORDER, "get_tradeable_order", mock_get_tradeable_order):
-
             # WHEN: we poll
             result = await SINGLE_ORDER.poll(param)
 
@@ -301,7 +299,6 @@ class TestPollSingleOrders:
         ), patch.object(
             SINGLE_ORDER, "handle_poll_failed_already_present", mock_handle_failed
         ):
-
             # WHEN: we poll
             result = await SINGLE_ORDER.poll(param)
 
@@ -346,7 +343,6 @@ class TestPollValidate:
         ), patch.object(
             mock_order, "is_order_in_orderbook", mock_is_order_in_orderbook
         ):
-
             # Execute
             result = await mock_order.poll(poll_params)
 
@@ -439,7 +435,6 @@ class TestPollValidate:
         ), patch.object(
             mock_order, "handle_poll_failed_already_present", mock_handle_failed
         ):
-
             # Execute
             result = await mock_order.poll(poll_params)
 

@@ -6,9 +6,9 @@ from pymerkle import MerkleProof
 from web3 import AsyncWeb3
 from web3.types import BlockData
 
-from cow_py.common.chains import Chain
-from cow_py.contracts.order import Order
-from cow_py.order_book.api import OrderBookApi
+from cowdao_cowpy.common.chains import Chain
+from cowdao_cowpy.contracts.order import Order
+from cowdao_cowpy.order_book.api import OrderBookApi
 
 
 @dataclass

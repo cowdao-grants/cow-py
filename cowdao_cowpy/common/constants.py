@@ -18,7 +18,9 @@ class CowContractAddress(Enum):
     EXTENSIBLE_FALLBACK_HANDLER = "0x2f55e8b20D0B9FEFA187AA7d00B6Cbe563605bF5"
 
 
-def map_address_to_supported_networks(address) -> Dict[SupportedChainId, CowContractAddress]:
+def map_address_to_supported_networks(
+    address,
+) -> Dict[SupportedChainId, CowContractAddress]:
     """
     Maps a given address to all supported networks.
 

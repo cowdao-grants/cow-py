@@ -5,7 +5,7 @@ from web3 import Web3
 from eth_typing import HexStr
 
 
-from cow_py.common.chains import Chain
+from cowdao_cowpy.common.chains import Chain
 from cow_py.composable.order_types.twap import (
     Twap,
     TwapData,
@@ -13,7 +13,7 @@ from cow_py.composable.order_types.twap import (
     DurationType,
     StartType,
 )
-from cow_py.contracts.order import Order
+from cowdao_cowpy.contracts.order import Order
 from cow_py.composable.types import PollParams, PollResultCode, PollResultError
 
 # Constants
@@ -520,7 +520,10 @@ class TestCurrentTwapPartInOrderBook:
             provider=setup["provider"],
             chain=Chain.MAINNET,
             order_book_api=setup["mock_order_book"],
-            block_info={"number": setup["block_number"], "timestamp": setup["start_timestamp"]},  # type: ignore
+            block_info={
+                "number": setup["block_number"],
+                "timestamp": setup["start_timestamp"],
+            },  # type: ignore
         )
 
         setup["mock_cabinet"].return_value = uint256_helper(setup["start_timestamp"])

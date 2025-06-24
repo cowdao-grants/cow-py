@@ -8,8 +8,8 @@ from eth_abi.abi import encode, decode
 from enum import Enum
 
 
-from cow_py.common.chains import Chain
-from cow_py.common.constants import (
+from cowdao_cowpy.common.chains import Chain
+from cowdao_cowpy.common.constants import (
     COW_PROTOCOL_SETTLEMENT_CONTRACT_CHAIN_ADDRESS_MAP,
 )
 from cow_py.composable.types import (
@@ -24,7 +24,7 @@ from cow_py.composable.utils import (
     encode_params,
     getComposableCoW,
 )
-from cow_py.codegen.__generated__.ComposableCow import (
+from cowdao_cowpy.codegen.__generated__.ComposableCow import (
     ComposableCow,
     IConditionalOrder_ConditionalOrderParams,
 )
@@ -40,13 +40,13 @@ from cow_py.composable.types import (
     ContextFactory,
     PollResultCode,
 )
-from cow_py.contracts.domain import domain
-from cow_py.contracts.order import (
+from cowdao_cowpy.contracts.domain import domain
+from cowdao_cowpy.contracts.order import (
     Order,
     compute_order_uid,
 )
-from cow_py.order_book.api import OrderBookApi
-from cow_py.order_book.generated.model import UID
+from cowdao_cowpy.order_book.api import OrderBookApi
+from cowdao_cowpy.order_book.generated.model import UID
 
 T = TypeVar("T", bound="ConditionalOrder")
 

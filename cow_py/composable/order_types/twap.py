@@ -8,7 +8,7 @@ from hexbytes import HexBytes
 from web3 import Web3
 from eth_abi.abi import encode
 
-from cow_py.contracts.order import Order
+from cowdao_cowpy.contracts.order import Order
 
 
 from ..conditional_order import ConditionalOrder
@@ -405,7 +405,7 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
 
 
 def static_transform_tuple_to_struct(
-    params: Tuple[str, str, str, int, int, int, int, int, int, bytes]
+    params: Tuple[str, str, str, int, int, int, int, int, int, bytes],
 ) -> TwapStruct:
     return TwapStruct(
         sell_token=params[0],
@@ -456,6 +456,6 @@ def static_transform_struct_to_data(
 
 
 def static_transform_tuple_to_data(
-    params: Tuple[str, str, str, int, int, int, int, int, int, bytes]
+    params: Tuple[str, str, str, int, int, int, int, int, int, bytes],
 ) -> TwapData:
     return static_transform_struct_to_data(static_transform_tuple_to_struct(params))

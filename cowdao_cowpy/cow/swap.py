@@ -73,7 +73,11 @@ async def swap_tokens(
 
     order_quote = await get_order_quote(order_quote_request, order_side, order_book_api)
 
-    min_valid_to = order_quote.quote.validTo if valid_to is None else min(order_quote.quote.validTo, valid_to)
+    min_valid_to = (
+        order_quote.quote.validTo
+        if valid_to is None
+        else min(order_quote.quote.validTo, valid_to)
+    )
 
     order = Order(
         sell_token=sell_token,
@@ -92,7 +96,6 @@ async def swap_tokens(
         sell_token_balance="erc20",
         buy_token_balance="erc20",
     )
-
 
     signature = (
         PreSignSignature(

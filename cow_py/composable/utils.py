@@ -5,17 +5,24 @@ from web3 import Web3
 from eth_abi.abi import encode, decode
 
 
-from cow_py.common.chains import Chain
-from cow_py.common.constants import (
+from cowdao_cowpy.common.chains import Chain
+from cowdao_cowpy.common.constants import (
     COMPOSABLE_COW_CONTRACT_CHAIN_ADDRESS_MAP,
     EXTENSIBLE_FALLBACK_HANDLER_CONTRACT_CHAIN_ADDRESS_MAP,
 )
-from cow_py.codegen.__generated__.ExtensibleFallbackHandler import (
+from cowdao_cowpy.codegen.__generated__.ExtensibleFallbackHandler import (
     ExtensibleFallbackHandler,
 )
 from cow_py.composable.types import ConditionalOrderParams
-from cow_py.contracts.order import Order, bytes32_to_balance_kind, bytes32_to_order_kind
-from cow_py.codegen.__generated__.ComposableCow import GPv2Order_Data, ComposableCow
+from cowdao_cowpy.contracts.order import (
+    Order,
+    bytes32_to_balance_kind,
+    bytes32_to_order_kind,
+)
+from cowdao_cowpy.codegen.__generated__.ComposableCow import (
+    GPv2Order_Data,
+    ComposableCow,
+)
 
 
 def encode_params(params: ConditionalOrderParams) -> HexStr:

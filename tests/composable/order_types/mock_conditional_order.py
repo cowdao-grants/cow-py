@@ -8,7 +8,7 @@ from cow_py.composable.types import (
     PollParams,
     PollResultError,
 )
-from cow_py.contracts.order import Order
+from cowdao_cowpy.contracts.order import Order
 from cow_py.composable.utils import encode_params
 
 
@@ -76,7 +76,7 @@ class TestConditionalOrder(ConditionalOrder[str, str]):
 
 
 def create_test_conditional_order(
-    params: Optional[Dict[str, Any]] = None
+    params: Optional[Dict[str, Any]] = None,
 ) -> TestConditionalOrder:
     """Factory function to create test conditional orders"""
     if params is None:
