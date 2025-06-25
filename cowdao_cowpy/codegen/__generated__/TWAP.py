@@ -34,7 +34,7 @@ class GPv2Order_Data:
 
 
 class TWAPMixin(BaseMixin):
-    def get_tradeable_order(
+    async def get_tradeable_order(
         self,
         owner: str,
         str_arg_0: str,
@@ -42,14 +42,14 @@ class TWAPMixin(BaseMixin):
         static_input: HexBytes,
         hexbytes_arg_0: HexBytes,
     ) -> GPv2Order_Data:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "getTradeableOrder", owner, str_arg_0, ctx, static_input, hexbytes_arg_0
         )
 
-    def supports_interface(self, interface_id: HexBytes) -> bool:
-        return self.call_contract_method("supportsInterface", interface_id)
+    async def supports_interface(self, interface_id: HexBytes) -> bool:
+        return await self.call_contract_method("supportsInterface", interface_id)
 
-    def verify(
+    async def verify(
         self,
         owner: str,
         sender: str,
@@ -60,7 +60,7 @@ class TWAPMixin(BaseMixin):
         offchain_input: HexBytes,
         gpv_2order_data_arg_0: GPv2Order_Data,
     ) -> None:
-        return self.call_contract_method(
+        return await self.call_contract_method(
             "verify",
             owner,
             sender,

@@ -4,7 +4,7 @@ import httpx
 from multiformats import CID
 from collections.abc import Mapping
 
-import sha3
+from web3 import Web3
 
 from dataclasses import asdict, dataclass
 import json
@@ -35,7 +35,7 @@ def stringify_deterministic(obj):
 
 
 def keccak256(data: bytes) -> str:
-    return sha3.keccak_256(data).hexdigest()
+    return Web3.keccak(data).hex()
 
 
 async def fetch_doc_from_cid(
