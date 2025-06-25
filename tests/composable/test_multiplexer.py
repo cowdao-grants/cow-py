@@ -1,10 +1,10 @@
 import pytest
 
 from cowdao_cowpy.common.chains import Chain
-from cow_py.composable.multiplexer import Multiplexer
-from cow_py.composable.types import ProofLocation
-from cow_py.composable.order_types.twap import Twap
-from cow_py.composable.utils import getComposableCoW
+from cowdao_cowpy.composable.multiplexer import Multiplexer
+from cowdao_cowpy.composable.types import ProofLocation
+from cowdao_cowpy.composable.order_types.twap import Twap
+from cowdao_cowpy.composable.utils import getComposableCoW
 
 from .order_types.mock_twap_data import generate_random_twap_data
 

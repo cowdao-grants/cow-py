@@ -13,7 +13,7 @@ from cowdao_cowpy.common.constants import (
 from cowdao_cowpy.codegen.__generated__.ExtensibleFallbackHandler import (
     ExtensibleFallbackHandler,
 )
-from cow_py.composable.types import ConditionalOrderParams
+from cowdao_cowpy.composable.types import ConditionalOrderParams
 from cowdao_cowpy.contracts.order import (
     Order,
     bytes32_to_balance_kind,

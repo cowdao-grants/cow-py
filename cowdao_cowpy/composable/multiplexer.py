@@ -9,7 +9,7 @@ from pymerkle import InmemoryTree as MerkleTree
 
 
 from cowdao_cowpy.common.chains import Chain
-from cow_py.composable.utils import (
+from cowdao_cowpy.composable.utils import (
     convert_composable_cow_tradable_order_to_order_type,
     getComposableCoW,
 )

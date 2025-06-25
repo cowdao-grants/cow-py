@@ -6,7 +6,7 @@ from eth_typing import HexStr
 
 
 from cowdao_cowpy.common.chains import Chain
-from cow_py.composable.order_types.twap import (
+from cowdao_cowpy.composable.order_types.twap import (
     Twap,
     TwapData,
     TWAP_ADDRESS,
@@ -14,7 +14,7 @@ from cow_py.composable.order_types.twap import (
     StartType,
 )
 from cowdao_cowpy.contracts.order import Order
-from cow_py.composable.types import PollParams, PollResultCode, PollResultError
+from cowdao_cowpy.composable.types import PollParams, PollResultCode, PollResultError
 
 # Constants
 OWNER = "0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"

@@ -2,14 +2,14 @@ from dataclasses import dataclass
 from typing import Optional, Dict, Any
 from eth_typing import HexStr
 
-from cow_py.composable.conditional_order import ConditionalOrder
-from cow_py.composable.types import (
+from cowdao_cowpy.composable.conditional_order import ConditionalOrder
+from cowdao_cowpy.composable.types import (
     IsValidResult,
     PollParams,
     PollResultError,
 )
 from cowdao_cowpy.contracts.order import Order
-from cow_py.composable.utils import encode_params
+from cowdao_cowpy.composable.utils import encode_params
 
 
 @dataclass

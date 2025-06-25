@@ -1,7 +1,7 @@
 from secrets import token_bytes
 from web3 import Web3
 
-from cow_py.composable.order_types.twap import DurationType, StartType, TwapData
+from cowdao_cowpy.composable.order_types.twap import DurationType, StartType, TwapData
 
 
 def generate_random_twap_data():

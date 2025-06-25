@@ -12,13 +12,13 @@ from cowdao_cowpy.common.chains import Chain
 from cowdao_cowpy.common.constants import (
     COW_PROTOCOL_SETTLEMENT_CONTRACT_CHAIN_ADDRESS_MAP,
 )
-from cow_py.composable.types import (
+from cowdao_cowpy.composable.types import (
     ConditionalOrderParams,
     OwnerParams,
     PollResultError,
     PollResultSuccess,
 )
-from cow_py.composable.utils import (
+from cowdao_cowpy.composable.utils import (
     convert_composable_cow_tradable_order_to_order_type,
     decode_params,
     encode_params,
@@ -33,7 +33,7 @@ import abc
 from typing import Generic
 from eth_typing import HexStr, TypeStr
 
-from cow_py.composable.types import (
+from cowdao_cowpy.composable.types import (
     IsValidResult,
     PollParams,
     PollResult,
