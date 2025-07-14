@@ -7,13 +7,15 @@ web3_codegen:
 	poetry run python -m cowdao_cowpy.codegen.main
 
 orderbook_codegen:
+	wget -O openapi.yml https://raw.githubusercontent.com/cowprotocol/services/refs/heads/main/crates/orderbook/openapi.yml
 	poetry run datamodel-codegen \
-  		--url="https://raw.githubusercontent.com/cowprotocol/services/refs/heads/main/crates/orderbook/openapi.yml" \
+		--input openapi.yml \
   		--output cowdao_cowpy/order_book/generated/model.py \
   		--target-python-version 3.12 \
   		--output-model-type pydantic_v2.BaseModel \
   		--base-class cowdao_cowpy.order_book.base.BaseModel \
   		--input-file-type openapi
+	poetry run  python cowdao_cowpy/post_process.py openapi.yml cowdao_cowpy/order_book/generated/model.py
 
 
 subgraph_codegen:
