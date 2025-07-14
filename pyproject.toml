@@ -27,7 +27,7 @@ python-dotenv = "^1.0.1"
 eth-abi = "^5.1.0"
 pymerkle = "^6.1.0"
 eth-typing = "^5.0.0"
-eth-tester = "^0.13.0b1"
+eth-tester = "v0.12.1-beta.1"
 
 
 [tool.poetry.group.dev.dependencies]
