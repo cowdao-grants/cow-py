@@ -89,31 +89,19 @@ data = client.get_data(response)
 pprint(data)
 ```
 
-Or you can leverage `SubgraphClient` to use a custom query and get the results as JSON:
-
-```python
-from pprint import pprint
-from cowdao_cowpy.subgraph.client import SubgraphClient
-from cowdao_cowpy.subgraph.deployments import build_subgraph_url
-
-url = build_subgraph_url() # Default network is Chain.SEPOLIA and env SubgraphEnvironment.PRODUCTION
-client = SubgraphClient(url=url)
-
-response = await client.execute(query="""
-            query LastDaysVolume($days: Int!) {
-              dailyTotals(orderBy: timestamp, orderDirection: desc, first: $days) {
-                timestamp
-                volumeUsd
-              }
-            }
-            """, variables=dict(days=2)
-            )
-
-data = client.get_data(response)
-pprint(data)
-```
-
 ## 🐄 Development
+
+For developers looking to contribute or extend the SDK, here's how to set up your development environment:
+
+### 🐄 Setup
+
+Clone the repository and install the dependencies:
+
+```bash
+git clone git@github.com:cowdao-grants/cow-py.git
+cd cow-py
+make install # or poetry install
+```
 
 ### 🐄 Tests
 
