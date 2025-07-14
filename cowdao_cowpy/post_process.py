@@ -81,7 +81,6 @@ def main(openapi_spec_path: str, model_file_paths: Set[str]) -> None:
 
 
 if __name__ == "__main__":
-
     if len(sys.argv) < 3:
         print(
             "Usage: python post_process.py <openapi_spec_path> <model_file_path1> <model_file_path2> ..."
