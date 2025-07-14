@@ -1032,21 +1032,21 @@ cython = ["cython"]
 
 [[package]]
 name = "datamodel-code-generator"
-version = "0.28.5"
+version = "0.31.2"
 description = "Datamodel Code Generator"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 files = [
-    {file = "datamodel_code_generator-0.28.5-py3-none-any.whl", hash = "sha256:f899c1da5af04b5d5b6e3edbd718c1bf3a00fc4b2fe8210cef609d93a9983e9e"},
-    {file = "datamodel_code_generator-0.28.5.tar.gz", hash = "sha256:20e8b817d301d2d0bb15f436e81c97b25ad1c2ef922c99249c2444141ae15a6a"},
+    {file = "datamodel_code_generator-0.31.2-py3-none-any.whl", hash = "sha256:78f200a9e673ee4d041e96e82a835273baf4ce15e446d46501c0433d82af3ef5"},
+    {file = "datamodel_code_generator-0.31.2.tar.gz", hash = "sha256:47887b8aa6fd69865e07e2893c1e76e34dae753b9a97f1020357af8337bc4cdb"},
 ]
 
 [package.dependencies]
 argcomplete = ">=2.10.1,<4"
 black = ">=19.10b0"
 genson = ">=1.2.1,<2"
-inflect = ">=4.1,<6"
+inflect = ">=4.1,<8"
 isort = ">=4.3.21,<7"
 jinja2 = ">=2.10.1,<4"
 packaging = "*"
@@ -1244,7 +1244,7 @@ version = "0.12.1b1"
 description = "eth-tester: Tools for testing Ethereum applications."
 optional = false
 python-versions = "<4,>=3.8"
-groups = ["main"]
+groups = ["dev"]
 files = [
     {file = "eth_tester-0.12.1b1-py3-none-any.whl", hash = "sha256:aa3f91960e5ce9fe74eac4a0dcb22ffada84b8e28dc11d0f0a69085a5879be60"},
     {file = "eth_tester-0.12.1b1.tar.gz", hash = "sha256:7aeb3b5839fb1bc20e7f15c5e289ba95809fa41117a5ac194e8d270467982832"},
@@ -3305,7 +3305,7 @@ version = "2.10.0"
 description = "A library implementing the 'SemVer' scheme."
 optional = false
 python-versions = ">=2.7"
-groups = ["main"]
+groups = ["dev"]
 files = [
     {file = "semantic_version-2.10.0-py2.py3-none-any.whl", hash = "sha256:de78a3b8e0feda74cabc54aab2da702113e33ac9d9eb9d2389bcf1f58b7d9177"},
     {file = "semantic_version-2.10.0.tar.gz", hash = "sha256:bdabb6d336998cbb378d4b9db3a4b56a1e3235701dc05ea2690d9a997ed5041c"},
@@ -3886,4 +3886,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "97d3fd0f38ad8e55c0c77fcd15ceec9e843fbe1643ed0715f5eefe1d4fe5f011"
+content-hash = "8aae62b77ddfc81c2f871296b7066141e6a48b453d977316922ece589a8027d3"
