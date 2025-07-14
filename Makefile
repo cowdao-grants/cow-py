@@ -1,4 +1,7 @@
-.PHONY: codegen web3_codegen orderbook_codegen subgraph_codegen test lint format remove_unused_imports
+.PHONY: codegen web3_codegen orderbook_codegen subgraph_codegen test lint format remove_unused_imports install
+
+install:
+	poetry install
 
 codegen: web3_codegen orderbook_codegen
 # codegen: web3_codegen orderbook_codegen subgraph_codegen
