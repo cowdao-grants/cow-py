@@ -7,6 +7,10 @@ import ast
 import yaml
 from pathlib import Path
 from typing import Dict, Set
+from logging import getLogger, basicConfig, INFO
+
+logger = getLogger(__name__)
+basicConfig(level=INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 
 
 def extract_nullable_fields(openapi_spec_path: str) -> Dict[str, Set[str]]:
@@ -69,7 +73,7 @@ def update_ast_model_file(
                 ):
                     continue
 
-                print(
+                logger.info(
                     f"Making field '{field_name}' Optional and default None in class '{node.name}'"
                 )
 
@@ -95,7 +99,7 @@ def update_ast_model_file(
         patched_code = "from typing import Optional\n" + patched_code
 
     Path(model_file_path).write_text(patched_code)
-    print(f"Updated {model_file_path} with optional fields where necessary.")
+    logger.info(f"Updated {model_file_path} with optional fields where necessary.")
 
 
 def main(openapi_spec_path: str, model_file_paths: Set[str]) -> None:
@@ -108,7 +112,7 @@ def main(openapi_spec_path: str, model_file_paths: Set[str]) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) < 3:
-        print(
+        logger.error(
             "Usage: python post_process.py <openapi_spec_path> <model_file_path1> <model_file_path2> ..."
         )
         sys.exit(1)
@@ -117,4 +121,4 @@ if __name__ == "__main__":
     model_file_paths = set(sys.argv[2:])
 
     main(openapi_spec_path, model_file_paths)
-    print("Post-processing completed.")
+    logger.info("Post-processing completed.")
