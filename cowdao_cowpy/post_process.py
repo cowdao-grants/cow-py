@@ -41,23 +41,49 @@ def update_ast_model_file(
     class NullableFieldRewriter(ast.NodeTransformer):
         def visit_ClassDef(self, node: ast.ClassDef) -> ast.ClassDef:
             nullable_fields = nullable_fields_by_class.get(node.name, set())
+
             for stmt in node.body:
-                if isinstance(stmt, ast.AnnAssign) and isinstance(
-                    stmt.target, ast.Name
+                if not isinstance(stmt, ast.AnnAssign):
+                    continue
+                if not isinstance(stmt.target, ast.Name):
+                    continue
+
+                field_name = stmt.target.id
+                if field_name not in nullable_fields:
+                    continue
+
+                # Only proceed if we're going to modify both type and value
+                if not isinstance(stmt.annotation, ast.Name):
+                    continue
+                if not (
+                    isinstance(stmt.value, ast.Call)
+                    and isinstance(stmt.value.func, ast.Name)
+                    and stmt.value.func.id == "Field"
                 ):
-                    field_name = stmt.target.id
-                    if field_name in nullable_fields:
-                        if isinstance(stmt.annotation, ast.Name):
-                            print(
-                                f"Making field '{field_name}' Optional in class '{node.name}'"
-                            )
-                            original_type = stmt.annotation.id
-                            stmt.annotation = ast.Subscript(
-                                value=ast.Name(id="Optional", ctx=ast.Load()),
-                                slice=ast.Name(id=original_type, ctx=ast.Load()),
-                                ctx=ast.Load(),
-                            )
-                            stmt.value = ast.Constant(value=None)
+                    continue
+                if not stmt.value.args:
+                    continue
+                if not (
+                    isinstance(stmt.value.args[0], ast.Constant)
+                    and stmt.value.args[0].value is Ellipsis
+                ):
+                    continue
+
+                print(
+                    f"Making field '{field_name}' Optional and default None in class '{node.name}'"
+                )
+
+                # Wrap annotation in Optional
+                original_type = stmt.annotation.id
+                stmt.annotation = ast.Subscript(
+                    value=ast.Name(id="Optional", ctx=ast.Load()),
+                    slice=ast.Name(id=original_type, ctx=ast.Load()),
+                    ctx=ast.Load(),
+                )
+
+                # Replace Field(...) first argument from Ellipsis to None
+                stmt.value.args[0] = ast.Constant(value=None)
+
             return node
 
     tree = NullableFieldRewriter().visit(tree)

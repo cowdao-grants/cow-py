@@ -83,7 +83,10 @@ class OnchainOrderData(BaseModel):
 
 
 class EthflowData(BaseModel):
-    refundTxHash: Optional[TransactionHash] = None
+    refundTxHash: Optional[TransactionHash] = Field(
+        None,
+        description="Specifies in which transaction the order was refunded. If\nthis field is null the order was not yet refunded.\n",
+    )
     userValidTo: int = Field(
         ...,
         description="Describes the `validTo` of an order ethflow order.\n\n**NOTE**: For ethflow orders, the `validTo` encoded in the smart\ncontract is `type(uint256).max`.\n",
@@ -517,7 +520,10 @@ class Trade(BaseModel):
     buyAmount: TokenAmount = Field(
         ..., description="Total amount of `buyToken` received in this trade."
     )
-    txHash: Optional[TransactionHash] = None
+    txHash: Optional[TransactionHash] = Field(
+        None,
+        description="Transaction hash of the corresponding settlement transaction containing the trade (if available).",
+    )
     executedProtocolFees: Optional[List[ExecutedProtocolFee]] = Field(
         None,
         description="Executed protocol fees for this trade, together with the fee policies used. Listed in the order they got applied.\n",
@@ -690,7 +696,9 @@ class AuctionOrder(BaseModel):
     )
     validTo: int = Field(..., description="see `OrderParameters::validTo`")
     kind: OrderKind = Field(..., description="see `OrderParameters::kind`")
-    receiver: Optional[Address] = None
+    receiver: Optional[Address] = Field(
+        None, description="see `OrderParameters::receiver`"
+    )
     owner: Address
     partiallyFillable: bool = Field(
         ..., description="see `OrderParameters::partiallyFillable`"
