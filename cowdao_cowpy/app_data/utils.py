@@ -10,6 +10,7 @@ from dataclasses import asdict, dataclass
 import json
 
 from cowdao_cowpy.app_data.consts import DEFAULT_IPFS_READ_URI
+from cowdao_cowpy import __version__
 
 # CID uses multibase to self-describe the encoding used (See https://github.com/multiformats/multibase)
 #   - Most reference implementations (multiformats/cid or Pinata, etc) use base58btc encoding
@@ -79,7 +80,7 @@ def generate_app_data(
             },
             "utm": {
                 "utmSource": "cowmunity",
-                "utmMedium": "cow-py",
+                "utmMedium": f"cow-py@{__version__}",
                 "utmCampaign": "developer-cohort",
                 "utmContent": "🥩📢🌀🐮 'MÖØ'",
                 "utmTerm": "python"
