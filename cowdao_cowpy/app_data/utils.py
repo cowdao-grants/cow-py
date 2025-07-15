@@ -77,6 +77,13 @@ def generate_app_data(
             "hooks": {
                 "version": hooks_version,
             },
+            "utm": {
+                "utmSource": "cowmunity",
+                "utmMedium": "cow-py",
+                "utmCampaign": "developer-cohort",
+                "utmContent": "🥩📢🌀🐮 'MÖØ'",
+                "utmTerm": "python"
+        }
         },
         "version": version,
     }  # compact encoding to match JS behavior
