@@ -83,8 +83,8 @@ def generate_app_data(
                 "utmMedium": f"cow-py@{__version__}",
                 "utmCampaign": "developer-cohort",
                 "utmContent": "🥩📢🌀🐮 'MÖØ'",
-                "utmTerm": "python"
-        }
+                "utmTerm": "python",
+            },
         },
         "version": version,
     }  # compact encoding to match JS behavior
