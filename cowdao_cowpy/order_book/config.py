@@ -14,6 +14,8 @@ class ProdAPIConfig(APIConfig):
         SupportedChainId.GNOSIS_CHAIN: "https://api.cow.fi/xdai",
         SupportedChainId.ARBITRUM_ONE: "https://api.cow.fi/arbitrum_one",
         SupportedChainId.BASE: "https://api.cow.fi/base",
+        SupportedChainId.POLYGON: "https://api.cow.fi/polygon",
+        SupportedChainId.AVALANCHE: "https://api.cow.fi/avalanche",
     }
 
     def __init__(self, chain_id: SupportedChainId, base_context=None):
@@ -34,6 +36,8 @@ class StagingAPIConfig(APIConfig):
         SupportedChainId.GNOSIS_CHAIN: "https://barn.api.cow.fi/xdai",
         SupportedChainId.ARBITRUM_ONE: "https://barn.api.cow.fi/arbitrum_one",
         SupportedChainId.BASE: "https://barn.api.cow.fi/base",
+        SupportedChainId.POLYGON: "https://barn.api.cow.fi/polygon",
+        SupportedChainId.AVALANCHE: "https://barn.api.cow.fi/avalanche",
     }
 
     def __init__(self, chain_id: SupportedChainId, base_context=None):

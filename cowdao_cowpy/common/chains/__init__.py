@@ -17,6 +17,8 @@ class Chain(Enum):
         "https://arbiscan.io",
     )
     BASE = (SupportedChainId.BASE, "base", "https://basescan.org/")
+    POLYGON = (SupportedChainId.POLYGON, "polygon", "https://polygonscan.com")
+    AVALANCHE = (SupportedChainId.AVALANCHE, "avalanche", "https://snowtrace.io")
 
     def __init__(
         self, id: SupportedChainId, network_name: str, explorer_url: str
