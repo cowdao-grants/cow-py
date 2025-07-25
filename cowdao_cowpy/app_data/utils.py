@@ -14,8 +14,12 @@ from web3 import Web3
 from dataclasses import asdict, dataclass
 import json
 
-from cowdao_cowpy.app_data.consts import DEFAULT_IPFS_READ_URI
-from cowdao_cowpy import __version__
+from cowdao_cowpy.app_data.consts import (
+    DEFAULT_APP_CODE,
+    DEFAULT_APP_DATA_DOC,
+    DEFAULT_GRAFFITI,
+    DEFAULT_IPFS_READ_URI,
+)
 
 # CID uses multibase to self-describe the encoding used (See https://github.com/multiformats/multibase)
 #   - Most reference implementations (multiformats/cid or Pinata, etc) use base58btc encoding
@@ -74,25 +78,11 @@ def generate_app_data(
     app_code: str = None,
     partner_fee: PartnerFee = None,
     referrer_address: str = None,
-    version: str = "1.3.0",
-    hooks_version: str = "0.1.0",
     graffiti: str | None = None,
 ) -> CreateAppData:
-    app_data_doc = {
-        "metadata": {
-            "hooks": {
-                "version": hooks_version,
-            },
-            "utm": {
-                "utmSource": "cowmunity",
-                "utmMedium": f"cow-py@{__version__}",
-                "utmCampaign": "developer-cohort",
-                "utmContent": "🥩📢🌀🐮 'MÖØ'" if not graffiti else graffiti,
-                "utmTerm": "python",
-            },
-        },
-        "version": version,
-    }  # compact encoding to match JS behavior
+    app_data_doc = DEFAULT_APP_DATA_DOC.copy()
+    if graffiti:
+        app_data_doc["metadata"]["utm"]["utmContent"] = graffiti
 
     if referrer_address:
         app_data_doc["metadata"]["referrer"] = {
@@ -103,6 +93,7 @@ def generate_app_data(
 
     if app_code:
         app_data_doc["appCode"] = app_code
+
     stringified_data = stringify_deterministic(app_data_doc)
     app_data_hash = keccak256(stringified_data.encode("utf-8"))
     return CreateAppData(
@@ -146,8 +137,8 @@ def build_and_post_app_data(
 
 def build_all_app_codes(
     env: Envs = "prod",
-    app_code: str = "cowdao_cowpy",
-    graffiti: str | None = None,
+    app_code: str = DEFAULT_APP_CODE,
+    graffiti: str | None = DEFAULT_GRAFFITI,
     referrer_address: str | None = None,
     partner_fee: PartnerFee | None = None,
 ) -> str:
