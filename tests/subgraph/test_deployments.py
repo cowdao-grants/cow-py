@@ -9,6 +9,12 @@ from cowdao_cowpy.subgraph.deployments import (
 )
 
 
+UNDEPLOYED_CHAINS = [
+    Chain.AVALANCHE,
+    Chain.POLYGON,
+]
+
+
 @pytest.fixture
 def api_key():
     return "test_api_key"
@@ -37,6 +43,8 @@ def test_build_subgraph_url_staging_environment():
 
 def test_subgraph_config_staging():
     for chain in Chain:
+        if chain in UNDEPLOYED_CHAINS:
+            continue
         config = SubgraphConfig(chain)
         with pytest.raises(
             NotImplementedError, match="Staging subgraph URLs are not yet implemented"
@@ -46,4 +54,6 @@ def test_subgraph_config_staging():
 
 def test_network_subgraph_ids_map_completeness():
     for chain in Chain:
+        if chain in UNDEPLOYED_CHAINS:
+            continue
         assert chain in NETWORK_SUBGRAPH_IDS_MAP
