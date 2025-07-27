@@ -1,3 +1,4 @@
+from cowdao_cowpy.app_data.utils import DEFAULT_APP_DATA_HASH
 from cowdao_cowpy.common.chains import Chain
 from cowdao_cowpy.common.config import SupportedChainId
 from cowdao_cowpy.common.constants import CowContractAddress
@@ -9,7 +10,6 @@ from cowdao_cowpy.contracts.sign import (
     PreSignSignature,
     Signature,
 )
-from cowdao_cowpy.common.constants import ZERO_APP_DATA
 from cowdao_cowpy.contracts.sign import sign_order as _sign_order
 from cowdao_cowpy.order_book.api import OrderBookApi
 from cowdao_cowpy.order_book.config import Envs, OrderBookAPIConfigFactory
@@ -49,7 +49,7 @@ async def swap_tokens(
     sell_token: ChecksumAddress,
     buy_token: ChecksumAddress,
     safe_address: ChecksumAddress | None = None,
-    app_data: str = ZERO_APP_DATA,
+    app_data: str = DEFAULT_APP_DATA_HASH,
     valid_to: int | None = None,
     env: Envs = "prod",
     slippage_tolerance: float = 0.005,
