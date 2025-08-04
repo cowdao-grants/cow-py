@@ -11,7 +11,7 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = ">=3.10,<4.0"
 httpx = ">=0.23.0,<1.0.0"
-web3 = "^7.12.1"
+web3 = ">=6,<8"
 pybars3 = "^0.9.7"
 pydantic = "^2.7.0"
 pytest-mock = "^3.14.0"
