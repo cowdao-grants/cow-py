@@ -6,7 +6,7 @@ App data is used for a number of purposes, including:
 
 - **Order Metadata**: Encoding metadata for orders, such as the app that created the order.
 - **Partner Fees**: Specifying partner fees for orders, which can be used to incentivize partners or solvers.
-- **Refferals**: Including referral information in orders to track referrals and provide rewards.
+- **Referrals**: Including referral information in orders to track referrals and provide rewards.
 - **Custom Data**: Adding custom data to orders for various purposes, such as tracking or analytics.
 
 
