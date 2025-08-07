@@ -40,18 +40,12 @@ mkShell {
     echo 'Spinning up Python Virtual Environment in .nix-venv directory 🐍'
     ${pkgs.python311.interpreter} -m venv .nix-venv
     export PATH=$PWD/.nix-venv/bin:$PATH
-
-    echo "Python version: $(which python) $(python --version)"
-    echo $(pip show cytoolz)
-
     
     # Check if poetry is installed
     if ! command -v poetry &> /dev/null; then
       echo 'Installing poetry 🐍'
       .nix-venv/bin/pip install poetry==2.0.1 poetry-core
     fi
-
-    # Ensure virtual environment dependencies
   '';
 }
 
