@@ -4116,7 +4116,7 @@ version = "1.1.1"
 description = "Read key-value pairs from a .env file and set them as environment variables"
 optional = false
 python-versions = ">=3.9"
-groups = ["main", "dev"]
+groups = ["dev"]
 markers = "implementation_name == \"cpython\" or implementation_name == \"pypy\""
 files = [
     {file = "python_dotenv-1.1.1-py3-none-any.whl", hash = "sha256:31f23644fe2602f88ff55e1f5c79ba497e01224ee7737937930c448e4d0e24dc"},
@@ -5397,4 +5397,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "1f7193c2308e340b447df5ae3a28b1d6ba595710229435453f36c24e7180ff95"
+content-hash = "e950ee238ac5f83ff7b290c4e8ffabdbebd7e45d528d779217f3cdbcce005b8f"
