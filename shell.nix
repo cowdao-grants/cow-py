@@ -1,5 +1,13 @@
 with import <nixpkgs> {};
 
+let
+  python = pkgs.python311;
+
+  poetry = pkgs.poetry.override {
+    python3 = python;
+  };
+in
+
 mkShell {
   NIX_LD_LIBRARY_PATH = lib.makeLibraryPath [
     nss
@@ -20,6 +28,7 @@ mkShell {
   ];
 
   buildInputs = [
+    pkgs.poetry
     pkgs.python311
     pkgs.python311Packages.pip
     pkgs.python311Packages.virtualenv
@@ -40,12 +49,6 @@ mkShell {
     echo 'Spinning up Python Virtual Environment in .nix-venv directory 🐍'
     ${pkgs.python311.interpreter} -m venv .nix-venv
     export PATH=$PWD/.nix-venv/bin:$PATH
-    
-    # Check if poetry is installed
-    if ! command -v poetry &> /dev/null; then
-      echo 'Installing poetry 🐍'
-      .nix-venv/bin/pip install poetry==2.0.1 poetry-core
-    fi
   '';
 }
 
