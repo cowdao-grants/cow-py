@@ -1,0 +1,98 @@
+site_name: cowdao-cowpy
+site_url: https://cowdao_grants.github.io/cowdao-cowpy
+repo_url: https://github.com/cowdao-grants/cow-py
+repo_name: cow-py
+
+nav:
+- Home: index.md
+- Usage:
+  - Orders: orders.md
+  - AppData: appdata.md
+
+theme:
+  name: material
+  language: en
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: slate
+      primary: blue_grey
+      accent: blue
+      toggle:
+        icon: material/weather-sunny
+        name: switch to light mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: default
+      primary: blue_grey
+      accent: blue
+      toggle:
+        icon: material/weather-night
+        name: switch to dark mode
+  font:
+    text: "Source Sans Pro, sans-serif"
+    code: "Roboto Mono, monospace"
+  features:
+    - navigation.instant
+    - navigation.expand
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - toc.follow
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.tabs.link
+    - content.action.edit
+    - content.action.view
+    - content.tooltips
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.superfences
+  - pymdownx.inlinehilite
+  - admonition
+  - toc:
+      permalink: true
+      toc_depth: 3
+      baselevel: 1
+  - attr_list
+  - pymdownx.snippets:
+      base_path: .
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+
+plugins:
+  - search
+  - include-markdown
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          selection:
+            docstring_style: sphinx
+          rendering:
+            show_root_heading: true
+            show_source: true
+            show_signature_annotations: true
+            members_order: source
+            docstring_section_style: list
+          paths:
+            - auto_dev
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/8ball030/auto_dev
+      name: github
+    - icon: material/email
+      link: mailto:8ball030@gmail.com

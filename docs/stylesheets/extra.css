@@ -1,0 +1,39 @@
+.md-typeset pre > code {
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+/* Parameter table styling */
+.doc-contents .doc-children {
+    margin-top: 2em;
+}
+
+.doc-contents .doc-object {
+    margin-bottom: 2em;
+}
+
+.doc-contents .doc-param-table {
+    margin: 1em 0;
+}
+
+.doc-contents .doc-param-table td {
+    padding: 0.5em;
+    vertical-align: top;
+}
+
+.doc-contents .doc-param-table td p {
+    margin: 0;
+    white-space: pre-wrap;
+}
+
+/* Parameter descriptions */
+.doc-contents .doc-param-table td:nth-child(2) {
+    white-space: pre-wrap;
+    word-break: normal;
+}
+
+/* Parameter names */
+.doc-contents .doc-param-table td:first-child {
+    font-weight: bold;
+    white-space: nowrap;
+}
