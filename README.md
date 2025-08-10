@@ -2,6 +2,11 @@
 
 [Help the herd 🐮](https://snapshot.org/#/cowgrants.eth/proposal/0x29bde0a0789a15f2255e11bdff088b4ffdf491729250dbe93b8b0776beb7f999)
 
+
+## Documentation
+For detailed documentation on how to use the CoW Protocol Python SDK, please visit our [documentation site](https://cowdao-grants.github.io/cow-py/).
+
+
 ## 🐄 Introduction
 
 Welcome to the CoW Protocol Python SDK (cowdao_cowpy), a developer-friendly Python library for interacting with the CoW Protocol. This SDK provides tools for querying on-chain data, managing orders, and integrating with the CoW Protocol's smart contracts. Whether you're building a DeFi application, a solver, or just exploring the CoW Protocol, this SDK aims to make your development journey smoother and more enjoyable. 🚀
