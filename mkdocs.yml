@@ -92,7 +92,7 @@ extra_css:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/8ball030/auto_dev
+      link: https://github.com/cowdao-grants/cow-py
       name: github
     - icon: material/email
       link: mailto:8ball030@gmail.com
