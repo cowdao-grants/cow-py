@@ -38,6 +38,14 @@ jobs:
         run: |
           poetry install
 
+      - name: Codegen
+        run: |
+          make codegen
+
+      - name: Format
+        run: |
+          make format
+
       - name: Typecheck
         run: |
           poetry run pyright .
@@ -45,10 +53,6 @@ jobs:
       - name: Lint
         run: |
           poetry run ruff check .
-
-      - name: Codegen
-        run: |
-          make codegen
 
       - name: Test
         env:
@@ -67,4 +71,4 @@ jobs:
       - name: Check For changes
         id: changes
         run: |
-          git diff --exit-code || echo "Changes detected"
+          git diff --exit-code 
