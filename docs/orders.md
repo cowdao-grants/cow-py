@@ -107,7 +107,7 @@ from cowdao_cowpy.order_book.api import OrderBookApi, UID
 order_book_api = OrderBookApi()
 
 # Fetch and display individual order details
-order = order_book.get_order_by_uid(UID("0x..."))
+order = order_book_api.get_order_by_uid(UID("0x..."))
 print(order)
 
 # Fetch all orders for a specific user
