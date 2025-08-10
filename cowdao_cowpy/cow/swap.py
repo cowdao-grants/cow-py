@@ -53,6 +53,7 @@ async def swap_tokens(
     valid_to: int | None = None,
     env: Envs = "prod",
     slippage_tolerance: float = 0.005,
+    partially_fillable: bool = False,
 ) -> CompletedOrder:
     """
     Swap tokens using the CoW Protocol. `CowContractAddress.VAULT_RELAYER` needs to be approved to spend the sell token before calling this function.
@@ -95,6 +96,7 @@ async def swap_tokens(
         kind=OrderQuoteSideKindSell.sell.value,
         sell_token_balance="erc20",
         buy_token_balance="erc20",
+        partially_fillable=partially_fillable,
     )
 
     signature = (
