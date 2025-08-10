@@ -69,12 +69,34 @@ To buy tokens using the CoW Protocol, you can create a market order that specifi
 
 Limit orders allow you to specify the price at which you want to buy or sell a token. The order will only be executed if the market price reaches your specified limit price.
 
+You can create a limit order by specifying the desired price and amount of tokens you want to buy or sell. The order will remain open until it is either filled or canceled.
+
+Note: By default all orders are *technically* limit orders, with a minimum price specified as part of the order creation, however, allowed slippage is default set to 0.005 (0.5%), which means that the order will be executed at the best available price within that slippage tolerance. If you want to create a strict limit order, you can set the allowed slippage to 0.
+
 ```python
 # TODO: Implement limit order creation example
 ```
 
+## Order Options
 
-### Fetching Order Details
+There are several different order options available when creating orders on the CoW Protocol.
+
+This allows you to customize how your orders are executed and managed.
+
+### Fill or Kill (FOK) Orders
+
+Fill or Kill (FOK) orders are a type of order that must be executed immediately in full or not at all. If the order cannot be filled completely, it is canceled at the expiration time.
+
+By default orders are created as FOK orders.
+
+### Partial Fill Orders
+Partial fill orders allow you to execute a portion of your order immediately while leaving the rest open for execution later. This is useful when you want to take advantage of current market conditions but are willing to wait for a better price on the remaining portion of your order.
+
+```python
+# TODO: Implement partial fill order creation example
+```
+
+## Fetching Order Details
 
 To fetch details about a specific order, you can use the `get_order` method. This method retrieves information about an order based on its ID.
 
@@ -97,3 +119,6 @@ for order in orders:
     print(order)
 
 ```
+
+## Canceling Orders
+TODO: Implement order cancellation example
