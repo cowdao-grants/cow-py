@@ -84,7 +84,7 @@ plugins:
             members_order: source
             docstring_section_style: list
           paths:
-            - auto_dev
+            - cowdao_cowpy
 
 extra_css:
   - stylesheets/extra.css
