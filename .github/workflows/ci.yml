@@ -38,6 +38,14 @@ jobs:
         run: |
           poetry install
 
+      - name: Codegen
+        run: |
+          make codegen
+
+      - name: Format
+        run: |
+          make format
+
       - name: Typecheck
         run: |
           poetry run pyright .
@@ -55,3 +63,12 @@ jobs:
       - name: Build sdist
         run: |
           poetry build -f sdist
+
+      - name: Check docs
+        run: |
+          make doc-check
+
+      - name: Check For changes
+        id: changes
+        run: |
+          git diff --exit-code 

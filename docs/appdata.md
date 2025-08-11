@@ -12,7 +12,7 @@ App data is used for a number of purposes, including:
 
 Once app data has been created, it must be submitted to the CoW Protocol's Services for each chain that the AppData is intended to be used on.
 
-We provide a convienent method to both create and submit app data to the CoW Protocol's Services.
+We provide a convenient method to both create and submit app data to the CoW Protocol's Services.
 
 ```python
 from cowdao_cowpy.app_data.utils import PartnerFee, build_all_app_codes

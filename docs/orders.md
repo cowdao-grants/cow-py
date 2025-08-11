@@ -84,17 +84,20 @@ There are several different order options available when creating orders on the 
 
 This allows you to customize how your orders are executed and managed.
 
-### Fill or Kill (FOK) Orders
-
-Fill or Kill (FOK) orders are a type of order that must be executed immediately in full or not at all. If the order cannot be filled completely, it is canceled at the expiration time.
-
-By default orders are created as FOK orders.
-
 ### Partial Fill Orders
 Partial fill orders allow you to execute a portion of your order immediately while leaving the rest open for execution later. This is useful when you want to take advantage of current market conditions but are willing to wait for a better price on the remaining portion of your order.
 
 ```python
-# TODO: Implement partial fill order creation example
+asyncio.run(
+    swap_tokens(
+        amount=SELL_AMOUNT_BEFORE_FEE,
+        account=ACCOUNT,
+        chain=CHAIN,
+        sell_token=SELL_TOKEN,
+        buy_token=BUY_TOKEN,
+        partially_fillable=True,  # Allow partial fills
+    )
+)
 ```
 
 ## Fetching Order Details
