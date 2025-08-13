@@ -39,6 +39,10 @@ remove_unused_imports:
 typecheck:
 	poetry run pyright examples tests cowdao_cowpy
 
+doc-check:
+	poetry run codespell docs/ README.md
+	poetry run mkdocs build --clean
+
 all: 
 	make format lint typecheck test
 

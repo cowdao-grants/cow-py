@@ -2,6 +2,11 @@
 
 [Help the herd 🐮](https://snapshot.org/#/cowgrants.eth/proposal/0x29bde0a0789a15f2255e11bdff088b4ffdf491729250dbe93b8b0776beb7f999)
 
+
+## Documentation
+For detailed documentation on how to use the CoW Protocol Python SDK, please visit our [documentation site](https://cowdao-grants.github.io/cow-py/).
+
+
 ## 🐄 Introduction
 
 Welcome to the CoW Protocol Python SDK (cowdao_cowpy), a developer-friendly Python library for interacting with the CoW Protocol. This SDK provides tools for querying on-chain data, managing orders, and integrating with the CoW Protocol's smart contracts. Whether you're building a DeFi application, a solver, or just exploring the CoW Protocol, this SDK aims to make your development journey smoother and more enjoyable. 🚀
@@ -24,7 +29,7 @@ pip install cowdao_cowpy
 
 ## 🐄 Getting Started
 
-Here's a simple example to get your hooves dirty:
+Here's a simple example of fetching orders to get your hooves dirty:
 
 ```python
 
@@ -41,9 +46,9 @@ print(orders)
 ## 🐄 Project Structure
 
 - `common/`: Utilities and configurations, the backbone of the SDK.
-- `contracts/`(TODO): A pasture of Smart contract ABIs for interaction.
+- `contracts/`: A pasture of Smart contract ABIs for interaction.
 - `order_book/`: Functions to wrangle orders on the CoW Protocol.
-- `order_signing/`(TODO): Tools for signing and validating orders. Anything inside this module should use higher level modules, and the process of actually signing (ie. calling the web3 function to generate the signature, should be handled in contracts, not here).
+- `order_signing/`: Tools for signing and validating orders. Anything inside this module should use higher level modules, and the process of actually signing (ie. calling the web3 function to generate the signature, should be handled in contracts, not here).
 - `subgraph/`: GraphQL client for querying CoW Protocol's Subgraph.
 - `web3/`: Web3 providers for blockchain interactions.
 
@@ -128,59 +133,6 @@ Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook 
 make codegen
 ```
 
-## 🐄 Development
-
-### 🐄 Tests
-
-Run tests to ensure everything's working:
-
-```bash
-make test # or poetry run pytest
-```
-
-### 🐄 Formatting/Linting
-
-Run the formatter and linter:
-
-```bash
-make format # or ruff check . --fix
-make lint # or ruff format
-```
-
-### 🐄 Codegen
-
-Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook API:
-
-```bash
-make codegen
-```
-
-## 🐄 Development
-
-### 🐄 Tests
-
-Run tests to ensure everything's working:
-
-```bash
-make test # or poetry run pytest
-```
-
-### 🐄 Formatting/Linting
-
-Run the formatter and linter:
-
-```bash
-make format # or ruff check . --fix
-make lint # or ruff format
-```
-
-### 🐄 Codegen
-
-Generate the SDK from the CoW Protocol smart contracts, Subgraph, and Orderbook API:
-
-```bash
-make codegen
-```
 
 ## 🐄 Contributing to the Herd
 
@@ -218,10 +170,10 @@ tbump NEW_VERSION
 
 Got questions, bug reports, or feature requests? Open an issue in our [GitHub repository](https://github.com/cowdao-grants/cow-py/issues).
 
+Alternatively, you can join our community on [Discord](https://discord.gg/cowprotocol) or [Twitter](https://x.com/CoWSwap) to connect with other developers and get support.
+
 ## 🐄 License
 
 `cowdao_cowpy` is released under the GNU License. For more details, check out the [LICENSE](LICENSE) file.
-
----
 
 Happy coding, and may the herd be with you! 🐄💻
