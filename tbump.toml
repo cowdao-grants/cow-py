@@ -2,7 +2,7 @@
 # github_url = "https://github.com/<user or organization>/<project>/"
 
 [version]
-current = "1.0.0"
+current = "1.0.1"
 
 # Regex pattern that supports release candidates (rc), alpha, beta, etc.
 # This will match versions like: 1.0.0, 1.0.0rc1, 1.0.0rc2, 1.0.0alpha1, 1.0.0beta1
