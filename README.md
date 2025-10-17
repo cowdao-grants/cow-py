@@ -1,7 +1,7 @@
 # CoW Protocol Python SDK - Unofficial CoWSwap API Library
 
 [![PyPI version](https://badge.fury.io/py/cowdao-cowpy.svg)](https://badge.fury.io/py/cowdao-cowpy)
-[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.10+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![CI](https://github.com/cowdao-grants/cow-py/actions/workflows/ci.yml/badge.svg)](https://github.com/cowdao-grants/cow-py/actions/workflows/ci.yml)
 [![MkDocs Deploy](https://github.com/cowdao-grants/cow-py/actions/workflows/pages.yaml/badge.svg)](https://github.com/cowdao-grants/cow-py/actions/workflows/pages.yaml)
