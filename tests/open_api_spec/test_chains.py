@@ -48,3 +48,15 @@ def test_all_supported_chain_ids_in_orderbook_config(orderbook_config_class):
         except KeyError:
             missing_chain_ids.append(chain)
     assert not missing_chain_ids, f"The following SupportedChainIds are missing in {orderbook_config_class.__name__}: {missing_chain_ids}"
+
+
+def test_all_supported_chains_in_readme():
+    readme_path = Path("README.md")
+    readme_content = readme_path.read_text().lower()
+    missing_chains = []
+    for chain in Chain:
+        if chain.name not in readme_content:
+            missing_chains.append(chain.name)
+    assert (
+        not missing_chains
+    ), f"The following Chains are missing in README.md: {missing_chains}"

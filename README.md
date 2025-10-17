@@ -37,6 +37,30 @@ CoW Protocol (Coincidence of Wants) powers CoWSwap, a decentralized exchange (DE
 - Fetching and decoding blockchain data
 - Full Python type hints and async/await support
 
+## 🚀 Key Features for CoWSwap Integration
+
+### DEX Aggregation & MEV Protection
+- Execute trades across multiple DEXs with best price execution
+- Built-in MEV protection through CoW Protocol's batch auction mechanism
+- Gasless trading - pay fees in sell tokens
+
+### Python-First Development Experience
+- **Type-safe** - Full type hints and Pydantic models throughout
+- **Async/await** - Native asyncio support for high-performance applications
+- **Web3.py integration** - Seamless Ethereum and Gnosis Chain interaction
+- **GraphQL client** - Query CoW Protocol Subgraph efficiently
+
+### Multi-Chain Support
+- **Ethereum Mainnet** - Trade on CoWSwap with ETH and ERC20 tokens
+- **Gnosis Chain** - Low-cost trading with xDai
+- **Sepolia Testnet** - Test your CoWSwap integration safely
+- **Arbitrum_One** - Layer 2 support for faster transactions
+- **Avalanche** - Access CoW Protocol on Avalanche network
+- **Polygon** - Trade on CoW Protocol via Polygon network
+- **Base** - Interact with CoW Protocol on Base network
+- **Lens** - Utilize CoW Protocol on Lens network
+- **BNB** - Engage with CoW Protocol on BNB Chain
+
 ## 🐄 Installation
 
 Get started by installing `cowdao_cowpy` via pip:
@@ -150,24 +174,6 @@ response = await client.execute(query="""
 data = client.get_data(response)
 pprint(data)
 ```
-
-## 🚀 Key Features for CoWSwap Integration
-
-### DEX Aggregation & MEV Protection
-- Execute trades across multiple DEXs with best price execution
-- Built-in MEV protection through CoW Protocol's batch auction mechanism
-- Gasless trading - pay fees in sell tokens
-
-### Python-First Development Experience
-- **Type-safe** - Full type hints and Pydantic models throughout
-- **Async/await** - Native asyncio support for high-performance applications
-- **Web3.py integration** - Seamless Ethereum and Gnosis Chain interaction
-- **GraphQL client** - Query CoW Protocol Subgraph efficiently
-
-### Multi-Chain Support
-- **Ethereum Mainnet** - Trade on CoWSwap with ETH and ERC20 tokens
-- **Gnosis Chain** - Low-cost trading with xDai
-- **Sepolia Testnet** - Test your CoWSwap integration safely
 
 ## 🐄 Development
 
