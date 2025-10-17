@@ -14,6 +14,7 @@ from web3 import Web3
 from dataclasses import asdict, dataclass
 import json
 
+from cowdao_cowpy.common.api.errors import UnexpectedResponseError
 from cowdao_cowpy.app_data.consts import (
     DEFAULT_APP_CODE,
     DEFAULT_APP_DATA_DOC,
@@ -155,4 +156,8 @@ def build_all_app_codes(
     return app_data_hash  # type: ignore
 
 
-DEFAULT_APP_DATA_HASH = build_all_app_codes()
+try:
+    DEFAULT_APP_DATA_HASH = build_all_app_codes()
+except UnexpectedResponseError as e:
+    print(f"Error building default app data: {e}")
+    DEFAULT_APP_DATA_HASH = "0x971c41b97f59534448ab833b0d83f755a4bc5c29f92b01776faa3699fcb0eeae"  # fallback to known hash
