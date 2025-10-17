@@ -157,8 +157,8 @@ class CompetitionOrderStatus(BaseModel):
     )
 
 
-class AuctionPrices(RootModel[Optional[Dict[str, BigUint]]]):
-    root: Optional[Dict[str, BigUint]] = None
+class AuctionPrices(RootModel[Dict[str, BigUint]]):
+    root: Dict[str, BigUint]
 
 
 class UID(RootModel[str]):

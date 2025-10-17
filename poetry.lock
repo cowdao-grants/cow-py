@@ -1372,15 +1372,15 @@ cython = ["cython"]
 
 [[package]]
 name = "datamodel-code-generator"
-version = "0.31.2"
+version = "0.35.0"
 description = "Datamodel Code Generator"
 optional = false
 python-versions = ">=3.9"
 groups = ["dev"]
 markers = "implementation_name == \"cpython\" or implementation_name == \"pypy\""
 files = [
-    {file = "datamodel_code_generator-0.31.2-py3-none-any.whl", hash = "sha256:78f200a9e673ee4d041e96e82a835273baf4ce15e446d46501c0433d82af3ef5"},
-    {file = "datamodel_code_generator-0.31.2.tar.gz", hash = "sha256:47887b8aa6fd69865e07e2893c1e76e34dae753b9a97f1020357af8337bc4cdb"},
+    {file = "datamodel_code_generator-0.35.0-py3-none-any.whl", hash = "sha256:c356d1e4a555f86667a4262db03d4598a30caeda8f51786555fd269c8abb806b"},
+    {file = "datamodel_code_generator-0.35.0.tar.gz", hash = "sha256:46805fa2515d3871f6bfafce9aa63128e735a7a6a4cfcbf9c27b3794ee4ea846"},
 ]
 
 [package.dependencies]
@@ -5566,4 +5566,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.10,<4.0"
-content-hash = "31ad12de8f74442b0ab38c548a28a28ecbc47af89452188f20d6f79106210a72"
+content-hash = "b496a988dd8edea1ffca826fdc3650c2cdb53ba2266ccd9a3611d97f6d5f0848"
