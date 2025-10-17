@@ -19,6 +19,8 @@ class Chain(Enum):
     BASE = (SupportedChainId.BASE, "base", "https://basescan.org/")
     POLYGON = (SupportedChainId.POLYGON, "polygon", "https://polygonscan.com")
     AVALANCHE = (SupportedChainId.AVALANCHE, "avalanche", "https://snowtrace.io")
+    BNB = (SupportedChainId.BNB, "bnb", "https://bscscan.com")
+    LENS = (SupportedChainId.LENS, "lens", "https://explorer.lens.xyz/")
 
     def __init__(
         self, id: SupportedChainId, network_name: str, explorer_url: str

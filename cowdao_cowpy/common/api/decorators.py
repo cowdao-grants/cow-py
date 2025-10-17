@@ -50,6 +50,7 @@ def rate_limitted(
 ):
     def decorator(func):
         limiter = AsyncLimiter(rate, per)
+
         async def wrapper(*args, **kwargs):
             async with limiter:
                 return await func(*args, **kwargs)
