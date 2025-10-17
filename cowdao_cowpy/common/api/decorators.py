@@ -49,8 +49,8 @@ def rate_limitted(
     rate=DEFAULT_LIMITER_OPTIONS["rate"], per=DEFAULT_LIMITER_OPTIONS["per"]
 ):
     def decorator(func):
+        limiter = AsyncLimiter(rate, per)
         async def wrapper(*args, **kwargs):
-            limiter = AsyncLimiter(rate, per)
             async with limiter:
                 return await func(*args, **kwargs)
 
