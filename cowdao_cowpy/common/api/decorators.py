@@ -1,3 +1,4 @@
+import asyncio
 import backoff
 import httpx
 from aiolimiter import AsyncLimiter
@@ -49,10 +50,14 @@ def rate_limitted(
     rate=DEFAULT_LIMITER_OPTIONS["rate"], per=DEFAULT_LIMITER_OPTIONS["per"]
 ):
     def decorator(func):
-        limiter = AsyncLimiter(rate, per)
+        limiters = {}
 
         async def wrapper(*args, **kwargs):
-            async with limiter:
+            loop = asyncio.get_event_loop()
+            if loop not in limiters:
+                limiters[loop] = AsyncLimiter(rate, per)
+
+            async with limiters[loop]:
                 return await func(*args, **kwargs)
 
         return wrapper
