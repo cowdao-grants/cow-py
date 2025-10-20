@@ -107,7 +107,7 @@ CHAIN_TO_FREE_RPC = {
     SupportedChainId.ARBITRUM_ONE: "https://arb1.drpc.org",
     SupportedChainId.BASE: "https://base.drpc.org",
     SupportedChainId.GNOSIS_CHAIN: "https://gnosis.drpc.org",
-    SupportedChainId.SEPOLIA: "https://1rpc.io/sepolia",
+    SupportedChainId.SEPOLIA: "https://0xrpc.io/sep",
 }
 
 

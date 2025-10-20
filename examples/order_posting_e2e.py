@@ -34,7 +34,6 @@ def main():
     print(f"Sell Token: {SELL_TOKEN}")
     print(f"Buy Token: {BUY_TOKEN}")
     print(f"Sell Amount: {SELL_AMOUNT_BEFORE_FEE}")
-    print(f"Account: {ACCOUNT.address}")
 
     token_swapper = TokenSwapper(chain=CHAIN, account=ACCOUNT)
 
