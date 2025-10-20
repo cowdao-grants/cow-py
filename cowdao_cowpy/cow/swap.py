@@ -144,6 +144,7 @@ class TokenSwapper:
             OrderBookAPIConfigFactory.get_config(env, self.chain_id)
         )
         self.web3 = AsyncWeb3(AsyncHTTPProvider(CHAIN_TO_FREE_RPC[self.chain_id]))
+        self._token_decimals = {}
 
     async def approve_relayer_if_needed(
         self,
@@ -198,11 +199,14 @@ class TokenSwapper:
         Returns:
             int: Number of decimals
         """
+        if token_address in self._token_decimals:
+            return self._token_decimals[token_address]
         token_contract: AsyncContract = self.web3.eth.contract(
             address=token_address,
             abi=ERC20_ABI,
         )
         decimals = await token_contract.functions.decimals().call()
+        self._token_decimals[token_address] = decimals
         return decimals
 
     async def get_token_symbol(self, token_address: Address) -> str:
