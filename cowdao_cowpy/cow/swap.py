@@ -125,6 +125,7 @@ class TokenSwapper:
         account: LocalAccount,
         env: Envs = "prod",
         safe_address: ChecksumAddress | None = None,
+        rpc_url: str | None = None,
     ):
         """
         Initialize the TokenSwapper.
@@ -143,7 +144,8 @@ class TokenSwapper:
         self.order_book_api = OrderBookApi(
             OrderBookAPIConfigFactory.get_config(env, self.chain_id)
         )
-        self.web3 = AsyncWeb3(AsyncHTTPProvider(CHAIN_TO_FREE_RPC[self.chain_id]))
+        rpc_url = rpc_url or CHAIN_TO_FREE_RPC[self.chain_id]
+        self.web3 = AsyncWeb3(AsyncHTTPProvider(rpc_url))
         self._token_decimals = {}
 
     async def approve_relayer_if_needed(
