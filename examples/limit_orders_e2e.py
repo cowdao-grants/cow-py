@@ -77,14 +77,14 @@ async def main():
         print(
             f"Amount to sell: {AMOUNT_BEFORE_FEE / (10**BASE_TOKEN_DECIMALS)} WETH for {AMOUNT_BEFORE_FEE / (10**QUOTE_TOKEN_DECIMALS) * PRICE} USDC"
         )
-        sell_order = asyncio.run(do_sell(token_swapper))
+        sell_order = await do_sell(token_swapper)
         print(f"Created order: {sell_order.url}")
         print(f"Order details: {sell_order}")
     if input("Create buy order? (y/n): ").lower() == "y":
         print(
             f"Amount to buy: {AMOUNT_BEFORE_FEE / (10**BASE_TOKEN_DECIMALS)} WETH for {AMOUNT_BEFORE_FEE / (10**QUOTE_TOKEN_DECIMALS) * PRICE} USDC"
         )
-        buy_order = asyncio.run(do_buy(token_swapper))
+        buy_order = await do_buy(token_swapper)
         print(f"Created order: {buy_order.url}")
         print(f"Order details: {buy_order}")
 
