@@ -5,7 +5,7 @@ Simple example of building and posting app data to the endpoints.
 from cowdao_cowpy.app_data.utils import PartnerFee, build_all_app_codes
 
 
-if __name__ == "__main__":
+def main():
     app_code = "exampleAppCode"
     referrer_address = "0x1234567890abcdef1234567890abcdef12345678"
     # Example fee structure
@@ -21,3 +21,7 @@ if __name__ == "__main__":
         graffiti=graffiti,
     )
     print("App data hash:", app_data_hash)
+
+
+if __name__ == "__main__":
+    main()

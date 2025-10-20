@@ -65,7 +65,7 @@ async def set_approvals(token_swapper: TokenSwapper):
         )
 
 
-async def main():
+async def main(auto_approve: bool = False):
     token_swapper = TokenSwapper(
         account=ACCOUNT,
         chain=CHAIN,
@@ -82,7 +82,7 @@ async def main():
 
     await print_prices(sell_quote, buy_quote, token_swapper)
 
-    if input("Do you want to create a sell order? (y/n): ") == "y":
+    if auto_approve or input("Do you want to create a sell order? (y/n): ") == "y":
         order = token_swapper.create_order(
             sell_token=token_swapper.web3.to_checksum_address(BASE_TOKEN.root),
             buy_token=token_swapper.web3.to_checksum_address(QUOTE_TOKEN.root),
@@ -95,7 +95,7 @@ async def main():
         completed_order = await token_swapper.sign_and_post_order(order)
         print(completed_order)
 
-    if input("Do you want to create a buy order? (y/n): ") == "y":
+    if auto_approve or input("Do you want to create a buy order? (y/n): ") == "y":
         order = token_swapper.create_order(
             sell_token=token_swapper.web3.to_checksum_address(QUOTE_TOKEN.root),
             buy_token=token_swapper.web3.to_checksum_address(BASE_TOKEN.root),

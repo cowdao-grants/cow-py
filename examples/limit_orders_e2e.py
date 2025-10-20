@@ -48,7 +48,7 @@ async def do_buy(token_swapper: TokenSwapper):
         base_token_decimals=BASE_TOKEN_DECIMALS,
         quote_token_decimals=QUOTE_TOKEN_DECIMALS,
         quote_token=QUOTE_TOKEN,
-        valid_to=int((datetime.utcnow() + timedelta(hours=1)).timestamp()),
+        valid_to=int((datetime.utcnow() + timedelta(hours=2)).timestamp()),
     )
 
 
@@ -61,11 +61,11 @@ async def do_sell(token_swapper: TokenSwapper):
         quote_token_decimals=QUOTE_TOKEN_DECIMALS,
         base_token=BASE_TOKEN,
         base_token_decimals=BASE_TOKEN_DECIMALS,
-        valid_to=int((datetime.utcnow() + timedelta(hours=1)).timestamp()),
+        valid_to=int((datetime.utcnow() + timedelta(hours=2)).timestamp()),
     )
 
 
-async def main():
+async def main(auto_approve: bool = False):
     token_swapper = TokenSwapper(
         account=ACCOUNT,
         chain=CHAIN,
@@ -73,14 +73,14 @@ async def main():
 
     print("Price to trade at:", PRICE)
 
-    if input("Create sell order? (y/n): ").lower() == "y":
+    if auto_approve or input("Create sell order? (y/n): ").lower() == "y":
         print(
             f"Amount to sell: {AMOUNT_BEFORE_FEE / (10**BASE_TOKEN_DECIMALS)} WETH for {AMOUNT_BEFORE_FEE / (10**QUOTE_TOKEN_DECIMALS) * PRICE} USDC"
         )
         sell_order = await do_sell(token_swapper)
         print(f"Created order: {sell_order.url}")
         print(f"Order details: {sell_order}")
-    if input("Create buy order? (y/n): ").lower() == "y":
+    if auto_approve or input("Create buy order? (y/n): ").lower() == "y":
         print(
             f"Amount to buy: {AMOUNT_BEFORE_FEE / (10**BASE_TOKEN_DECIMALS)} WETH for {AMOUNT_BEFORE_FEE / (10**QUOTE_TOKEN_DECIMALS) * PRICE} USDC"
         )
@@ -90,4 +90,4 @@ async def main():
 
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    asyncio.run(main(auto_approve=False))

@@ -29,7 +29,7 @@ if not PRIVATE_KEY:
 ACCOUNT = Account.from_key(PRIVATE_KEY)
 
 
-if __name__ == "__main__":
+def main():
     print("Swapping tokens...")
     print(f"Sell Token: {SELL_TOKEN}")
     print(f"Buy Token: {BUY_TOKEN}")
@@ -53,3 +53,7 @@ if __name__ == "__main__":
     print("Created order:")
     print(f"     id:    {order.uid.root}")
     print(f"     url:   {order.url}")
+
+
+if __name__ == "__main__":
+    main()
