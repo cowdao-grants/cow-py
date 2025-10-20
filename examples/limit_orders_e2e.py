@@ -27,7 +27,8 @@ BASE_TOKEN_DECIMALS = 18
 AMOUNT_BEFORE_FEE = Wei(int(0.1 * 10**BASE_TOKEN_DECIMALS))  # 0.1 WETH with 18 decimals
 CHAIN = Chain.SEPOLIA
 
-BUY_PRICE = 125.00  # Price in USDC
+PRICE = 125.00  # Price in USDC
+
 load_dotenv()
 
 PRIVATE_KEY = os.getenv("PRIVATE_KEY")
@@ -41,7 +42,7 @@ ACCOUNT = Account.from_key(PRIVATE_KEY)
 async def do_buy(token_swapper: TokenSwapper):
     return await create_limit_buy_order(
         buy_amount=AMOUNT_BEFORE_FEE,
-        price=BUY_PRICE,
+        price=PRICE,
         swapper=token_swapper,
         base_token=BASE_TOKEN,
         base_token_decimals=BASE_TOKEN_DECIMALS,
@@ -54,7 +55,7 @@ async def do_buy(token_swapper: TokenSwapper):
 async def do_sell(token_swapper: TokenSwapper):
     return await create_limit_sell_order(
         sell_amount=AMOUNT_BEFORE_FEE,
-        price=BUY_PRICE,
+        price=PRICE,
         swapper=token_swapper,
         quote_token=QUOTE_TOKEN,
         quote_token_decimals=QUOTE_TOKEN_DECIMALS,
@@ -64,23 +65,29 @@ async def do_sell(token_swapper: TokenSwapper):
     )
 
 
-if __name__ == "__main__":
+async def main():
     token_swapper = TokenSwapper(
         account=ACCOUNT,
         chain=CHAIN,
     )
 
-    print("Price to trade at:", BUY_PRICE)
+    print("Price to trade at:", PRICE)
 
-    # if input("Create sell order? (y/n): ").lower() == "y":
-    #     print(f"Amount to sell: {AMOUNT_BEFORE_FEE / (10**BASE_TOKEN_DECIMALS)} WETH for {AMOUNT_BEFORE_FEE / (10**QUOTE_TOKEN_DECIMALS) * BUY_PRICE} USDC")
-    #     sell_order = asyncio.run(do_sell(token_swapper))
-    #     print(f"Created order: {sell_order.url}")
-    #     print(f"Order details: {sell_order}")
+    if input("Create sell order? (y/n): ").lower() == "y":
+        print(
+            f"Amount to sell: {AMOUNT_BEFORE_FEE / (10**BASE_TOKEN_DECIMALS)} WETH for {AMOUNT_BEFORE_FEE / (10**QUOTE_TOKEN_DECIMALS) * PRICE} USDC"
+        )
+        sell_order = asyncio.run(do_sell(token_swapper))
+        print(f"Created order: {sell_order.url}")
+        print(f"Order details: {sell_order}")
     if input("Create buy order? (y/n): ").lower() == "y":
         print(
-            f"Amount to buy: {AMOUNT_BEFORE_FEE / (10**BASE_TOKEN_DECIMALS)} WETH for {AMOUNT_BEFORE_FEE / (10**QUOTE_TOKEN_DECIMALS) * BUY_PRICE} USDC"
+            f"Amount to buy: {AMOUNT_BEFORE_FEE / (10**BASE_TOKEN_DECIMALS)} WETH for {AMOUNT_BEFORE_FEE / (10**QUOTE_TOKEN_DECIMALS) * PRICE} USDC"
         )
         buy_order = asyncio.run(do_buy(token_swapper))
         print(f"Created order: {buy_order.url}")
         print(f"Order details: {buy_order}")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
