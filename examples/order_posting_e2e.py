@@ -21,7 +21,7 @@ CHAIN = Chain.SEPOLIA
 
 load_dotenv()
 
-PRIVATE_KEY = os.getenv("PRIVATE_KEY")
+PRIVATE_KEY = os.getenv("TEST_PRIVATE_KEY")
 
 if not PRIVATE_KEY:
     raise ValueError("Missing variables on .env file")
