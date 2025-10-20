@@ -59,14 +59,7 @@ asyncio.run(
 ```
 
 
-### Buying Tokens
-To buy tokens using the CoW Protocol, you can create a market order that specifies the amount of tokens you want to purchase. The system will execute the order at the best available market price.
-
-```python
-# TODO: Implement buying tokens example
-```
-
-### Limit Orders
+### Limit Orders & Buy Orders
 
 Limit orders allow you to specify the price at which you want to buy or sell a token. The order will only be executed if the market price reaches your specified limit price.
 
@@ -74,8 +67,65 @@ You can create a limit order by specifying the desired price and amount of token
 
 Note: By default all orders are *technically* limit orders, with a minimum price specified as part of the order creation, however, allowed slippage is default set to 0.005 (0.5%), which means that the order will be executed at the best available price within that slippage tolerance. If you want to create a strict limit order, you can set the allowed slippage to 0.
 
+We alternatively provide helper functions to create limit buy and limit sell orders directly, which do not allow for any slippage and allow you to specify the exact price you want to trade at.
+
 ```python
-# TODO: Implement limit order creation example
+from datetime import datetime, timedelta
+import os
+
+import asyncio
+from dotenv import load_dotenv
+from web3 import Account
+from web3.types import Wei
+from cowdao_cowpy.common.chains import Chain
+from cowdao_cowpy.cow.swap import (
+    create_limit_buy_order,
+    TokenSwapper,
+)
+from cowdao_cowpy.order_book.generated.model import Address
+
+QUOTE_TOKEN = Address("0xbe72E441BF55620febc26715db68d3494213D8Cb")  # USDC
+QUOTE_TOKEN_DECIMALS = 18
+BASE_TOKEN = Address("0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14")  # WETH
+BASE_TOKEN_DECIMALS = 18
+AMOUNT_BEFORE_FEE = Wei(int(0.1 * 10**BASE_TOKEN_DECIMALS))  # 0.1 WETH with 18 decimals
+CHAIN = Chain.SEPOLIA
+
+PRICE = 125.00  # Price in USDC
+
+load_dotenv()
+
+PRIVATE_KEY = os.getenv("TEST_PRIVATE_KEY")
+
+if not PRIVATE_KEY:
+    raise ValueError("Missing variables on .env file")
+
+ACCOUNT = Account.from_key(PRIVATE_KEY)
+
+async def main(auto_approve: bool = False):
+    token_swapper = TokenSwapper(
+        account=ACCOUNT,
+        chain=CHAIN,
+    )
+
+    print("Price to trade at:", PRICE)
+
+    buy_order = await await create_limit_buy_order(
+        buy_amount=AMOUNT_BEFORE_FEE,
+        price=PRICE,
+        swapper=token_swapper,
+        base_token=BASE_TOKEN,
+        base_token_decimals=BASE_TOKEN_DECIMALS,
+        quote_token_decimals=QUOTE_TOKEN_DECIMALS,
+        quote_token=QUOTE_TOKEN,
+        valid_to=int((datetime.utcnow() + timedelta(hours=2)).timestamp()),
+    )
+    print(f"Created order: {buy_order.url}")
+    print(f"Order details: {buy_order}")
+
+
+asyncio.run(main())
+
 ```
 
 ## Order Options
@@ -125,4 +175,5 @@ for order in orders:
 ```
 
 ## Canceling Orders
-TODO: Implement order cancellation example
+Todo: Add section on canceling orders
+
