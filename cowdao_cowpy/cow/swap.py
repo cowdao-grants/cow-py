@@ -189,7 +189,7 @@ class TokenSwapper:
         receipt = await self.web3.eth.wait_for_transaction_receipt(tx_hash)
         return receipt["status"] == 1  # status 1 means success
 
-    async def get_token_decimals(self, token_address: ChecksumAddress) -> int:
+    async def get_token_decimals(self, token_address: Address) -> int:
         """
         Get the decimals of a token.
 
@@ -199,14 +199,15 @@ class TokenSwapper:
         Returns:
             int: Number of decimals
         """
-        if token_address in self._token_decimals:
+        if token_address.root in self._token_decimals:
             return self._token_decimals[token_address]
+        address = self.web3.to_checksum_address(token_address.root)
         token_contract: AsyncContract = self.web3.eth.contract(
-            address=token_address,
+            address=address,
             abi=ERC20_ABI,
         )
         decimals = await token_contract.functions.decimals().call()
-        self._token_decimals[token_address] = decimals
+        self._token_decimals[token_address.root] = decimals
         return decimals
 
     async def get_token_symbol(self, token_address: Address) -> str:
@@ -326,12 +327,8 @@ class TokenSwapper:
     ) -> float:
         """Get the price from an order quote."""
         sell_amount = int(order_quote.quote.sellAmount.root)
-        sell_decimal_fut = self.get_token_decimals(
-            to_checksum_address(str(order_quote.quote.sellToken.root))
-        )
-        buy_decimal_fut = self.get_token_decimals(
-            to_checksum_address(str(order_quote.quote.buyToken.root))
-        )
+        sell_decimal_fut = self.get_token_decimals(order_quote.quote.sellToken)
+        buy_decimal_fut = self.get_token_decimals(order_quote.quote.buyToken)
         sell_decimals, buy_decimals = await asyncio.gather(
             sell_decimal_fut, buy_decimal_fut
         )
