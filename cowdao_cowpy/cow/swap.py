@@ -248,8 +248,8 @@ class TokenSwapper:
             CompletedOrder with UID and explorer URL
         """
         order_quote = await self.get_quote(
-            sell_token=sell_token,
-            buy_token=buy_token,
+            base_token=sell_token,
+            quote_token=buy_token,
             amount=amount,
             app_data=app_data,
         )
