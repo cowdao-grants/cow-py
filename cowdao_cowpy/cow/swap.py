@@ -558,7 +558,9 @@ async def create_limit_sell_order(
     """
 
     buy_amount = Wei(
-        int((sell_amount / base_token_decimals) * price * quote_token_decimals)
+        int(
+            sell_amount / (10**base_token_decimals) * price * (10**quote_token_decimals)
+        )
     )
     return await swapper.create_limit_order(
         sell_token=base_token,
@@ -600,7 +602,7 @@ async def create_limit_buy_order(
     """
 
     sell_amount = Wei(
-        int(buy_amount / quote_token_decimals * price * base_token_decimals)
+        int(buy_amount / (10**base_token_decimals) * price * (10**quote_token_decimals))
     )
     return await swapper.create_limit_order(
         sell_token=quote_token,
