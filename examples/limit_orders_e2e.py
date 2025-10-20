@@ -5,7 +5,7 @@ Test the functionality of the token swapper module.
 # You will also need to have enough funds in you wallet of the sell token to create the order.
 # The funds have to already be approved to the CoW Swap Vault Relayer
 
-from datetime import datetime, timedelta, UTC
+from datetime import datetime, timedelta
 import os
 
 import asyncio
@@ -48,7 +48,7 @@ async def do_buy(token_swapper: TokenSwapper):
         base_token_decimals=BASE_TOKEN_DECIMALS,
         quote_token_decimals=QUOTE_TOKEN_DECIMALS,
         quote_token=QUOTE_TOKEN,
-        valid_to=int((datetime.now(UTC) + timedelta(hours=1)).timestamp()),
+        valid_to=int((datetime.utcnow() + timedelta(hours=1)).timestamp()),
     )
 
 
@@ -61,7 +61,7 @@ async def do_sell(token_swapper: TokenSwapper):
         quote_token_decimals=QUOTE_TOKEN_DECIMALS,
         base_token=BASE_TOKEN,
         base_token_decimals=BASE_TOKEN_DECIMALS,
-        valid_to=int((datetime.now(UTC) + timedelta(hours=1)).timestamp()),
+        valid_to=int((datetime.utcnow() + timedelta(hours=1)).timestamp()),
     )
 
 
