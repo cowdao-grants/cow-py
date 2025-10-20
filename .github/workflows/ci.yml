@@ -57,7 +57,7 @@ jobs:
       - name: Test
         env:
           E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY: ${{ secrets.E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY }}
-          TEST_PRIVATE_KEY: ${{ secrets.E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY }}
+          TEST_PRIVATE_KEY: ${{ secrets.E2E_SEPOLIA_TESTING_EOA_PRIVATE_KEY }}
         run: |
           poetry run pytest tests/ --with-slow --integration
 
