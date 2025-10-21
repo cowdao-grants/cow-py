@@ -51,6 +51,7 @@ def e2e_gnosis_mainnet_testing_eoa():
 @pytest.mark.slow
 @pytest.mark.asyncio
 @pytest.mark.integration
+@pytest.mark.flaky(reruns=3, reruns_delay=5)
 async def test_post_and_cancel_order_live_e2e(e2e_gnosis_mainnet_testing_eoa):
     """
     Test to post an order and cancel it live on the Gnosis chain.
