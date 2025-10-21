@@ -202,7 +202,7 @@ class TokenSwapper:
             int: Number of decimals
         """
         if token_address.root in self._token_decimals:
-            return self._token_decimals[token_address]
+            return self._token_decimals[token_address.root]
         address = self.web3.to_checksum_address(token_address.root)
         token_contract: AsyncContract = self.web3.eth.contract(
             address=address,
