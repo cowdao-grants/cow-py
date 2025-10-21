@@ -110,7 +110,7 @@ async def main(auto_approve: bool = False):
 
     print("Price to trade at:", PRICE)
 
-    buy_order = await await create_limit_buy_order(
+    buy_order = await create_limit_buy_order(
         buy_amount=AMOUNT_BEFORE_FEE,
         price=PRICE,
         swapper=token_swapper,
