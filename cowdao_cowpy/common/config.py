@@ -11,6 +11,8 @@ class SupportedChainId(Enum):
     BASE = 8453
     POLYGON = 137
     AVALANCHE = 43114
+    BNB = 56
+    LENS = 232
 
 
 class CowEnv(Enum):
