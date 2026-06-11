@@ -54,7 +54,7 @@ jobs:
         run: |
           poetry run ruff check .
 
-      # Hermetic test run: no secrets, no live API calls, so it works on forks.
+      # No secrets and no integration-gated live tests, so it works on forks.
       - name: Test
         run: |
           poetry run pytest tests/ --with-slow

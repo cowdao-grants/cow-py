@@ -85,6 +85,9 @@ async def test_post_and_cancel_order_offline(throwaway_eoa, httpx_mock: HTTPXMoc
                 "buyTokenBalance": "erc20",
                 "kind": "sell",
                 "signingScheme": "eip712",
+                "gasAmount": "150000",
+                "gasPrice": "15000000000",
+                "sellTokenPrice": "1000000000",
             },
             "from": eoa_address,
             "expiration": "2026-01-01T00:00:00Z",
@@ -122,6 +125,17 @@ async def test_post_and_cancel_order_offline(throwaway_eoa, httpx_mock: HTTPXMoc
             kind=OrderQuoteSideKindSell.sell,
         ),
     )
+
+    # The quote request body uses the wire aliases and stringified amounts.
+    (quote_request,) = httpx_mock.get_requests(
+        method="POST", url=f"{GNOSIS_PROD_BASE_URL}/api/v1/quote"
+    )
+    quote_body = json.loads(quote_request.content)
+    assert quote_body["sellToken"] == WXDAI_GNOSIS_MAINNET_ADDRESS
+    assert quote_body["buyToken"] == COW_TOKEN_GNOSIS_MAINNET_ADDRESS
+    assert quote_body["from"] == eoa_address  # alias for from_, not "from_"
+    assert quote_body["sellAmountBeforeFee"] == "1000000000000000000"
+    assert quote_body["kind"] == "sell"
 
     order = Order(
         sell_token=WXDAI_GNOSIS_MAINNET_ADDRESS,
