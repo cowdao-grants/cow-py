@@ -1,4 +1,7 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
+
+import httpx
+
 from cowdao_cowpy.common.api.api_base import ApiBase, Context
 from cowdao_cowpy.common.api.errors import UnexpectedResponseError
 from cowdao_cowpy.common.config import SupportedChainId, ENVS_LIST
@@ -33,8 +36,9 @@ class OrderBookApi(ApiBase):
     def __init__(
         self,
         config=OrderBookAPIConfigFactory.get_config("prod", SupportedChainId.MAINNET),
+        client: Optional[httpx.AsyncClient] = None,
     ):
-        super().__init__(config)
+        super().__init__(config, client=client)
 
     async def get_version(self, context_override: Context = {}) -> str:
         return await self._fetch("/api/v1/version", context_override=context_override)
