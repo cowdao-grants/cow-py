@@ -31,6 +31,8 @@ class ApiContext:
     env: CowEnv
     base_urls: Optional[ApiBaseUrls] = None
     max_tries: Optional[int] = 5
+    bearer_token: Optional[str] = None
+    api_key: Optional[str] = None
 
 
 # Define the list of available environments.

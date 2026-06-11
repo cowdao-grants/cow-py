@@ -24,6 +24,35 @@ def order_book_api():
     return OrderBookApi(config=config)
 
 
+def test_default_base_url_without_api_key():
+    config = OrderBookAPIConfigFactory.get_config("prod", SupportedChainId.MAINNET)
+    assert config.get_base_url() == "https://api.cow.fi/mainnet"
+
+
+def test_partner_gateway_base_url_when_api_key_set():
+    config = OrderBookAPIConfigFactory.get_config(
+        "prod", SupportedChainId.MAINNET, api_key="my-key"
+    )
+    assert config.get_base_url() == "https://partners.cow.fi/mainnet"
+
+
+def test_partner_gateway_base_url_staging():
+    config = OrderBookAPIConfigFactory.get_config(
+        "staging", SupportedChainId.MAINNET, api_key="my-key"
+    )
+    assert config.get_base_url() == "https://partners.barn.cow.fi/mainnet"
+
+
+def test_with_env_preserves_auth_context():
+    config = OrderBookAPIConfigFactory.get_config(
+        "prod", SupportedChainId.MAINNET, api_key="my-key", bearer_token="my-token"
+    )
+    staging = config.with_env("staging")
+    assert staging.api_key == "my-key"
+    assert staging.bearer_token == "my-token"
+    assert staging.get_base_url() == "https://partners.barn.cow.fi/mainnet"
+
+
 @pytest.mark.asyncio
 async def test_get_version(order_book_api):
     expected_version = "1.0.0"

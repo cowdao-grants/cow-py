@@ -5,6 +5,7 @@ import pytest
 
 from cowdao_cowpy.common.api.api_base import ApiBase, APIConfig
 from cowdao_cowpy.common.api.decorators import DEFAULT_BACKOFF_OPTIONS
+from cowdao_cowpy.common.api.errors import UnexpectedResponseError
 from cowdao_cowpy.common.config import SupportedChainId
 from httpx import Request
 
@@ -106,7 +107,7 @@ async def test_does_not_reattempt_after_max_failures(sut, mock_http_status_error
     with patch(
         "httpx.AsyncClient.request", side_effect=[mock_http_status_error] * 3
     ) as mock_call:
-        with pytest.raises(httpx.HTTPStatusError):
+        with pytest.raises(UnexpectedResponseError):
             await sut.get_version(context_override={"backoff_opts": {"max_tries": 3}})
 
         assert mock_call.call_count == 3
@@ -125,7 +126,7 @@ async def test_backoff_uses_function_options_instead_of_default(
         "httpx.AsyncClient.request",
         side_effect=[mock_http_status_error] * max_tries,
     ) as mock_call:
-        with pytest.raises(httpx.HTTPStatusError):
+        with pytest.raises(UnexpectedResponseError):
             await sut.get_version(
                 context_override={"backoff_opts": {"max_tries": max_tries}}
             )
