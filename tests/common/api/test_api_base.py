@@ -19,7 +19,7 @@ def sut():
         def __init__(self):
             super().__init__(SupportedChainId.SEPOLIA, None)
 
-        def get_base_url(self):
+        def get_base_url(self, api_key=None):
             return "http://localhost"
 
     class MyAPI(ApiBase):

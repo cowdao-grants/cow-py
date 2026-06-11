@@ -63,8 +63,9 @@ class APIConfig(ABC):
     def api_key(self) -> Optional[str]:
         return self.context.get("api_key")
 
-    def get_base_url(self) -> str:
-        if self.api_key:
+    def get_base_url(self, api_key: Optional[str] = None) -> str:
+        effective_api_key = api_key if api_key is not None else self.api_key
+        if effective_api_key:
             partner_base_url = self.partner_config_map.get(self.chain_id)
             if partner_base_url:
                 return partner_base_url
@@ -184,6 +185,14 @@ class ApiBase:
             or self._client.is_closed
             or self._client_loop is not loop
         ):
+            if self._client is not None and not self._client.is_closed:
+                # The old client is bound to another loop, so it cannot be
+                # closed here. Close it on its own loop if that loop is still
+                # alive; with asyncio.run()-per-call the old loop is already
+                # closed and its transports were torn down with it.
+                old_client, old_loop = self._client, self._client_loop
+                if old_loop is not None and not old_loop.is_closed():
+                    asyncio.run_coroutine_threadsafe(old_client.aclose(), old_loop)
             self._client = httpx.AsyncClient()
             self._client_loop = loop
         return self._client
@@ -263,6 +272,9 @@ class ApiBase:
         """
         context_override = kwargs.get("context_override", {})
         url_override = None
+        # A request-scoped api_key must also affect URL routing (partner
+        # gateway), not just the X-API-Key header.
+        api_key_override = context_override.get("api_key")
 
         # Handle environment override
         if "env" in context_override:
@@ -270,13 +282,13 @@ class ApiBase:
             try:
                 # Use the config's with_env method to get a config for the desired environment
                 temp_config = self.config.with_env(env)
-                url_override = temp_config.get_base_url() + path
+                url_override = temp_config.get_base_url(api_key=api_key_override) + path
             except Exception as e:
                 # Log the error but continue with the default URL
                 print(f"Error switching environment: {e}")
 
         # Use the overridden URL or the default one
-        url = url_override or self.config.get_base_url() + path
+        url = url_override or self.config.get_base_url(api_key=api_key_override) + path
 
         kwargs = {k: v for k, v in kwargs.items() if k != "context_override"}
 

@@ -97,6 +97,35 @@ async def test_context_override_auth_headers(httpx_mock: HTTPXMock):
 
 
 @pytest.mark.asyncio
+async def test_context_override_api_key_routes_to_partner_gateway(
+    httpx_mock: HTTPXMock,
+):
+    httpx_mock.add_response(url=f"{PARTNER_BASE_URL}/api/v1/version", json=OK_RESPONSE)
+
+    await make_sut().get_version(context_override={"api_key": "override-key"})
+
+    request = httpx_mock.get_requests()[0]
+    assert request.headers["x-api-key"] == "override-key"
+    assert str(request.url) == f"{PARTNER_BASE_URL}/api/v1/version"
+
+
+@pytest.mark.asyncio
+async def test_partial_backoff_opts_merge_with_defaults(httpx_mock: HTTPXMock):
+    # A partial override must keep the remaining defaults rather than
+    # replacing them; with only max_tries given, retries must still happen
+    # (and the merged opts must not lose keys like max_value).
+    httpx_mock.add_response(status_code=429)
+    httpx_mock.add_response(json=OK_RESPONSE)
+
+    response = await make_sut().get_version(
+        context_override={"backoff_opts": {"max_tries": 2, "factor": 0.01}}
+    )
+
+    assert response == OK_RESPONSE
+    assert len(httpx_mock.get_requests()) == 2
+
+
+@pytest.mark.asyncio
 async def test_retries_429_then_succeeds(httpx_mock: HTTPXMock):
     httpx_mock.add_response(status_code=429)
     httpx_mock.add_response(json=OK_RESPONSE)
@@ -178,3 +207,26 @@ async def test_lazy_client_created_once_and_reused(httpx_mock: HTTPXMock):
 
     await sut.aclose()
     assert first_client.is_closed
+
+
+@pytest.mark.asyncio
+async def test_order_book_api_accepts_injected_client(httpx_mock: HTTPXMock):
+    from cowdao_cowpy.common.config import SupportedChainId
+    from cowdao_cowpy.order_book.api import OrderBookApi
+    from cowdao_cowpy.order_book.config import OrderBookAPIConfigFactory
+
+    httpx_mock.add_response(url="https://api.cow.fi/xdai/api/v1/version", json="1.0.0")
+
+    client = httpx.AsyncClient()
+    order_book = OrderBookApi(
+        config=OrderBookAPIConfigFactory.get_config(
+            "prod", SupportedChainId.GNOSIS_CHAIN
+        ),
+        client=client,
+    )
+
+    await order_book.get_version()
+
+    assert order_book._get_client() is client
+    assert not client.is_closed
+    await client.aclose()

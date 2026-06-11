@@ -41,10 +41,9 @@ def with_backoff():
         async def wrapper(*args, **kwargs):
             backoff_opts = dig(kwargs, "context_override", "backoff_opts")
 
-            if backoff_opts is None:
-                internal_backoff_opts = DEFAULT_BACKOFF_OPTIONS
-            else:
-                internal_backoff_opts = backoff_opts
+            # Merge so partial overrides (e.g. {"max_tries": 3}) keep the
+            # remaining defaults, notably the max_value wait cap.
+            internal_backoff_opts = {**DEFAULT_BACKOFF_OPTIONS, **(backoff_opts or {})}
 
             @backoff.on_exception(
                 backoff.expo,
