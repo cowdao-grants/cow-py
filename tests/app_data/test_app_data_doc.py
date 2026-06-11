@@ -1,4 +1,5 @@
 from cowdao_cowpy.app_data.app_data_doc import AppDataDoc
+from cowdao_cowpy.app_data.consts import DEFAULT_APP_CODE, DEFAULT_APP_DATA_DOC
 from .mocks import (
     APP_DATA_2,
     APP_DATA_DOC,
@@ -15,8 +16,8 @@ from .mocks import (
 def test_init_empty_metadata():
     app_data_doc = AppDataDoc()
     assert app_data_doc.app_data_doc.get("version")
-    assert app_data_doc.app_data_doc.get("metadata") == {}
-    assert app_data_doc.app_data_doc.get("appCode") == "CoW Swap"
+    assert app_data_doc.app_data_doc.get("metadata") == DEFAULT_APP_DATA_DOC["metadata"]
+    assert app_data_doc.app_data_doc.get("appCode") == DEFAULT_APP_CODE
     assert app_data_doc.app_data_doc.get("environment") is None
 
 
