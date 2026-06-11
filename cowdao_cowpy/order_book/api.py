@@ -8,6 +8,7 @@ from cowdao_cowpy.order_book.generated.model import (
     Address,
     AppDataHash,
     AppDataObject,
+    CompetitionOrderStatus,
     NativePriceResponse,
     Order,
     OrderCreation,
@@ -99,11 +100,11 @@ class OrderBookApi(ApiBase):
 
     async def get_order_competition_status(
         self, order_uid: UID, context_override: Context = {}
-    ) -> Order:
+    ) -> CompetitionOrderStatus:
         return await self._fetch(
-            path=f"/api/v1/orders/{order_uid}/status",
+            path=f"/api/v1/orders/{order_uid.root}/status",
             context_override=context_override,
-            response_model=Order,
+            response_model=CompetitionOrderStatus,
         )
 
     def get_order_link(self, order_uid: UID) -> str:
