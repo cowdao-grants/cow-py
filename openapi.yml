@@ -27,14 +27,22 @@ servers:
     url: "https://api.cow.fi/polygon"
   - description: Polygon (Staging)
     url: "https://barn.api.cow.fi/polygon"
-  - description: Lens (Prod)
-    url: "https://api.cow.fi/lens"
-  - description: Lens (Staging)
-    url: "https://barn.api.cow.fi/lens"
+  - description: Linea (Prod)
+    url: "https://api.cow.fi/linea"
+  - description: Linea (Staging)
+    url: "https://barn.api.cow.fi/linea"
   - description: BNB (Prod)
     url: "https://api.cow.fi/bnb"
   - description: BNB (Staging)
     url: "https://barn.api.cow.fi/bnb"
+  - description: Plasma (Prod)
+    url: "https://api.cow.fi/plasma"
+  - description: Plasma (Staging)
+    url: "https://barn.api.cow.fi/plasma"
+  - description: Ink (Prod)
+    url: "https://api.cow.fi/ink"
+  - description: Ink (Staging)
+    url: "https://barn.api.cow.fi/ink"
   - description: Sepolia (Prod)
     url: "https://api.cow.fi/sepolia"
   - description: Sepolia (Staging)

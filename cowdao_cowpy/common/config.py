@@ -12,7 +12,9 @@ class SupportedChainId(Enum):
     POLYGON = 137
     AVALANCHE = 43114
     BNB = 56
-    LENS = 232
+    LINEA = 59144
+    PLASMA = 9745
+    INK = 57073
 
 
 class CowEnv(Enum):

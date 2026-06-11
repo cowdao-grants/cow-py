@@ -9,7 +9,14 @@ from cowdao_cowpy.subgraph.deployments import (
 )
 
 
-UNDEPLOYED_CHAINS = [Chain.AVALANCHE, Chain.POLYGON, Chain.BNB, Chain.LENS]
+UNDEPLOYED_CHAINS = [
+    Chain.AVALANCHE,
+    Chain.POLYGON,
+    Chain.BNB,
+    Chain.LINEA,
+    Chain.PLASMA,
+    Chain.INK,
+]
 
 
 @pytest.fixture

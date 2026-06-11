@@ -16,8 +16,10 @@ class ProdAPIConfig(APIConfig):
         SupportedChainId.BASE: "https://api.cow.fi/base",
         SupportedChainId.POLYGON: "https://api.cow.fi/polygon",
         SupportedChainId.AVALANCHE: "https://api.cow.fi/avalanche",
-        SupportedChainId.LENS: "https://api.cow.fi/lens",
         SupportedChainId.BNB: "https://api.cow.fi/bnb",
+        SupportedChainId.LINEA: "https://api.cow.fi/linea",
+        SupportedChainId.PLASMA: "https://api.cow.fi/plasma",
+        SupportedChainId.INK: "https://api.cow.fi/ink",
     }
 
     def __init__(self, chain_id: SupportedChainId, base_context=None):
@@ -40,8 +42,10 @@ class StagingAPIConfig(APIConfig):
         SupportedChainId.BASE: "https://barn.api.cow.fi/base",
         SupportedChainId.POLYGON: "https://barn.api.cow.fi/polygon",
         SupportedChainId.AVALANCHE: "https://barn.api.cow.fi/avalanche",
-        SupportedChainId.LENS: "https://barn.api.cow.fi/lens",
         SupportedChainId.BNB: "https://barn.api.cow.fi/bnb",
+        SupportedChainId.LINEA: "https://barn.api.cow.fi/linea",
+        SupportedChainId.PLASMA: "https://barn.api.cow.fi/plasma",
+        SupportedChainId.INK: "https://barn.api.cow.fi/ink",
     }
 
     def __init__(self, chain_id: SupportedChainId, base_context=None):
