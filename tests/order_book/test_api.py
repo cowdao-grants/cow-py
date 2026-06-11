@@ -1,12 +1,12 @@
 # test_order_book_api.py
-import json
 from unittest.mock import AsyncMock, Mock, patch
 import pytest
-from cowdao_cowpy.order_book.api import Order, OrderBookApi
+from cowdao_cowpy.order_book.api import OrderBookApi
 from cowdao_cowpy.order_book.config import OrderBookAPIConfigFactory
 from cowdao_cowpy.common.config import SupportedChainId
 from cowdao_cowpy.order_book.generated.model import (
     Address,
+    CompetitionOrderStatus,
     OrderQuoteRequest,
     OrderQuoteSide1,
     OrderQuoteSideKindSell,
@@ -14,6 +14,7 @@ from cowdao_cowpy.order_book.generated.model import (
     OrderQuoteResponse,
     Trade,
     OrderCreation,
+    Type as CompetitionStatusType,
     UID,
 )
 
@@ -148,43 +149,30 @@ async def test_post_order(order_book_api):
 
 @pytest.mark.asyncio
 async def test_order_status(order_book_api):
-    mock_uid = "mock_uid"
-    mock_order_creation = Order(
-        sellToken="0x",
-        buyToken="0x",
-        sellAmount="0",
-        buyAmount="0",
-        validTo=0,
-        feeAmount="0",
-        kind="buy",
-        partiallyFillable=True,
-        appData="0x",
-        signingScheme="eip712",
-        signature="0x",
-        receiver="0x",
-        sellTokenBalance="erc20",
-        buyTokenBalance="erc20",
-        quoteId=0,
-        appDataHash="0x",
-        from_="0x",  # type: ignore # pyright doesn't recognize `populate_by_name=True`.
-        creationDate="2023-01-01T00:00:00Z",
-        uid=UID(mock_uid),
-        owner="0x",
-        executedSellAmount="0",
-        status="open",
-        invalidated=False,
-        executedBuyAmount="0",
-        executedSellAmountBeforeFees="0",
-        executedFeeAmount="0",
-        settlementContract="0x",
-        class_="market",  # type: ignore
-    )
+    mock_uid = "0x" + "ab" * 56
+    mock_status = {
+        "type": "active",
+        "value": [
+            {"solver": "solver-a", "executedAmounts": None},
+            {
+                "solver": "solver-b",
+                "executedAmounts": {"sell": "1000", "buy": "2000"},
+            },
+        ],
+    }
     with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
-        mock_request.return_value.text = json.loads(
-            mock_order_creation.model_dump_json()
+        mock_request.return_value = AsyncMock(
+            status_code=200,
+            headers={"content-type": "application/json"},
+            json=Mock(return_value=mock_status),
         )
-        response = await order_book_api.get_order_competition_status(
-            mock_order_creation
-        )
+        response = await order_book_api.get_order_competition_status(UID(mock_uid))
         mock_request.assert_awaited_once()
-        assert response.uid.root == mock_uid
+        # The bare hex UID is interpolated into the URL, not the model repr.
+        requested_url = mock_request.call_args.kwargs["url"]
+        assert f"/api/v1/orders/{mock_uid}/status" in requested_url
+        assert "root=" not in requested_url
+        assert isinstance(response, CompetitionOrderStatus)
+        assert response.type == CompetitionStatusType.active
+        assert response.value is not None
+        assert response.value[1].solver == "solver-b"
