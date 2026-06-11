@@ -94,6 +94,9 @@ async def test_post_quote(order_book_api):
             "sellTokenBalance": "erc20",
             "buyTokenBalance": "erc20",
             "kind": "buy",
+            "gasAmount": "150000",
+            "gasPrice": "15000000000",
+            "sellTokenPrice": "1000000000",
         },
         "verified": True,
         "from": "0x",
@@ -173,6 +176,7 @@ async def test_order_status(order_book_api):
         executedBuyAmount="0",
         executedSellAmountBeforeFees="0",
         executedFeeAmount="0",
+        settlementContract="0x",
         class_="market",  # type: ignore
     )
     with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:

@@ -2,7 +2,7 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any, Dict, List, Optional, Union
 from cowdao_cowpy.order_book.base import BaseModel
-from pydantic import Field, RootModel, confloat
+from pydantic import AwareDatetime, Field, RootModel, confloat
 
 
 class TransactionHash(RootModel[str]):
@@ -228,7 +228,9 @@ class ErrorType(Enum):
     UnsupportedToken = "UnsupportedToken"
     InvalidAppData = "InvalidAppData"
     AppDataHashMismatch = "AppDataHashMismatch"
+    AppDataMismatch = "AppDataMismatch"
     AppdataFromMismatch = "AppdataFromMismatch"
+    MetadataSerializationFailed = "MetadataSerializationFailed"
     OldOrderActivelyBidOn = "OldOrderActivelyBidOn"
 
 
@@ -253,15 +255,34 @@ class OrderCancellationError(BaseModel):
 
 
 class ErrorType2(Enum):
+    AppDataHashMismatch = "AppDataHashMismatch"
+    CustomSolverError = "CustomSolverError"
+    ExcessiveValidTo = "ExcessiveValidTo"
+    Forbidden = "Forbidden"
+    InsufficientLiquidity = "InsufficientLiquidity"
+    InsufficientValidTo = "InsufficientValidTo"
+    InternalServerError = "InternalServerError"
+    InvalidAppData = "InvalidAppData"
+    InvalidNativeSellToken = "InvalidNativeSellToken"
+    NoLiquidity = "NoLiquidity"
     QuoteNotVerified = "QuoteNotVerified"
-    UnsupportedToken = "UnsupportedToken"
-    ZeroAmount = "ZeroAmount"
+    SameBuyAndSellToken = "SameBuyAndSellToken"
+    SellAmountDoesNotCoverFee = "SellAmountDoesNotCoverFee"
+    TokenTemporarilySuspended = "TokenTemporarilySuspended"
+    TradingOutsideAllowedWindow = "TradingOutsideAllowedWindow"
+    UnsupportedBuyTokenDestination = "UnsupportedBuyTokenDestination"
     UnsupportedOrderType = "UnsupportedOrderType"
+    UnsupportedSellTokenSource = "UnsupportedSellTokenSource"
+    UnsupportedToken = "UnsupportedToken"
 
 
 class PriceEstimationError(BaseModel):
     errorType: ErrorType2
     description: str
+    data: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Optional error-specific payload: `SellAmountDoesNotCoverFee` returns an object with `fee_amount`.",
+    )
 
 
 class OrderQuoteSideKindSell(Enum):
@@ -320,7 +341,7 @@ class SolverSettlement(BaseModel):
     )
     clearingPrices: Optional[Dict[str, BigUint]] = Field(
         None,
-        description="The prices of tokens for settled user orders as passed to the settlement contract.\n",
+        description="Deprecated. The autopilot no longer persists per-solution uniform clearing prices, so this field will be empty for solutions of auctions produced by recent autopilots. Solutions stored before this change keep their original values.\n\nThe prices of tokens for settled user orders as passed to the settlement contract.\n",
     )
     orders: Optional[List[Order1]] = Field(None, description="Touched orders.")
     isWinner: Optional[bool] = Field(
@@ -342,10 +363,53 @@ class TotalSurplus(BaseModel):
 
 
 class InteractionData(BaseModel):
-    target: Optional[Address] = None
-    value: Optional[TokenAmount] = None
-    call_data: Optional[List[CallData]] = Field(
-        None, description="The call data to be used for the interaction."
+    target: Address = Field(..., description="The address of the contract to call.")
+    value: TokenAmount = Field(
+        ...,
+        description="The amount of native token (ETH, xDAI, etc.) in Wei to send with the interaction call.\n",
+    )
+    callData: CallData = Field(
+        ...,
+        description="The calldata to be sent to the target contract. Encoded as a hex string with `0x` prefix.\n",
+    )
+
+
+class StoredOrderQuote(BaseModel):
+    gasAmount: str = Field(
+        ...,
+        description="The estimated gas units required to execute the quoted trade.\nMeasured in gas units (not Wei). Used together with `gasPrice` and\n`sellTokenPrice` to calculate the network fee in sell token atoms.\n",
+        examples=["150000"],
+    )
+    gasPrice: str = Field(
+        ...,
+        description="The estimated gas price at the time of quoting, measured in Wei per gas unit.\nThe network fee in Wei can be calculated as: `feeInWei = gasAmount * gasPrice`.\n",
+        examples=["15000000000"],
+    )
+    sellTokenPrice: str = Field(
+        ...,
+        description="The price of the sell token expressed in native token atoms per sell token atom.\n\nUnits: `native token atoms / sell token atoms`\n\n**Example calculation (Mainnet, selling USDC):**\n- Sell token: USDC (6 decimals)\n- Native token: ETH (18 decimals)\n- Market price: 1 ETH = 1000 USDC\n\n`sellTokenPrice = 1 × 10^18 wei / (1000 × 10^6 USDC atoms) = 10^9`\n\nThis value is used to convert network fees (in native token) to sell token amounts.\n",
+        examples=["1000000000"],
+    )
+    sellAmount: TokenAmount = Field(
+        ..., description="The quoted sell amount in atoms of the sell token."
+    )
+    buyAmount: TokenAmount = Field(
+        ..., description="The quoted buy amount in atoms of the buy token."
+    )
+    feeAmount: TokenAmount = Field(
+        ...,
+        description="The fee amount in atoms of the sell token, calculated from the gas parameters\nat the time of quoting.\n\nComputed as: `ceil((gasAmount * gasPrice) / sellTokenPrice)`.\n\nThis represents the network fee that was estimated when the quote was created.\n",
+    )
+    solver: Address = Field(
+        ..., description="The address of the solver that provided this quote."
+    )
+    verified: bool = Field(
+        ...,
+        description="Whether the quote was verified through simulation. A verified quote\nprovides higher confidence that the trade will execute successfully.\n",
+    )
+    metadata: Optional[Dict[str, Any]] = Field(
+        None,
+        description="Additional metadata about the quote execution plan (e.g., the route taken).\nThis field is only populated for orders that are no longer fillable\n(filled, cancelled, or expired) to prevent solvers from copying\nexecution strategies for active orders.\n",
     )
 
 
@@ -377,9 +441,21 @@ class PriceImprovement(BaseModel):
     quote: Quote = Field(..., description="The best quote received.")
 
 
-class FeePolicy(RootModel[Union[Surplus, Volume, PriceImprovement]]):
-    root: Union[Surplus, Volume, PriceImprovement] = Field(
-        ..., description="Defines the ways to calculate the protocol fee."
+class FeePolicy1(BaseModel):
+    surplus: Surplus
+
+
+class FeePolicy2(BaseModel):
+    volume: Volume
+
+
+class FeePolicy3(BaseModel):
+    priceImprovement: PriceImprovement
+
+
+class FeePolicy(RootModel[Union[FeePolicy1, FeePolicy2, FeePolicy3]]):
+    root: Union[FeePolicy1, FeePolicy2, FeePolicy3] = Field(
+        ..., description="Defines the ways to calculate the protocol fee.\n"
     )
 
 
@@ -387,6 +463,148 @@ class ExecutedProtocolFee(BaseModel):
     policy: Optional[FeePolicy] = None
     amount: Optional[TokenAmount] = None
     token: Optional[Address] = None
+
+
+class DebugEvent(BaseModel):
+    label: str = Field(
+        ..., description="Event type (e.g. created, ready, filtered, traded)."
+    )
+    timestamp: AwareDatetime
+    reason: Optional[str] = Field(
+        None,
+        description='Why the order was filtered or marked invalid. Only present for "filtered" and "invalid" events.\n',
+    )
+
+
+class DebugProposedSolution(BaseModel):
+    solutionUid: int
+    ranking: int
+    solver: Address
+    isWinner: bool
+    filteredOut: bool
+    score: str = Field(..., description="Decimal-encoded score.")
+    executedSell: TokenAmount
+    executedBuy: TokenAmount
+
+
+class DebugProtocolFee(BaseModel):
+    token: Address
+    amount: TokenAmount
+
+
+class DebugTrade(BaseModel):
+    blockNumber: int
+    logIndex: int
+    buyAmount: TokenAmount
+    sellAmount: TokenAmount
+    sellAmountBeforeFees: TokenAmount
+    txHash: Optional[TransactionHash] = None
+    auctionId: Optional[int] = None
+
+
+class DebugSettlementAttempt(BaseModel):
+    solver: Address
+    solutionUid: int
+    startTimestamp: AwareDatetime
+    endTimestamp: Optional[AwareDatetime] = None
+    startBlock: int
+    endBlock: Optional[int] = None
+    deadlineBlock: int
+    outcome: Optional[str] = Field(
+        None, description='Settlement outcome (e.g. "success", "revert").'
+    )
+
+
+class Kind(Enum):
+    surplus = "surplus"
+    volume = "volume"
+    priceImprovement = "priceImprovement"
+
+
+class DebugFeePolicy(BaseModel):
+    kind: Kind
+    surplusFactor: Optional[float] = None
+    surplusMaxVolumeFactor: Optional[float] = None
+    volumeFactor: Optional[float] = None
+    priceImprovementFactor: Optional[float] = None
+    priceImprovementMaxVolumeFactor: Optional[float] = None
+
+
+class SimulationType(Enum):
+    full = "full"
+    quick = "quick"
+
+
+class AccessListItem(BaseModel):
+    address: Address
+    storage_keys: List[str]
+
+
+class StateObject(BaseModel):
+    balance: Optional[str] = Field(
+        None,
+        description="Fake balance to set for the account (decimal-encoded uint256).",
+        examples=["1000000000000000000"],
+    )
+    code: Optional[str] = Field(
+        None,
+        description="Fake EVM bytecode to inject into the account (hex with `0x` prefix).",
+        examples=["0x6080604052"],
+    )
+    storage: Optional[Dict[str, str]] = Field(
+        None,
+        description="Fake key-value mapping to override individual storage slots. Keys and values are 32-byte hex strings with `0x` prefix.\n",
+    )
+
+
+class TenderlyRequest(BaseModel):
+    network_id: str = Field(
+        ...,
+        description='The network identifier (e.g. "1" for mainnet).',
+        examples=["1"],
+    )
+    block_number: Optional[int] = Field(
+        None, description="Block number to simulate the transaction at."
+    )
+    transaction_index: Optional[int] = Field(
+        None, description="Transaction index within the block."
+    )
+    from_: Address = Field(..., alias="from")
+    to: Address
+    input: CallData = Field(
+        ..., description="Transaction calldata encoded as hex with `0x` prefix."
+    )
+    gas: Optional[int] = Field(None, description="Gas limit for the transaction.")
+    gas_price: Optional[int] = Field(None, description="Gas price in Wei.")
+    value: Optional[str] = Field(
+        None,
+        description="ETH value to send with the transaction (decimal-encoded uint256).",
+        examples=["0"],
+    )
+    simulation_type: Optional[SimulationType] = None
+    save: Optional[bool] = Field(
+        None, description="Whether to save the simulation on Tenderly."
+    )
+    save_if_fails: Optional[bool] = Field(
+        None, description="Whether to save the simulation only if it fails."
+    )
+    generate_access_list: Optional[bool] = Field(
+        None, description="Whether to generate an access list for the transaction."
+    )
+    state_objects: Optional[Dict[str, StateObject]] = Field(
+        None,
+        description="State overrides applied before simulation. Keys are account addresses (hex with `0x` prefix).\n",
+    )
+    access_list: Optional[List[AccessListItem]] = Field(
+        None, description="EIP-2930 access list for the transaction."
+    )
+
+
+class OrderSimulation(BaseModel):
+    tenderly_request: TenderlyRequest
+    error: Optional[str] = Field(
+        None, description="Simulation error message, if the simulation failed."
+    )
 
 
 class OrderParameters(BaseModel):
@@ -405,18 +623,49 @@ class OrderParameters(BaseModel):
     validTo: int = Field(
         ..., description="Unix timestamp (`uint32`) until which the order is valid."
     )
-    appData: AppDataHash
+    appData: Union[AppData, AppDataHash] = Field(
+        ...,
+        description="The app data associated with the order. In quote responses, this can be either the full app data JSON string or the app data hash, depending on what was provided in the quote request.\n",
+    )
+    appDataHash: Optional[AppDataHash] = Field(
+        None,
+        description="The hash of the app data. Only present when the full app data is also provided in the `appData` field.\n",
+    )
     feeAmount: TokenAmount = Field(
         ...,
-        description="sellAmount in atoms to cover network fees. Needs to be zero (and incorporated into the limit price) when placing the order",
+        description="The fee amount in sell token atoms. For quote responses, this represents\nthe estimated network fee, calculated as:\n`feeAmount = ceil((gasAmount * gasPrice) / sellTokenPrice)`.\n\nWhen creating an order, this should be set to zero as fees are now\ncomputed dynamically by solvers.\n",
+    )
+    gasAmount: str = Field(
+        ...,
+        description="The estimated gas units required to execute the quoted trade.\n",
+        examples=["150000"],
+    )
+    gasPrice: str = Field(
+        ...,
+        description="The estimated gas price at the time of quoting, measured in Wei per gas unit.\n",
+        examples=["15000000000"],
+    )
+    sellTokenPrice: str = Field(
+        ...,
+        description="Represents how much one atomic unit of the sell token is worth\nin the network's native token (in Wei or the equivalent atom).\n",
+        examples=["0.0004"],
     )
     kind: OrderKind = Field(..., description="The kind is either a buy or sell order.")
     partiallyFillable: bool = Field(
         ..., description="Is the order fill-or-kill or partially fillable?"
     )
-    sellTokenBalance: Optional[SellTokenSource] = "erc20"
-    buyTokenBalance: Optional[BuyTokenDestination] = "erc20"
-    signingScheme: Optional[SigningScheme] = "eip712"
+    sellTokenBalance: Optional[SellTokenSource] = Field(
+        "erc20",
+        description="Where the sell token should be drawn from. Defaults to `erc20` for standard ERC-20 token transfers.\n",
+    )
+    buyTokenBalance: Optional[BuyTokenDestination] = Field(
+        "erc20",
+        description="Where the buy token should be transferred to. Defaults to `erc20` for standard ERC-20 token transfers.\n",
+    )
+    signingScheme: Optional[SigningScheme] = Field(
+        "eip712",
+        description="The signing scheme to use for the order. Defaults to `eip712` for standard typed data signing.\n",
+    )
 
 
 class OrderMetaData(BaseModel):
@@ -425,9 +674,19 @@ class OrderMetaData(BaseModel):
         description="Creation time of the order. Encoded as ISO 8601 UTC.",
         examples=["2020-12-03T18:35:18.814523Z"],
     )
-    class_: OrderClass = Field(..., alias="class")
-    owner: Address
-    uid: UID
+    class_: OrderClass = Field(
+        ...,
+        alias="class",
+        description="The class of the order (market, limit, or liquidity). Determines how fees are handled.\n",
+    )
+    owner: Address = Field(
+        ...,
+        description="The address that signed the order and owns it. For regular orders, this is the trader. For EIP 1271 orders, it's the respective contract (see `onchainUser` for the actual trader).\n",
+    )
+    uid: UID = Field(
+        ...,
+        description="Unique identifier of the order. Computed as the EIP-712 hash of the order data combined with the owner address and valid_to timestamp.\n",
+    )
     availableBalance: Optional[TokenAmount] = Field(
         None,
         description="Unused field that is currently always set to `null` and will be removed in the future.\n",
@@ -454,7 +713,10 @@ class OrderMetaData(BaseModel):
         None,
         description="Liquidity orders are functionally the same as normal smart contract\norders but are not placed with the intent of actively getting\ntraded. Instead they facilitate the trade of normal orders by\nallowing them to be matched against liquidity orders which uses less\ngas and can have better prices than external liquidity.\n\nAs such liquidity orders will only be used in order to improve\nsettlement of normal orders. They should not be expected to be\ntraded otherwise and should not expect to get surplus.",
     )
-    ethflowData: Optional[EthflowData] = None
+    ethflowData: Optional[EthflowData] = Field(
+        None,
+        description="Additional data specific to ethflow orders. Only present for orders placed through the EthFlow contract, which allows trading native ETH directly without wrapping to WETH first.\n",
+    )
     onchainUser: Optional[Address] = Field(
         None,
         description="This represents the actual trader of an on-chain order.\n### ethflow orders\nIn this case, the `owner` would be the `EthFlow` contract and *not* the actual trader.\n",
@@ -474,6 +736,25 @@ class OrderMetaData(BaseModel):
         None,
         description="Full `appData`, which the contract-level `appData` is a hash of. See `OrderCreation` for more information.\n",
     )
+    settlementContract: Address = Field(
+        ...,
+        description="The address of the CoW Protocol settlement contract that this order is valid for. Orders are only valid on the settlement contract they were signed for.\n",
+    )
+    quote: Optional[StoredOrderQuote] = Field(
+        None,
+        description="If the order was created with a quote, this field contains the original quote data for reference. Includes gas estimation and pricing information captured at the time of quoting, which can be used to analyze order execution and calculate fees.\n",
+    )
+
+
+class Interactions(BaseModel):
+    pre: Optional[List[InteractionData]] = Field(
+        None,
+        description="Interactions to be executed before the order's trade. These can be used for setup operations like token approvals.\n",
+    )
+    post: Optional[List[InteractionData]] = Field(
+        None,
+        description="Interactions to be executed after the order's trade. These can be used for cleanup or follow-up operations.\n",
+    )
 
 
 class CompetitionAuction(BaseModel):
@@ -485,7 +766,7 @@ class CompetitionAuction(BaseModel):
 
 class OrderCancellations(BaseModel):
     orderUids: Optional[List[UID]] = Field(
-        None, description="UIDs of orders to cancel."
+        None, description="Up to 128 UIDs of orders to cancel."
     )
     signature: EcdsaSignature = Field(
         ..., description="`OrderCancellation` signed by the owner."
@@ -590,13 +871,20 @@ class OrderQuoteRequest(BaseModel):
     )
     timeout: Optional[int] = Field(
         None,
-        description="User provided timeout in milliseconds. Can only be used to reduce the response time for quote requests if the default is too slow as values greater than the default will be capped to the default. Note that reducing the timeout can result in worse quotes because the reduced timeout might be too slow for some price estimators.\n",
+        description="User provided timeout in milliseconds. If no value is provided the systems default quote timeout will be used. Values get capped at a generous maximum timeout. Note that reducing the timeout can result in worse quotes because it might be too short for some price estimators.\n",
     )
 
 
 class OrderQuoteResponse(BaseModel):
-    quote: OrderParameters
-    from_: Optional[Address] = Field(None, alias="from")
+    quote: OrderParameters = Field(
+        ...,
+        description="The quoted order parameters. These values can be used directly to create and sign an order.\n",
+    )
+    from_: Optional[Address] = Field(
+        None,
+        alias="from",
+        description="The address of the trader for whom the quote was requested.\n",
+    )
     expiration: str = Field(
         ...,
         description="Expiration date of the offered fee. Order service might not accept\nthe fee after this expiration date. Encoded as ISO 8601 UTC.\n",
@@ -612,12 +900,8 @@ class OrderQuoteResponse(BaseModel):
     )
     protocolFeeBps: Optional[str] = Field(
         None,
-        description='Protocol fee in basis points (e.g., "2" for 0.02%). This represents the volume-based fee policy. Only present when configured.\n',
+        description='Protocol fee in basis points (e.g., "2" for 0.02%). This represents the volume-based fee policy. Only present when a volume fee is configured.\n',
         examples=["2"],
-    )
-    protocolFeeSellAmount: Optional[TokenAmount] = Field(
-        None,
-        description="Protocol fee amount in sell token. For SELL orders, this amount is already included in the returned sellAmount. For BUY orders, this amount is applied before network fees are added to sellAmount. Only present when a volume fee is configured.\n",
     )
 
 
@@ -627,6 +911,9 @@ class SolverCompetitionResponse(BaseModel):
     )
     auctionStartBlock: Optional[int] = Field(
         None, description="Block that the auction started on."
+    )
+    auctionDeadlineBlock: Optional[int] = Field(
+        None, description="Block deadline by which the auction must be settled."
     )
     transactionHashes: Optional[List[TransactionHash]] = Field(
         None,
@@ -640,6 +927,52 @@ class SolverCompetitionResponse(BaseModel):
     solutions: Optional[List[SolverSettlement]] = Field(
         None,
         description="Maps from solver name to object describing that solver's settlement.",
+    )
+
+
+class DebugExecution(BaseModel):
+    executedFee: TokenAmount
+    executedFeeToken: Address
+    blockNumber: int
+    protocolFees: List[DebugProtocolFee]
+
+
+class SimulationRequest(BaseModel):
+    sellToken: Address = Field(..., description="The token being sold.")
+    buyToken: Address = Field(..., description="The token being bought.")
+    sellAmount: TokenAmount = Field(
+        ...,
+        description="Amount of sell token (hex- or decimal-encoded uint256). Must be greater than zero.\n",
+    )
+    buyAmount: TokenAmount = Field(
+        ..., description="Amount of buy token (hex- or decimal-encoded uint256)."
+    )
+    kind: OrderKind = Field(..., description="Whether this is a sell or buy order.")
+    owner: Address = Field(..., description="The address of the order owner.")
+    receiver: Optional[Address] = Field(
+        None,
+        description="The address that will receive the buy tokens. Defaults to the owner if omitted.\n",
+    )
+    sellTokenBalance: Optional[SellTokenSource] = Field(
+        None, description="Where the sell token should be drawn from."
+    )
+    buyTokenBalance: Optional[BuyTokenDestination] = Field(
+        None, description="Where the buy token should be transferred to."
+    )
+    appData: str = Field(..., description="Full app data JSON string.\n")
+    blockNumber: Optional[int] = None
+    signingScheme: SigningScheme
+    signature: Signature
+    feeAmount: TokenAmount = Field(
+        ...,
+        description="The fee amount in sell token atoms. Expected to be 0; only present because it must be part of the signed order data.\n",
+    )
+    validTo: int = Field(
+        ..., description="Unix timestamp (`uint32`) until which the order is valid."
+    )
+    partiallyFillable: bool = Field(
+        ...,
+        description="Whether the order can be partially filled or must be filled all at once.",
     )
 
 
@@ -684,10 +1017,17 @@ class OrderCreation(BaseModel):
         None,
         description="May be set for debugging purposes. If set, this field is compared to what the backend internally calculates as the app data hash based on the contents of `appData`. If the hash does not match, an error is returned. If this field is set, then `appData` **MUST** be a string encoding of a JSON object.\n",
     )
+    fullBalanceCheck: Optional[bool] = Field(
+        False,
+        description="If set to true, full sell amount will be checked during allowance and balance checking. This will ensure the account has correct allowance and available balance for the order to be created.\n",
+    )
 
 
 class Order(OrderCreation, OrderMetaData):
-    pass
+    interactions: Optional[Interactions] = Field(
+        None,
+        description="Optional pre and post interactions associated with the order. Pre-interactions are executed before the order's trade, and post-interactions are executed after.\n",
+    )
 
 
 class AuctionOrder(BaseModel):
@@ -757,3 +1097,28 @@ class Auction(BaseModel):
         None,
         description="List of addresses on whose surplus will count towards the objective value of their solution (unlike other orders that were created by the solver).\n",
     )
+
+
+class DebugAuction(BaseModel):
+    id: int = Field(..., description="Auction ID.")
+    block: int = Field(..., description="Block number of the auction.")
+    deadline: int = Field(..., description="Deadline block for the auction.")
+    nativePrices: Dict[str, str] = Field(
+        ...,
+        description="Native prices for the order's sell and buy tokens in this auction. Keys are hex-encoded token addresses, values are decimal price strings.\n",
+    )
+    proposedSolutions: List[DebugProposedSolution]
+    executions: List[DebugExecution]
+    settlementAttempts: List[DebugSettlementAttempt]
+    feePolicies: List[DebugFeePolicy]
+
+
+class DebugOrderResponse(BaseModel):
+    orderUid: UID = Field(..., description="The UID of the order being debugged.")
+    order: Order
+    events: List[DebugEvent]
+    auctions: List[DebugAuction] = Field(
+        ...,
+        description="Auctions this order participated in, sorted by ID. Each auction groups all related data: native prices, proposed solutions, executions, settlement attempts, and fee policies.\n",
+    )
+    trades: List[DebugTrade]
