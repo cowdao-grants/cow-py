@@ -208,7 +208,12 @@ class OrderBookApi(ApiBase):
         app_data_hash: AppDataHash = None,
         context_override: Context = {},
     ) -> AppDataHash:
-        app_data_hash_url = app_data_hash if app_data_hash else ""
+        # Interpolating the AppDataHash model directly would produce
+        # "root='0x...'" in the URL; the API needs the bare hash string.
+        if isinstance(app_data_hash, AppDataHash):
+            app_data_hash_url = app_data_hash.root
+        else:
+            app_data_hash_url = app_data_hash or ""
         response = await self._fetch(
             path=f"/api/v1/app_data/{app_data_hash_url}",
             method="PUT",

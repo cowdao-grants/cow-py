@@ -1,4 +1,7 @@
-from cowdao_cowpy.app_data.utils import DEFAULT_APP_DATA_HASH
+from cowdao_cowpy.app_data.utils import (
+    DEFAULT_APP_DATA_HASH,
+    ensure_app_data_uploaded,
+)
 from cowdao_cowpy.common.chains import Chain
 from cowdao_cowpy.common.config import SupportedChainId
 from cowdao_cowpy.common.constants import CowContractAddress
@@ -60,6 +63,11 @@ async def swap_tokens(
     """
     chain_id = SupportedChainId(chain.value[0])
     order_book_api = OrderBookApi(OrderBookAPIConfigFactory.get_config(env, chain_id))
+
+    if app_data == DEFAULT_APP_DATA_HASH:
+        # Register the default app-data document with the orderbook before
+        # referencing its hash; uploads are cached per (chain, env).
+        await ensure_app_data_uploaded(order_book_api)
 
     order_quote_request = OrderQuoteRequest(
         sellToken=sell_token,
