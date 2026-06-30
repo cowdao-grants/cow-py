@@ -14,6 +14,7 @@ from cowdao_cowpy.order_book.generated.model import (
     OrderQuoteResponse,
     Trade,
     OrderCreation,
+    SolverCompetitionResponse,
     Type as CompetitionStatusType,
     UID,
 )
@@ -205,3 +206,55 @@ async def test_order_status(order_book_api):
         assert response.type == CompetitionStatusType.active
         assert response.value is not None
         assert response.value[1].solver == "solver-b"
+
+
+@pytest.mark.asyncio
+async def test_get_solver_competition_latest_uses_v2_latest_path(order_book_api):
+    # v1 was decommissioned; the default "latest" must hit the dedicated v2 path.
+    with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
+        mock_request.return_value = AsyncMock(
+            status_code=200,
+            headers={"content-type": "application/json"},
+            json=Mock(return_value={"auctionId": 42}),
+        )
+        response = await order_book_api.get_solver_competition()
+        mock_request.assert_awaited_once()
+        requested_url = mock_request.call_args.kwargs["url"]
+        assert requested_url.endswith("/api/v2/solver_competition/latest")
+        assert isinstance(response, SolverCompetitionResponse)
+        assert response.auctionId == 42
+
+
+@pytest.mark.asyncio
+async def test_get_solver_competition_by_auction_id_uses_v2_path(order_book_api):
+    with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
+        mock_request.return_value = AsyncMock(
+            status_code=200,
+            headers={"content-type": "application/json"},
+            json=Mock(return_value={"auctionId": 123}),
+        )
+        response = await order_book_api.get_solver_competition(123)
+        mock_request.assert_awaited_once()
+        requested_url = mock_request.call_args.kwargs["url"]
+        assert requested_url.endswith("/api/v2/solver_competition/123")
+        assert "/api/v1/" not in requested_url
+        assert isinstance(response, SolverCompetitionResponse)
+
+
+@pytest.mark.asyncio
+async def test_get_solver_competition_by_tx_hash_uses_v2_path(order_book_api):
+    tx_hash = "0x" + "ab" * 32
+    with patch("httpx.AsyncClient.request", new_callable=AsyncMock) as mock_request:
+        mock_request.return_value = AsyncMock(
+            status_code=200,
+            headers={"content-type": "application/json"},
+            json=Mock(return_value={"auctionId": 7}),
+        )
+        response = await order_book_api.get_solver_competition_by_tx_hash(tx_hash)
+        mock_request.assert_awaited_once()
+        requested_url = mock_request.call_args.kwargs["url"]
+        assert requested_url.endswith(
+            f"/api/v2/solver_competition/by_tx_hash/{tx_hash}"
+        )
+        assert "/api/v1/" not in requested_url
+        assert isinstance(response, SolverCompetitionResponse)

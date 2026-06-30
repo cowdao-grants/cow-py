@@ -143,8 +143,15 @@ class OrderBookApi(ApiBase):
     async def get_solver_competition(
         self, action_id: Union[int, str] = "latest", context_override: Context = {}
     ) -> SolverCompetitionResponse:
+        # v1 was decommissioned; v2 exposes a dedicated /latest path and keys
+        # the by-id lookup on the auction id.
+        path = (
+            "/api/v2/solver_competition/latest"
+            if action_id == "latest"
+            else f"/api/v2/solver_competition/{action_id}"
+        )
         return await self._fetch(
-            path=f"/api/v1/solver_competition/{action_id}",
+            path=path,
             context_override=context_override,
             response_model=SolverCompetitionResponse,
         )
@@ -153,7 +160,7 @@ class OrderBookApi(ApiBase):
         self, tx_hash: TransactionHash, context_override: Context = {}
     ) -> SolverCompetitionResponse:
         return await self._fetch(
-            path=f"/api/v1/solver_competition/by_tx_hash/{tx_hash}",
+            path=f"/api/v2/solver_competition/by_tx_hash/{tx_hash}",
             context_override=context_override,
             response_model=SolverCompetitionResponse,
         )
