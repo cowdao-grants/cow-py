@@ -1,4 +1,7 @@
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Optional, Union
+
+import httpx
+
 from cowdao_cowpy.common.api.api_base import ApiBase, Context
 from cowdao_cowpy.common.api.errors import UnexpectedResponseError
 from cowdao_cowpy.common.config import SupportedChainId, ENVS_LIST
@@ -8,6 +11,7 @@ from cowdao_cowpy.order_book.generated.model import (
     Address,
     AppDataHash,
     AppDataObject,
+    CompetitionOrderStatus,
     NativePriceResponse,
     Order,
     OrderCreation,
@@ -32,8 +36,9 @@ class OrderBookApi(ApiBase):
     def __init__(
         self,
         config=OrderBookAPIConfigFactory.get_config("prod", SupportedChainId.MAINNET),
+        client: Optional[httpx.AsyncClient] = None,
     ):
-        super().__init__(config)
+        super().__init__(config, client=client)
 
     async def get_version(self, context_override: Context = {}) -> str:
         return await self._fetch("/api/v1/version", context_override=context_override)
@@ -89,7 +94,6 @@ class OrderBookApi(ApiBase):
         for env in ENVS_LIST:
             # TODO extract & exclude current env from loop.
             try:
-                # TODO: context override does not appear to work as expected.
                 result = await self.get_order_by_uid(
                     order_uid, {**context_override, "env": env.value}
                 )
@@ -99,11 +103,11 @@ class OrderBookApi(ApiBase):
 
     async def get_order_competition_status(
         self, order_uid: UID, context_override: Context = {}
-    ) -> Order:
+    ) -> CompetitionOrderStatus:
         return await self._fetch(
-            path=f"/api/v1/orders/{order_uid}/status",
+            path=f"/api/v1/orders/{order_uid.root}/status",
             context_override=context_override,
-            response_model=Order,
+            response_model=CompetitionOrderStatus,
         )
 
     def get_order_link(self, order_uid: UID) -> str:
@@ -139,8 +143,15 @@ class OrderBookApi(ApiBase):
     async def get_solver_competition(
         self, action_id: Union[int, str] = "latest", context_override: Context = {}
     ) -> SolverCompetitionResponse:
+        # v1 was decommissioned; v2 exposes a dedicated /latest path and keys
+        # the by-id lookup on the auction id.
+        path = (
+            "/api/v2/solver_competition/latest"
+            if action_id == "latest"
+            else f"/api/v2/solver_competition/{action_id}"
+        )
         return await self._fetch(
-            path=f"/api/v1/solver_competition/{action_id}",
+            path=path,
             context_override=context_override,
             response_model=SolverCompetitionResponse,
         )
@@ -149,7 +160,7 @@ class OrderBookApi(ApiBase):
         self, tx_hash: TransactionHash, context_override: Context = {}
     ) -> SolverCompetitionResponse:
         return await self._fetch(
-            path=f"/api/v1/solver_competition/by_tx_hash/{tx_hash}",
+            path=f"/api/v2/solver_competition/by_tx_hash/{tx_hash}",
             context_override=context_override,
             response_model=SolverCompetitionResponse,
         )
@@ -203,7 +214,12 @@ class OrderBookApi(ApiBase):
         app_data_hash: AppDataHash = None,
         context_override: Context = {},
     ) -> AppDataHash:
-        app_data_hash_url = app_data_hash if app_data_hash else ""
+        # Interpolating the AppDataHash model directly would produce
+        # "root='0x...'" in the URL; the API needs the bare hash string.
+        if isinstance(app_data_hash, AppDataHash):
+            app_data_hash_url = app_data_hash.root
+        else:
+            app_data_hash_url = app_data_hash or ""
         response = await self._fetch(
             path=f"/api/v1/app_data/{app_data_hash_url}",
             method="PUT",

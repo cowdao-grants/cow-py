@@ -58,8 +58,10 @@ CoW Protocol (Coincidence of Wants) powers CoWSwap, a decentralized exchange (DE
 - **Avalanche** - Access CoW Protocol on Avalanche network
 - **Polygon** - Trade on CoW Protocol via Polygon network
 - **Base** - Interact with CoW Protocol on Base network
-- **Lens** - Utilize CoW Protocol on Lens network
 - **BNB** - Engage with CoW Protocol on BNB Chain
+- **Linea** - Trade on CoW Protocol via Linea
+- **Plasma** - Access CoW Protocol on Plasma
+- **Ink** - Interact with CoW Protocol on Ink
 
 ## 🐄 Installation
 

@@ -27,14 +27,22 @@ servers:
     url: "https://api.cow.fi/polygon"
   - description: Polygon (Staging)
     url: "https://barn.api.cow.fi/polygon"
-  - description: Lens (Prod)
-    url: "https://api.cow.fi/lens"
-  - description: Lens (Staging)
-    url: "https://barn.api.cow.fi/lens"
+  - description: Linea (Prod)
+    url: "https://api.cow.fi/linea"
+  - description: Linea (Staging)
+    url: "https://barn.api.cow.fi/linea"
   - description: BNB (Prod)
     url: "https://api.cow.fi/bnb"
   - description: BNB (Staging)
     url: "https://barn.api.cow.fi/bnb"
+  - description: Plasma (Prod)
+    url: "https://api.cow.fi/plasma"
+  - description: Plasma (Staging)
+    url: "https://barn.api.cow.fi/plasma"
+  - description: Ink (Prod)
+    url: "https://api.cow.fi/ink"
+  - description: Ink (Staging)
+    url: "https://barn.api.cow.fi/ink"
   - description: Sepolia (Prod)
     url: "https://api.cow.fi/sepolia"
   - description: Sepolia (Staging)
@@ -73,6 +81,8 @@ paths:
           description: "Forbidden, your account is deny-listed."
         "404":
           description: No route was found quoting the order.
+        "422":
+          description: Unable to parse request body as valid JSON.
         "429":
           description: Too many order placements.
         "500":
@@ -113,6 +123,62 @@ paths:
           description: Invalid signature.
         "404":
           description: One or more orders were not found and no orders were cancelled.
+        "422":
+          description: Unable to parse request body as valid JSON.
+  "/api/v1/orders/by_uids":
+    post:
+      operationId: getOrders
+      summary: Get existing orders from the list of UIDs.
+      description: |
+        Returns an array where each element is an object with either
+        an "order" key containing the full order, or an "error" key
+        containing the UID and a description of what went wrong.
+      requestBody:
+        description: The list of up to 128 order uids to fetch
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/UID"
+      responses:
+        "200":
+          description: |
+            The resulting full order data based on the request. Each element of the array is
+            an object of the following format:
+            - `{"order": <Order>}` for successfully fetched orders
+            - `{"error": {"uid": "<UID>", "description": "<message>"}}` for orders that failed conversion
+            The result ordering is not guaranteed and might differ from the order of requested UIDs.
+            Orders that do not exist in the database will be missing from the response.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      order:
+                        $ref: "#/components/schemas/Order"
+                    required:
+                      - order
+                  - type: object
+                    properties:
+                      error:
+                        type: object
+                        properties:
+                          uid:
+                            $ref: "#/components/schemas/UID"
+                          description:
+                            type: string
+                        required:
+                          - uid
+                          - description
+                    required:
+                      - error
+        "400":
+          description: Request array size larger than 128 or unable to parse request body as valid JSON.
+        "422":
+          description: Could not decode array values as order UID.
   "/api/v1/orders/{UID}":
     get:
       operationId: getOrder
@@ -130,6 +196,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Order"
+        "400":
+          description: Invalid order UID.
         "404":
           description: Order was not found.
     delete:
@@ -169,6 +237,8 @@ paths:
           description: Invalid signature.
         "404":
           description: Order was not found.
+        "422":
+          description: Unable to parse request body as valid JSON.
   "/api/v1/orders/{UID}/status":
     get:
       operationId: getOrderStatus
@@ -188,6 +258,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/CompetitionOrderStatus"
+        "400":
+          description: Invalid order UID.
   "/api/v1/transactions/{txHash}/orders":
     get:
       operationId: getOrdersByTxHash
@@ -207,12 +279,21 @@ paths:
                 type: array
                 items:
                   $ref: "#/components/schemas/Order"
+        "400":
+          description: Invalid transaction hash.
   /api/v1/trades:
     get:
       operationId: getTrades
-      summary: Get existing trades.
+      summary: Get existing trades (unpaginated).
+      deprecated: true
       description: |
+        **Deprecated:** This endpoint is deprecated and will be removed in the future. Please use `/api/v2/trades` instead, which provides pagination support.
+
         Exactly one of `owner` or `orderUid` must be set.
+
+        Results are sorted by block number and log index descending (newest trades first).
+
+        **Note:** This endpoint returns all matching trades without pagination. For paginated results, use `/api/v2/trades`.
       parameters:
         - name: owner
           in: query
@@ -223,6 +304,63 @@ paths:
           in: query
           schema:
             $ref: "#/components/schemas/UID"
+          required: false
+      responses:
+        "200":
+          description: |-
+            ### If `owner` is specified:
+
+            Return all trades related to that `owner`.
+
+            ### If `orderUid` is specified:
+
+            Return all trades related to that `orderUid`. Given that an order
+            may be partially fillable, it is possible that an individual order
+            may have *multiple* trades.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Trade"
+  /api/v2/trades:
+    get:
+      operationId: getTradesV2
+      summary: Get existing trades (paginated).
+      description: |
+        Exactly one of `owner` or `orderUid` must be set.
+
+        Results are paginated and sorted by block number and log index descending (newest trades first).
+
+        To enumerate all trades start with `offset` 0 and keep increasing the
+        `offset` by the total number of returned results. When a response
+        contains less than `limit` the last page has been reached.
+      parameters:
+        - name: owner
+          in: query
+          schema:
+            $ref: "#/components/schemas/Address"
+          required: false
+        - name: orderUid
+          in: query
+          schema:
+            $ref: "#/components/schemas/UID"
+          required: false
+        - name: offset
+          in: query
+          description: |
+            The pagination offset. Defaults to 0.
+          schema:
+            type: integer
+          required: false
+        - name: limit
+          in: query
+          description: |
+            The maximum number of trades to return. Defaults to 10. Must be between 1 and 1000.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
           required: false
       responses:
         "200":
@@ -363,73 +501,84 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/PriceEstimationError"
+        "403":
+          description: >-
+            Forbidden, the order owner is deny-listed (`errorType`:
+            `Forbidden`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceEstimationError"
+        "404":
+          description: >-
+            No route was found for the specified order (`errorType`:
+            `NoLiquidity`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceEstimationError"
+        "422":
+          description: Unable to parse request body as valid JSON.
+        "429":
+          description: Too many order quotes.
+        "500":
+          description: >-
+            Unexpected error (`errorType`: `InternalServerError`).
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceEstimationError"
+  /api/v1/quote/stream:
+    post:
+      operationId: quoteStream
+      summary: Stream quotes from individual solvers as they arrive.
+      description: >
+        Accepts the same request body as `POST /api/v1/quote`. Instead of
+        waiting for all solvers and returning the single best quote, this
+        endpoint opens a Server-Sent Events stream and emits one event per quote
+        as solvers respond. Solvers without a usable quote emit no event, so you
+        may receive fewer events than there are solvers. The stream closes when
+        the quote timeout elapses or all solvers have responded. Each event's
+        `id` is always `null`. Clients can use this to show progressive quote
+        updates in real time.
+
+
+        The `priceQuality` field of the request body is ignored: this endpoint
+        always queries all solvers and attempts verification, emitting each
+        result with its own `verified` flag. If no solver returns a usable
+        quote, a terminal event named `error` is sent with a
+        `PriceEstimationError` body before the stream closes.
+      requestBody:
+        description: The order parameters to compute quotes for.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderQuoteRequest"
+      responses:
+        "200":
+          description: >
+            A Server-Sent Events stream. Each event's `data` field is a JSON
+            object matching `OrderQuoteResponse`. Events arrive one per quote
+            as solvers respond.
+          content:
+            text/event-stream:
+              schema:
+                $ref: "#/components/schemas/OrderQuoteResponse"
+        "400":
+          description: Error quoting order.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PriceEstimationError"
         "404":
           description: No route was found for the specified order.
+        "422":
+          description: Unable to parse request body as valid JSON.
         "429":
           description: Too many order quotes.
         "500":
           description: Unexpected error quoting an order.
-  "/api/v1/solver_competition/{auction_id}":
-    get:
-      operationId: getSolverCompetitionByAuctionId
-      deprecated: true
-      summary: Get information about a solver competition.
-      description: |
-        Returns the competition information by `auction_id`.
-      parameters:
-        - name: auction_id
-          in: path
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Competition
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SolverCompetitionResponse"
-        "404":
-          description: No competition information available for this auction id.
-  "/api/v1/solver_competition/by_tx_hash/{tx_hash}":
-    get:
-      operationId: getSolverCompetitionByTxHash
-      deprecated: true
-      summary: Get information about solver competition.
-      description: |
-        Returns the competition information by `tx_hash`.
-      parameters:
-        - name: tx_hash
-          description: Transaction hash in which the competition was settled.
-          in: path
-          required: true
-          schema:
-            $ref: "#/components/schemas/TransactionHash"
-      responses:
-        "200":
-          description: Competition
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SolverCompetitionResponse"
-        "404":
-          description: No competition information available for this `tx_hash`.
-  /api/v1/solver_competition/latest:
-    get:
-      operationId: getSolverCompetitionLatest
-      deprecated: true
-      summary: Get information about the most recent solver competition.
-      description: |
-        Returns the competition information for the last seen auction_id.
-      responses:
-        "200":
-          description: Competition
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/SolverCompetitionResponse"
-        "404":
-          description: No competition information available.
   "/api/v2/solver_competition/{auction_id}":
     get:
       operationId: getSolverCompetitionByAuctionIdV2
@@ -449,6 +598,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SolverCompetitionResponse"
+        "400":
+          description: Invalid auction ID.
         "404":
           description: No competition information available for this auction id.
   "/api/v2/solver_competition/by_tx_hash/{tx_hash}":
@@ -471,6 +622,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/SolverCompetitionResponse"
+        "400":
+          description: Invalid transaction hash.
         "404":
           description: No competition information available for this `tx_hash`.
   /api/v2/solver_competition/latest:
@@ -517,6 +670,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/AppDataObject"
+        "400":
+          description: Invalid app data hash.
         "404":
           description: No full `appData` stored for this hash.
     put:
@@ -554,6 +709,8 @@ paths:
                 $ref: "#/components/schemas/AppDataHash"
         "400":
           description: Error validating full `appData`
+        "422":
+          description: Unable to parse request body as valid JSON.
         "500":
           description: Error storing the full `appData`
   /api/v1/app_data:
@@ -585,6 +742,8 @@ paths:
                 $ref: "#/components/schemas/AppDataHash"
         "400":
           description: Error validating full `appData`
+        "422":
+          description: Unable to parse request body as valid JSON.
         "500":
           description: Error storing the full `appData`
   "/api/v1/users/{address}/total_surplus":
@@ -609,6 +768,106 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/TotalSurplus"
+        "400":
+          description: Invalid address.
+  "/restricted/api/v1/debug/simulation":
+    post:
+      operationId: debugSimulationPost
+      summary: Simulate an arbitrary order.
+      description: >
+        Simulates an arbitrary order specified in the request body and returns
+        the Tenderly simulation request, along with any simulation error if
+        applicable.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SimulationRequest"
+      responses:
+        "200":
+          description: Simulation request returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderSimulation"
+        "400":
+          description: >
+            Invalid JSON body, or `appData` is not valid JSON.
+        "405":
+          description: Order simulation endpoint is not enabled.
+        "422":
+          description: >
+            Request body failed schema validation: missing required field,
+            wrong field type, zero `sellAmount`, or unrecognised `kind` value.
+        "500":
+          description: Internal error.
+  "/restricted/api/v1/debug/simulation/{uid}":
+    get:
+      operationId: debugSimulation
+      summary: Get Tenderly simulation request for an order.
+      description: >
+        Returns the Tenderly simulation request that would be used to simulate
+        the given order, along with any simulation error if applicable.
+      parameters:
+        - in: path
+          name: uid
+          schema:
+            $ref: "#/components/schemas/UID"
+          required: true
+        - in: query
+          name: block_number
+          schema:
+            type: integer
+            format: int64
+          required: false
+          description: >
+            Block number to simulate the order at. If not specified, the
+            simulation uses the latest block.
+      responses:
+        "200":
+          description: Simulation request returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderSimulation"
+        "400":
+          description: >
+            Malformed path parameter (invalid order UID format) or invalid
+            `block_number` query parameter.
+        "404":
+          description: Order not found.
+        "405":
+          description: Order simulation endpoint is not enabled.
+        "500":
+          description: Internal error.
+  "/restricted/api/v1/debug/order/{uid}":
+    get:
+      operationId: debugOrder
+      summary: Debug an order's lifecycle.
+      description: >
+        Returns a comprehensive debug report for the given order, including
+        order details, lifecycle events, auction participation, proposed
+        solutions, executions, trades, and settlement attempts.
+      parameters:
+        - in: path
+          name: uid
+          schema:
+            $ref: "#/components/schemas/UID"
+          required: true
+      responses:
+        "200":
+          description: Debug report returned.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DebugOrderResponse"
+        "400":
+          description: Invalid order UID (malformed hex or wrong length).
+        "404":
+          description: Order not found.
+        "500":
+          description: Internal error.
 components:
   schemas:
     TransactionHash:
@@ -713,14 +972,26 @@ components:
         - limit
         - liquidity
     SellTokenSource:
-      description: Where should the `sellToken` be drawn from?
+      description: |-
+        Where should the `sellToken` be drawn from?
+
+        **Only `erc20` is accepted for new orders.** The `internal` and `external`
+        (Balancer Vault) sources are deprecated: orders using them are rejected at
+        creation with `UnsupportedSellTokenSource`. The values remain in the enum
+        because they may still appear on historical orders returned by the API.
       type: string
       enum:
         - erc20
         - internal
         - external
     BuyTokenDestination:
-      description: Where should the `buyToken` be transferred to?
+      description: |-
+        Where should the `buyToken` be transferred to?
+
+        **Only `erc20` is accepted for new orders.** The `internal` (Balancer Vault)
+        destination is rejected at creation with `UnsupportedBuyTokenDestination`.
+        The value remains in the enum because it may still appear on historical
+        orders returned by the API.
       type: string
       enum:
         - erc20
@@ -781,11 +1052,45 @@ components:
           description: Unix timestamp (`uint32`) until which the order is valid.
           type: integer
         appData:
-          $ref: "#/components/schemas/AppDataHash"
+          description: >
+            The app data associated with the order. In quote responses, this can be
+            either the full app data JSON string or the app data hash, depending on
+            what was provided in the quote request.
+          oneOf:
+            - $ref: "#/components/schemas/AppData"
+            - $ref: "#/components/schemas/AppDataHash"
+        appDataHash:
+          description: >
+            The hash of the app data. Only present when the full app data is also
+            provided in the `appData` field.
+          allOf:
+            - $ref: "#/components/schemas/AppDataHash"
         feeAmount:
-          description: sellAmount in atoms to cover network fees. Needs to be zero (and incorporated into the limit price) when placing the order
+          description: |
+            The fee amount in sell token atoms. For quote responses, this represents
+            the estimated network fee, calculated as:
+            `feeAmount = ceil((gasAmount * gasPrice) / sellTokenPrice)`.
+
+            When creating an order, this should be set to zero as fees are now
+            computed dynamically by solvers.
           allOf:
             - $ref: "#/components/schemas/TokenAmount"
+        gasAmount:
+          description: |
+            The estimated gas units required to execute the quoted trade.
+          type: string
+          example: "150000"
+        gasPrice:
+          description: |
+            The estimated gas price at the time of quoting, measured in Wei per gas unit.
+          type: string
+          example: "15000000000"
+        sellTokenPrice:
+          description: |
+            Represents how much one atomic unit of the sell token is worth
+            in the network's native token (in Wei or the equivalent atom).
+          type: string
+          example: "0.0004"
         kind:
           description: The kind is either a buy or sell order.
           allOf:
@@ -794,14 +1099,25 @@ components:
           description: Is the order fill-or-kill or partially fillable?
           type: boolean
         sellTokenBalance:
+          deprecated: true
+          description: >
+            Where the sell token should be drawn from. Defaults to `erc20` for
+            standard ERC-20 token transfers.
           allOf:
             - $ref: "#/components/schemas/SellTokenSource"
           default: erc20
         buyTokenBalance:
+          deprecated: true
+          description: >
+            Where the buy token should be transferred to. Defaults to `erc20` for
+            standard ERC-20 token transfers.
           allOf:
             - $ref: "#/components/schemas/BuyTokenDestination"
           default: erc20
         signingScheme:
+          description: >
+            The signing scheme to use for the order. Defaults to `eip712` for
+            standard typed data signing.
           allOf:
             - $ref: "#/components/schemas/SigningScheme"
           default: eip712
@@ -813,6 +1129,9 @@ components:
         - validTo
         - appData
         - feeAmount
+        - gasAmount
+        - gasPrice
+        - sellTokenPrice
         - kind
         - partiallyFillable
     OrderCreation:
@@ -855,11 +1174,13 @@ components:
           description: "see `OrderParameters::partiallyFillable`"
           type: boolean
         sellTokenBalance:
+          deprecated: true
           description: "see `OrderParameters::sellTokenBalance`"
           allOf:
             - $ref: "#/components/schemas/SellTokenSource"
           default: erc20
         buyTokenBalance:
+          deprecated: true
           description: "see `OrderParameters::buyTokenBalance`"
           allOf:
             - $ref: "#/components/schemas/BuyTokenDestination"
@@ -943,6 +1264,14 @@ components:
           allOf:
             - $ref: "#/components/schemas/AppDataHash"
           nullable: true
+        fullBalanceCheck:
+          description: >
+            If set to true, full sell amount will be checked during allowance and balance checking.
+            This will ensure the account has correct allowance and available balance for the order
+            to be created.
+
+          type: boolean
+          default: false
       required:
         - sellToken
         - buyToken
@@ -966,11 +1295,24 @@ components:
           type: string
           example: "2020-12-03T18:35:18.814523Z"
         class:
-          $ref: "#/components/schemas/OrderClass"
+          description: >
+            The class of the order (market, limit, or liquidity). Determines
+            how fees are handled.
+          allOf:
+            - $ref: "#/components/schemas/OrderClass"
         owner:
-          $ref: "#/components/schemas/Address"
+          description: >
+            The address that signed the order and owns it. For regular orders,
+            this is the trader. For EIP 1271 orders, it's the respective contract
+            (see `onchainUser` for the actual trader).
+          allOf:
+            - $ref: "#/components/schemas/Address"
         uid:
-          $ref: "#/components/schemas/UID"
+          description: >
+            Unique identifier of the order. Computed as the EIP-712 hash of the
+            order data combined with the owner address and valid_to timestamp.
+          allOf:
+            - $ref: "#/components/schemas/UID"
         availableBalance:
           description: >
             Unused field that is currently always set to `null` and will be
@@ -1027,6 +1369,10 @@ components:
             traded otherwise and should not expect to get surplus.
           type: boolean
         ethflowData:
+          description: >
+            Additional data specific to ethflow orders. Only present for orders
+            placed through the EthFlow contract, which allows trading native ETH
+            directly without wrapping to WETH first.
           allOf:
             - $ref: "#/components/schemas/EthflowData"
         onchainUser:
@@ -1063,6 +1409,22 @@ components:
             `OrderCreation` for more information.
           type: string
           nullable: true
+        settlementContract:
+          description: >
+            The address of the CoW Protocol settlement contract that this order
+            is valid for. Orders are only valid on the settlement contract they
+            were signed for.
+          allOf:
+            - $ref: "#/components/schemas/Address"
+        quote:
+          description: >
+            If the order was created with a quote, this field contains the original
+            quote data for reference. Includes gas estimation and pricing information
+            captured at the time of quoting, which can be used to analyze order
+            execution and calculate fees.
+          allOf:
+            - $ref: "#/components/schemas/StoredOrderQuote"
+          nullable: true
       required:
         - creationDate
         - class
@@ -1074,10 +1436,37 @@ components:
         - executedFeeAmount
         - invalidated
         - status
+        - settlementContract
     Order:
+      description: >
+        An order as returned by the API. Combines the order creation data,
+        order metadata, and any associated interactions.
       allOf:
         - $ref: "#/components/schemas/OrderCreation"
         - $ref: "#/components/schemas/OrderMetaData"
+        - type: object
+          properties:
+            interactions:
+              description: >
+                Optional pre and post interactions associated with the order.
+                Pre-interactions are executed before the order's trade, and
+                post-interactions are executed after.
+              type: object
+              properties:
+                pre:
+                  description: >
+                    Interactions to be executed before the order's trade.
+                    These can be used for setup operations like token approvals.
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/InteractionData"
+                post:
+                  description: >
+                    Interactions to be executed after the order's trade.
+                    These can be used for cleanup or follow-up operations.
+                  type: array
+                  items:
+                    $ref: "#/components/schemas/InteractionData"
     AuctionOrder:
       description: >
         A solvable order included in the current batch auction. Contains the
@@ -1144,11 +1533,13 @@ components:
           items:
             $ref: "#/components/schemas/InteractionData"
         sellTokenBalance:
+          deprecated: true
           description: "see `OrderParameters::sellTokenBalance`"
           allOf:
             - $ref: "#/components/schemas/SellTokenSource"
           default: erc20
         buyTokenBalance:
+          deprecated: true
           description: "see `OrderParameters::buyTokenBalance`"
           allOf:
             - $ref: "#/components/schemas/BuyTokenDestination"
@@ -1298,7 +1689,7 @@ components:
       properties:
         orderUids:
           type: array
-          description: UIDs of orders to cancel.
+          description: Up to 128 UIDs of orders to cancel.
           items:
             $ref: "#/components/schemas/UID"
         signature:
@@ -1465,7 +1856,9 @@ components:
             - UnsupportedToken
             - InvalidAppData
             - AppDataHashMismatch
+            - AppDataMismatch
             - AppdataFromMismatch
+            - MetadataSerializationFailed
             - OldOrderActivelyBidOn
         description:
           type: string
@@ -1491,17 +1884,51 @@ components:
         - errorType
         - description
     PriceEstimationError:
+      description: |
+        Error quoting an order.
+
+        Possible `errorType` values per HTTP status:
+        * 400: `AppDataHashMismatch`, `CustomSolverError`, `ExcessiveValidTo`,
+          `InsufficientLiquidity`, `InsufficientValidTo`, `InvalidAppData`,
+          `InvalidNativeSellToken`, `QuoteNotVerified`, `SameBuyAndSellToken`,
+          `SellAmountDoesNotCoverFee`, `TokenTemporarilySuspended`,
+          `TradingOutsideAllowedWindow`, `UnsupportedBuyTokenDestination`,
+          `UnsupportedOrderType`, `UnsupportedSellTokenSource`,
+          `UnsupportedToken`
+        * 403: `Forbidden`
+        * 404: `NoLiquidity`
+        * 500: `InternalServerError`
       type: object
       properties:
         errorType:
           type: string
           enum:
+            - AppDataHashMismatch
+            - CustomSolverError
+            - ExcessiveValidTo
+            - Forbidden
+            - InsufficientLiquidity
+            - InsufficientValidTo
+            - InternalServerError
+            - InvalidAppData
+            - InvalidNativeSellToken
+            - NoLiquidity
             - QuoteNotVerified
-            - UnsupportedToken
-            - ZeroAmount
+            - SameBuyAndSellToken
+            - SellAmountDoesNotCoverFee
+            - TokenTemporarilySuspended
+            - TradingOutsideAllowedWindow
+            - UnsupportedBuyTokenDestination
             - UnsupportedOrderType
+            - UnsupportedSellTokenSource
+            - UnsupportedToken
         description:
           type: string
+        data:
+          type: object
+          description: >-
+            Optional error-specific payload: `SellAmountDoesNotCoverFee`
+            returns an object with `fee_amount`.
       required:
         - errorType
         - description
@@ -1622,10 +2049,12 @@ components:
               anyOf:
                 - $ref: "#/components/schemas/AppDataHash"
             sellTokenBalance:
+              deprecated: true
               allOf:
                 - $ref: "#/components/schemas/SellTokenSource"
               default: erc20
             buyTokenBalance:
+              deprecated: true
               allOf:
                 - $ref: "#/components/schemas/BuyTokenDestination"
               default: erc20
@@ -1647,11 +2076,11 @@ components:
             timeout:
               type: integer
               description: >
-                User provided timeout in milliseconds. Can only be used to reduce
-                the response time for quote requests if the default is too slow
-                as values greater than the default will be capped to the default.
+                User provided timeout in milliseconds. If no value is provided
+                the systems default quote timeout will be used. Values get capped
+                at a generous maximum timeout.
                 Note that reducing the timeout can result in worse quotes because
-                the reduced timeout might be too slow for some price estimators.
+                it might be too short for some price estimators.
           required:
             - sellToken
             - buyToken
@@ -1663,9 +2092,16 @@ components:
       type: object
       properties:
         quote:
-          $ref: "#/components/schemas/OrderParameters"
+          description: >
+            The quoted order parameters. These values can be used directly to
+            create and sign an order.
+          allOf:
+            - $ref: "#/components/schemas/OrderParameters"
         from:
-          $ref: "#/components/schemas/Address"
+          description: >
+            The address of the trader for whom the quote was requested.
+          allOf:
+            - $ref: "#/components/schemas/Address"
         expiration:
           description: |
             Expiration date of the offered fee. Order service might not accept
@@ -1685,17 +2121,9 @@ components:
         protocolFeeBps:
           description: >
             Protocol fee in basis points (e.g., "2" for 0.02%). This represents
-            the volume-based fee policy. Only present when configured.
+            the volume-based fee policy. Only present when a volume fee is configured.
           type: string
           example: "2"
-        protocolFeeSellAmount:
-          description: >
-            Protocol fee amount in sell token. For SELL orders, this amount is
-            already included in the returned sellAmount. For BUY orders, this
-            amount is applied before network fees are added to sellAmount. Only
-            present when a volume fee is configured.
-          allOf:
-            - $ref: "#/components/schemas/TokenAmount"
       required:
         - quote
         - expiration
@@ -1713,6 +2141,9 @@ components:
         auctionStartBlock:
           type: integer
           description: Block that the auction started on.
+        auctionDeadlineBlock:
+          type: integer
+          description: Block deadline by which the auction must be settled.
         transactionHashes:
           type: array
           description: |
@@ -1765,10 +2196,17 @@ components:
             Transaction in which the solution was executed onchain (if available).
           nullable: true
         clearingPrices:
+          deprecated: true
           type: object
           additionalProperties:
             $ref: "#/components/schemas/BigUint"
           description: >
+            Deprecated. The autopilot no longer persists per-solution uniform
+            clearing prices, so this field will be empty for solutions of
+            auctions produced by recent autopilots. Solutions stored before
+            this change keep their original values.
+
+
             The prices of tokens for settled user orders as passed to the
             settlement contract.
         orders:
@@ -1806,20 +2244,116 @@ components:
           type: string
           description: The total surplus.
     InteractionData:
+      description: >
+        Represents a smart contract interaction that can be executed as part of
+        an order's pre or post hooks.
       type: object
       properties:
         target:
-          $ref: "#/components/schemas/Address"
+          description: The address of the contract to call.
+          allOf:
+            - $ref: "#/components/schemas/Address"
         value:
-          $ref: "#/components/schemas/TokenAmount"
-        call_data:
-          type: array
-          items:
-            $ref: "#/components/schemas/CallData"
-          description: The call data to be used for the interaction.
+          description: >
+            The amount of native token (ETH, xDAI, etc.) in Wei to send with the
+            interaction call.
+          allOf:
+            - $ref: "#/components/schemas/TokenAmount"
+        callData:
+          description: >
+            The calldata to be sent to the target contract. Encoded as a hex
+            string with `0x` prefix.
+          allOf:
+            - $ref: "#/components/schemas/CallData"
+      required:
+        - target
+        - value
+        - callData
+    StoredOrderQuote:
+      description: |
+        Quote data stored with an order. This represents the original quote used to
+        create the order, containing gas estimation and pricing information captured
+        at the time of quoting.
+
+        Note: This is different from `OrderQuoteResponse` which is returned by the
+        `POST /api/v1/quote` endpoint and contains order parameters to sign.
+      type: object
+      properties:
+        gasAmount:
+          description: |
+            The estimated gas units required to execute the quoted trade.
+            Measured in gas units (not Wei). Used together with `gasPrice` and
+            `sellTokenPrice` to calculate the network fee in sell token atoms.
+          type: string
+          example: "150000"
+        gasPrice:
+          description: |
+            The estimated gas price at the time of quoting, measured in Wei per gas unit.
+            The network fee in Wei can be calculated as: `feeInWei = gasAmount * gasPrice`.
+          type: string
+          example: "15000000000"
+        sellTokenPrice:
+          description: |
+            The price of the sell token expressed in native token atoms per sell token atom.
+
+            Units: `native token atoms / sell token atoms`
+
+            **Example calculation (Mainnet, selling USDC):**
+            - Sell token: USDC (6 decimals)
+            - Native token: ETH (18 decimals)
+            - Market price: 1 ETH = 1000 USDC
+
+            `sellTokenPrice = 1 × 10^18 wei / (1000 × 10^6 USDC atoms) = 10^9`
+
+            This value is used to convert network fees (in native token) to sell token amounts.
+          type: string
+          example: "1000000000"
+        sellAmount:
+          description: The quoted sell amount in atoms of the sell token.
+          allOf:
+            - $ref: "#/components/schemas/TokenAmount"
+        buyAmount:
+          description: The quoted buy amount in atoms of the buy token.
+          allOf:
+            - $ref: "#/components/schemas/TokenAmount"
+        feeAmount:
+          description: |
+            The fee amount in atoms of the sell token, calculated from the gas parameters
+            at the time of quoting.
+
+            Computed as: `ceil((gasAmount * gasPrice) / sellTokenPrice)`.
+
+            This represents the network fee that was estimated when the quote was created.
+          allOf:
+            - $ref: "#/components/schemas/TokenAmount"
+        solver:
+          description: The address of the solver that provided this quote.
+          allOf:
+            - $ref: "#/components/schemas/Address"
+        verified:
+          description: |
+            Whether the quote was verified through simulation. A verified quote
+            provides higher confidence that the trade will execute successfully.
+          type: boolean
+        metadata:
+          description: |
+            Additional metadata about the quote execution plan (e.g., the route taken).
+            This field is only populated for orders that are no longer fillable
+            (filled, cancelled, or expired) to prevent solvers from copying
+            execution strategies for active orders.
+          type: object
+      required:
+        - gasAmount
+        - gasPrice
+        - sellTokenPrice
+        - sellAmount
+        - buyAmount
+        - feeAmount
+        - solver
+        - verified
     Quote:
       description: |
-        A calculated order quote.
+        A calculated order quote used in solver auctions.
       type: object
       properties:
         sellAmount:
@@ -1887,11 +2421,27 @@ components:
         - maxVolumeFactor
         - quote
     FeePolicy:
-      description: Defines the ways to calculate the protocol fee.
+      description: >
+        Defines the ways to calculate the protocol fee.
       oneOf:
-        - $ref: "#/components/schemas/Surplus"
-        - $ref: "#/components/schemas/Volume"
-        - $ref: "#/components/schemas/PriceImprovement"
+        - type: object
+          properties:
+            surplus:
+              $ref: "#/components/schemas/Surplus"
+          required:
+            - surplus
+        - type: object
+          properties:
+            volume:
+              $ref: "#/components/schemas/Volume"
+          required:
+            - volume
+        - type: object
+          properties:
+            priceImprovement:
+              $ref: "#/components/schemas/PriceImprovement"
+          required:
+            - priceImprovement
     ExecutedProtocolFee:
       type: object
       properties:
@@ -1905,3 +2455,421 @@ components:
           allOf:
             - description: The token in which the fee is taken
             - $ref: "#/components/schemas/Address"
+    DebugOrderResponse:
+      type: object
+      required:
+        - orderUid
+        - order
+        - events
+        - auctions
+        - trades
+      properties:
+        orderUid:
+          description: The UID of the order being debugged.
+          allOf:
+            - $ref: "#/components/schemas/UID"
+        order:
+          $ref: "#/components/schemas/Order"
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/DebugEvent"
+        auctions:
+          description: >
+            Auctions this order participated in, sorted by ID. Each auction
+            groups all related data: native prices, proposed solutions,
+            executions, settlement attempts, and fee policies.
+          type: array
+          items:
+            $ref: "#/components/schemas/DebugAuction"
+        trades:
+          type: array
+          items:
+            $ref: "#/components/schemas/DebugTrade"
+    DebugEvent:
+      type: object
+      required:
+        - label
+        - timestamp
+      properties:
+        label:
+          type: string
+          description: Event type (e.g. created, ready, filtered, traded).
+        timestamp:
+          type: string
+          format: date-time
+        reason:
+          type: string
+          nullable: true
+          description: >
+            Why the order was filtered or marked invalid. Only present for
+            "filtered" and "invalid" events.
+    DebugAuction:
+      type: object
+      required:
+        - id
+        - block
+        - deadline
+        - nativePrices
+        - proposedSolutions
+        - executions
+        - settlementAttempts
+        - feePolicies
+      properties:
+        id:
+          type: integer
+          description: Auction ID.
+        block:
+          type: integer
+          description: Block number of the auction.
+        deadline:
+          type: integer
+          description: Deadline block for the auction.
+        nativePrices:
+          type: object
+          additionalProperties:
+            type: string
+          description: >
+            Native prices for the order's sell and buy tokens in this auction.
+            Keys are hex-encoded token addresses, values are decimal price
+            strings.
+        proposedSolutions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DebugProposedSolution"
+        executions:
+          type: array
+          items:
+            $ref: "#/components/schemas/DebugExecution"
+        settlementAttempts:
+          type: array
+          items:
+            $ref: "#/components/schemas/DebugSettlementAttempt"
+        feePolicies:
+          type: array
+          items:
+            $ref: "#/components/schemas/DebugFeePolicy"
+    DebugProposedSolution:
+      type: object
+      required:
+        - solutionUid
+        - ranking
+        - solver
+        - isWinner
+        - filteredOut
+        - score
+        - executedSell
+        - executedBuy
+      properties:
+        solutionUid:
+          type: integer
+        ranking:
+          type: integer
+        solver:
+          $ref: "#/components/schemas/Address"
+        isWinner:
+          type: boolean
+        filteredOut:
+          type: boolean
+        score:
+          type: string
+          description: Decimal-encoded score.
+        executedSell:
+          $ref: "#/components/schemas/TokenAmount"
+        executedBuy:
+          $ref: "#/components/schemas/TokenAmount"
+    DebugExecution:
+      type: object
+      required:
+        - executedFee
+        - executedFeeToken
+        - blockNumber
+        - protocolFees
+      properties:
+        executedFee:
+          $ref: "#/components/schemas/TokenAmount"
+        executedFeeToken:
+          $ref: "#/components/schemas/Address"
+        blockNumber:
+          type: integer
+        protocolFees:
+          type: array
+          items:
+            $ref: "#/components/schemas/DebugProtocolFee"
+    DebugProtocolFee:
+      type: object
+      required:
+        - token
+        - amount
+      properties:
+        token:
+          $ref: "#/components/schemas/Address"
+        amount:
+          $ref: "#/components/schemas/TokenAmount"
+    DebugTrade:
+      type: object
+      required:
+        - blockNumber
+        - logIndex
+        - buyAmount
+        - sellAmount
+        - sellAmountBeforeFees
+      properties:
+        blockNumber:
+          type: integer
+        logIndex:
+          type: integer
+        buyAmount:
+          $ref: "#/components/schemas/TokenAmount"
+        sellAmount:
+          $ref: "#/components/schemas/TokenAmount"
+        sellAmountBeforeFees:
+          $ref: "#/components/schemas/TokenAmount"
+        txHash:
+          $ref: "#/components/schemas/TransactionHash"
+        auctionId:
+          type: integer
+    DebugSettlementAttempt:
+      type: object
+      required:
+        - solver
+        - solutionUid
+        - startTimestamp
+        - startBlock
+        - deadlineBlock
+      properties:
+        solver:
+          $ref: "#/components/schemas/Address"
+        solutionUid:
+          type: integer
+        startTimestamp:
+          type: string
+          format: date-time
+        endTimestamp:
+          type: string
+          format: date-time
+        startBlock:
+          type: integer
+        endBlock:
+          type: integer
+        deadlineBlock:
+          type: integer
+        outcome:
+          type: string
+          description: Settlement outcome (e.g. "success", "revert").
+    DebugFeePolicy:
+      type: object
+      description: Fee policy applied to this order in this auction.
+      required:
+        - kind
+      properties:
+        kind:
+          type: string
+          enum: [surplus, volume, priceImprovement]
+        surplusFactor:
+          type: number
+        surplusMaxVolumeFactor:
+          type: number
+        volumeFactor:
+          type: number
+        priceImprovementFactor:
+          type: number
+        priceImprovementMaxVolumeFactor:
+          type: number
+    SimulationType:
+      description: The kind of Tenderly simulation to run.
+      type: string
+      enum:
+        - full
+        - quick
+    AccessListItem:
+      type: object
+      properties:
+        address:
+          $ref: "#/components/schemas/Address"
+        storage_keys:
+          type: array
+          items:
+            description: 32 byte storage key encoded as hex with `0x` prefix.
+            type: string
+            example: "0x0000000000000000000000000000000000000000000000000000000000000000"
+      required:
+        - address
+        - storage_keys
+    StateObject:
+      description: State overrides for a given account before simulation.
+      type: object
+      properties:
+        balance:
+          description: Fake balance to set for the account (decimal-encoded uint256).
+          type: string
+          example: "1000000000000000000"
+        code:
+          description: Fake EVM bytecode to inject into the account (hex with `0x` prefix).
+          type: string
+          example: "0x6080604052"
+        storage:
+          description: >
+            Fake key-value mapping to override individual storage slots.
+            Keys and values are 32-byte hex strings with `0x` prefix.
+          type: object
+          additionalProperties:
+            type: string
+    TenderlyRequest:
+      description: A Tenderly transaction simulation request.
+      type: object
+      properties:
+        network_id:
+          description: The network identifier (e.g. "1" for mainnet).
+          type: string
+          example: "1"
+        block_number:
+          description: Block number to simulate the transaction at.
+          type: integer
+        transaction_index:
+          description: Transaction index within the block.
+          type: integer
+        from:
+          $ref: "#/components/schemas/Address"
+        to:
+          $ref: "#/components/schemas/Address"
+        input:
+          allOf:
+            - $ref: "#/components/schemas/CallData"
+          description: Transaction calldata encoded as hex with `0x` prefix.
+        gas:
+          description: Gas limit for the transaction.
+          type: integer
+        gas_price:
+          description: Gas price in Wei.
+          type: integer
+        value:
+          description: ETH value to send with the transaction (decimal-encoded uint256).
+          type: string
+          example: "0"
+        simulation_type:
+          $ref: "#/components/schemas/SimulationType"
+        save:
+          description: Whether to save the simulation on Tenderly.
+          type: boolean
+        save_if_fails:
+          description: Whether to save the simulation only if it fails.
+          type: boolean
+        generate_access_list:
+          description: Whether to generate an access list for the transaction.
+          type: boolean
+        state_objects:
+          description: >
+            State overrides applied before simulation. Keys are account
+            addresses (hex with `0x` prefix).
+          type: object
+          additionalProperties:
+            $ref: "#/components/schemas/StateObject"
+        access_list:
+          description: EIP-2930 access list for the transaction.
+          type: array
+          items:
+            $ref: "#/components/schemas/AccessListItem"
+      required:
+        - network_id
+        - from
+        - to
+        - input
+    SimulationRequest:
+      description: >
+        Request body for simulating an arbitrary order without it being stored
+        in the orderbook.
+      type: object
+      properties:
+        sellToken:
+          description: The token being sold.
+          allOf:
+            - $ref: "#/components/schemas/Address"
+        buyToken:
+          description: The token being bought.
+          allOf:
+            - $ref: "#/components/schemas/Address"
+        sellAmount:
+          description: >
+            Amount of sell token (hex- or decimal-encoded uint256). Must be
+            greater than zero.
+          allOf:
+            - $ref: "#/components/schemas/TokenAmount"
+        buyAmount:
+          description: Amount of buy token (hex- or decimal-encoded uint256).
+          allOf:
+            - $ref: "#/components/schemas/TokenAmount"
+        kind:
+          description: Whether this is a sell or buy order.
+          allOf:
+            - $ref: "#/components/schemas/OrderKind"
+        owner:
+          description: The address of the order owner.
+          allOf:
+            - $ref: "#/components/schemas/Address"
+        receiver:
+          description: >
+            The address that will receive the buy tokens. Defaults to the owner
+            if omitted.
+          allOf:
+            - $ref: "#/components/schemas/Address"
+        sellTokenBalance:
+          deprecated: true
+          description: Where the sell token should be drawn from.
+          allOf:
+            - $ref: "#/components/schemas/SellTokenSource"
+        buyTokenBalance:
+          deprecated: true
+          description: Where the buy token should be transferred to.
+          allOf:
+            - $ref: "#/components/schemas/BuyTokenDestination"
+        appData:
+          description: >
+            Full app data JSON string.
+          type: string
+        blockNumber:
+          type: integer
+          nullable: true
+        signingScheme:
+          $ref: "#/components/schemas/SigningScheme"
+        signature:
+          $ref: "#/components/schemas/Signature"
+        feeAmount:
+          description: >
+            The fee amount in sell token atoms. Expected to be 0; only present
+            because it must be part of the signed order data.
+          allOf:
+            - $ref: "#/components/schemas/TokenAmount"
+        validTo:
+          description: Unix timestamp (`uint32`) until which the order is valid.
+          type: integer
+        partiallyFillable:
+          description: Whether the order can be partially filled or must be filled all at once.
+          type: boolean
+      required:
+        - sellToken
+        - buyToken
+        - sellAmount
+        - buyAmount
+        - kind
+        - owner
+        - signingScheme
+        - signature
+        - feeAmount
+        - validTo
+        - partiallyFillable
+        - appData
+    OrderSimulation:
+      description: >
+        The Tenderly simulation request for an order, along with any
+        simulation error.
+      type: object
+      properties:
+        tenderly_request:
+          $ref: "#/components/schemas/TenderlyRequest"
+        error:
+          description: Simulation error message, if the simulation failed.
+          type: string
+          nullable: true
+      required:
+        - tenderly_request

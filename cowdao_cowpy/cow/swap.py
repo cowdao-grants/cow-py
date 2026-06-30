@@ -1,4 +1,7 @@
-from cowdao_cowpy.app_data.utils import DEFAULT_APP_DATA_HASH
+from cowdao_cowpy.app_data.utils import (
+    PartnerFee,
+    ensure_app_data_uploaded,
+)
 from cowdao_cowpy.common.chains import Chain
 from cowdao_cowpy.common.config import SupportedChainId
 from cowdao_cowpy.common.constants import CowContractAddress
@@ -49,7 +52,10 @@ async def swap_tokens(
     sell_token: ChecksumAddress,
     buy_token: ChecksumAddress,
     safe_address: ChecksumAddress | None = None,
-    app_data: str = DEFAULT_APP_DATA_HASH,
+    app_code: str | None = None,
+    referrer_address: str | None = None,
+    partner_fee: PartnerFee | None = None,
+    graffiti: str | None = None,
     valid_to: int | None = None,
     env: Envs = "prod",
     slippage_tolerance: float = 0.005,
@@ -57,9 +63,26 @@ async def swap_tokens(
 ) -> CompletedOrder:
     """
     Swap tokens using the CoW Protocol. `CowContractAddress.VAULT_RELAYER` needs to be approved to spend the sell token before calling this function.
+
+    The app-data document built from `app_code`/`referrer_address`/`partner_fee`/
+    `graffiti` is always registered with the orderbook before the order
+    references its hash, so custom metadata works out of the box. With no
+    overrides the default document is used.
     """
     chain_id = SupportedChainId(chain.value[0])
     order_book_api = OrderBookApi(OrderBookAPIConfigFactory.get_config(env, chain_id))
+
+    # Register the app-data document and reference its hash. This is
+    # unconditional (and idempotent: cached per chain/env) so the hash the order
+    # references is guaranteed to exist on the orderbook — otherwise the order
+    # would be rejected with an unregistered-hash error.
+    app_data = await ensure_app_data_uploaded(
+        order_book_api,
+        app_code=app_code,
+        referrer_address=referrer_address,
+        partner_fee=partner_fee,
+        graffiti=graffiti,
+    )
 
     order_quote_request = OrderQuoteRequest(
         sellToken=sell_token,

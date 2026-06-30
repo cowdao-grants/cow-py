@@ -54,9 +54,8 @@ jobs:
         run: |
           poetry run ruff check .
 
+      # No secrets and no integration-gated live tests, so it works on forks.
       - name: Test
-        env:
-          E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY: ${{ secrets.E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY }}
         run: |
           poetry run pytest tests/ --with-slow
 
@@ -71,4 +70,39 @@ jobs:
       - name: Check For changes
         id: changes
         run: |
-          git diff --exit-code 
+          git diff --exit-code
+
+  integration:
+    # Live API tests need repo secrets, which forks don't have. Run them on
+    # pushes to main and manual dispatch only; pull request CI stays hermetic.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Install Poetry
+        run: |
+          pipx install poetry
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+          cache: poetry
+          cache-dependency-path: poetry.lock
+
+      - name: Poetry lock
+        run: |
+          poetry lock
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Test (integration)
+        env:
+          E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY: ${{ secrets.E2E_GNOSIS_MAINNET_TESTING_EOA_PRIVATE_KEY }}
+        run: |
+          poetry run pytest tests/ --with-slow --integration

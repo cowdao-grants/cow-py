@@ -2,9 +2,12 @@
 Tests for uploading application data to the COW server.
 """
 
+import pytest
+
 from cowdao_cowpy.app_data.utils import DEFAULT_APP_DATA_HASH, build_all_app_codes
 
 
+@pytest.mark.integration
 def test_upload_app_data():
     """
     Test the upload of application data to the COW server.

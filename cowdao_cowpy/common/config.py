@@ -12,7 +12,9 @@ class SupportedChainId(Enum):
     POLYGON = 137
     AVALANCHE = 43114
     BNB = 56
-    LENS = 232
+    LINEA = 59144
+    PLASMA = 9745
+    INK = 57073
 
 
 class CowEnv(Enum):
@@ -29,6 +31,8 @@ class ApiContext:
     env: CowEnv
     base_urls: Optional[ApiBaseUrls] = None
     max_tries: Optional[int] = 5
+    bearer_token: Optional[str] = None
+    api_key: Optional[str] = None
 
 
 # Define the list of available environments.

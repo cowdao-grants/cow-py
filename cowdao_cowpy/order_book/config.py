@@ -1,6 +1,6 @@
-from typing import Dict, Literal, Type
+from typing import Dict, Literal, Optional, Type
 
-from cowdao_cowpy.common.api.api_base import APIConfig
+from cowdao_cowpy.common.api.api_base import APIConfig, Context
 from cowdao_cowpy.common.config import SupportedChainId
 
 # Define the Envs type
@@ -16,19 +16,44 @@ class ProdAPIConfig(APIConfig):
         SupportedChainId.BASE: "https://api.cow.fi/base",
         SupportedChainId.POLYGON: "https://api.cow.fi/polygon",
         SupportedChainId.AVALANCHE: "https://api.cow.fi/avalanche",
-        SupportedChainId.LENS: "https://api.cow.fi/lens",
         SupportedChainId.BNB: "https://api.cow.fi/bnb",
+        SupportedChainId.LINEA: "https://api.cow.fi/linea",
+        SupportedChainId.PLASMA: "https://api.cow.fi/plasma",
+        SupportedChainId.INK: "https://api.cow.fi/ink",
     }
 
-    def __init__(self, chain_id: SupportedChainId, base_context=None):
-        super().__init__(chain_id, base_context)
+    # Partner gateway, used instead of config_map when an api_key is configured.
+    partner_config_map = {
+        SupportedChainId.MAINNET: "https://partners.cow.fi/mainnet",
+        SupportedChainId.SEPOLIA: "https://partners.cow.fi/sepolia",
+        SupportedChainId.GNOSIS_CHAIN: "https://partners.cow.fi/xdai",
+        SupportedChainId.ARBITRUM_ONE: "https://partners.cow.fi/arbitrum_one",
+        SupportedChainId.BASE: "https://partners.cow.fi/base",
+        SupportedChainId.POLYGON: "https://partners.cow.fi/polygon",
+        SupportedChainId.AVALANCHE: "https://partners.cow.fi/avalanche",
+        SupportedChainId.BNB: "https://partners.cow.fi/bnb",
+        SupportedChainId.LINEA: "https://partners.cow.fi/linea",
+        SupportedChainId.PLASMA: "https://partners.cow.fi/plasma",
+        SupportedChainId.INK: "https://partners.cow.fi/ink",
+    }
+
+    def __init__(
+        self,
+        chain_id: SupportedChainId,
+        base_context: Optional[Context] = None,
+        bearer_token: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
+        super().__init__(chain_id, base_context, bearer_token, api_key)
         self.env = "prod"  # Store the environment
 
     def with_env(self, env: Envs) -> APIConfig:
         """Switch to a different environment configuration."""
         if env == self.env:
             return self
-        return OrderBookAPIConfigFactory.get_config(env, self.chain_id)
+        return OrderBookAPIConfigFactory.get_config(
+            env, self.chain_id, base_context=self.context
+        )
 
 
 class StagingAPIConfig(APIConfig):
@@ -40,19 +65,44 @@ class StagingAPIConfig(APIConfig):
         SupportedChainId.BASE: "https://barn.api.cow.fi/base",
         SupportedChainId.POLYGON: "https://barn.api.cow.fi/polygon",
         SupportedChainId.AVALANCHE: "https://barn.api.cow.fi/avalanche",
-        SupportedChainId.LENS: "https://barn.api.cow.fi/lens",
         SupportedChainId.BNB: "https://barn.api.cow.fi/bnb",
+        SupportedChainId.LINEA: "https://barn.api.cow.fi/linea",
+        SupportedChainId.PLASMA: "https://barn.api.cow.fi/plasma",
+        SupportedChainId.INK: "https://barn.api.cow.fi/ink",
     }
 
-    def __init__(self, chain_id: SupportedChainId, base_context=None):
-        super().__init__(chain_id, base_context)
+    # Partner gateway, used instead of config_map when an api_key is configured.
+    partner_config_map = {
+        SupportedChainId.MAINNET: "https://partners.barn.cow.fi/mainnet",
+        SupportedChainId.SEPOLIA: "https://partners.barn.cow.fi/sepolia",
+        SupportedChainId.GNOSIS_CHAIN: "https://partners.barn.cow.fi/xdai",
+        SupportedChainId.ARBITRUM_ONE: "https://partners.barn.cow.fi/arbitrum_one",
+        SupportedChainId.BASE: "https://partners.barn.cow.fi/base",
+        SupportedChainId.POLYGON: "https://partners.barn.cow.fi/polygon",
+        SupportedChainId.AVALANCHE: "https://partners.barn.cow.fi/avalanche",
+        SupportedChainId.BNB: "https://partners.barn.cow.fi/bnb",
+        SupportedChainId.LINEA: "https://partners.barn.cow.fi/linea",
+        SupportedChainId.PLASMA: "https://partners.barn.cow.fi/plasma",
+        SupportedChainId.INK: "https://partners.barn.cow.fi/ink",
+    }
+
+    def __init__(
+        self,
+        chain_id: SupportedChainId,
+        base_context: Optional[Context] = None,
+        bearer_token: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ):
+        super().__init__(chain_id, base_context, bearer_token, api_key)
         self.env = "staging"  # Store the environment
 
     def with_env(self, env: Envs) -> APIConfig:
         """Switch to a different environment configuration."""
         if env == self.env:
             return self
-        return OrderBookAPIConfigFactory.get_config(env, self.chain_id)
+        return OrderBookAPIConfigFactory.get_config(
+            env, self.chain_id, base_context=self.context
+        )
 
 
 class OrderBookAPIConfigFactory:
@@ -62,11 +112,22 @@ class OrderBookAPIConfigFactory:
     }
 
     @staticmethod
-    def get_config(env: Envs, chain_id: SupportedChainId) -> APIConfig:
+    def get_config(
+        env: Envs,
+        chain_id: SupportedChainId,
+        base_context: Optional[Context] = None,
+        bearer_token: Optional[str] = None,
+        api_key: Optional[str] = None,
+    ) -> APIConfig:
         """Get a config instance for the specified environment and chain."""
         config_class = OrderBookAPIConfigFactory.config_classes.get(env)
 
         if config_class:
-            return config_class(chain_id)
+            return config_class(
+                chain_id,
+                base_context,
+                bearer_token=bearer_token,
+                api_key=api_key,
+            )
         else:
             raise ValueError(f"Unknown environment: {env}")

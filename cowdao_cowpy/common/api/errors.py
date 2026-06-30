@@ -18,8 +18,19 @@ class SerializationError(BaseApiError):
     pass
 
 
-class ApiResponseError(BaseApiError):
-    """Raised when the API returns an error response."""
+class UnexpectedResponseError(BaseApiError):
+    """Raised when the API returns an unexpected response."""
+
+    pass
+
+
+class ApiResponseError(UnexpectedResponseError):
+    """Raised when the API returns an error response.
+
+    Subclasses UnexpectedResponseError for backwards compatibility: callers
+    that caught UnexpectedResponseError keep working now that API errors
+    propagate with their original errorType instead of being rewrapped.
+    """
 
     def __init__(
         self, message: str, error_type: str, response: Dict[str, Any] | Response
@@ -30,11 +41,5 @@ class ApiResponseError(BaseApiError):
 
 class NetworkError(BaseApiError):
     """Raised when there's a network-related error."""
-
-    pass
-
-
-class UnexpectedResponseError(BaseApiError):
-    """Raised when the API returns an unexpected response."""
 
     pass

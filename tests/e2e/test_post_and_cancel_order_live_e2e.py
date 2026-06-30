@@ -136,6 +136,7 @@ async def test_post_and_cancel_order_live_e2e(e2e_gnosis_mainnet_testing_eoa):
 
 
 @pytest.mark.asyncio
+@pytest.mark.integration
 async def test_get_order_multi_env():
     config = OrderBookAPIConfigFactory.get_config("prod", SupportedChainId.MAINNET)
     order_book = OrderBookApi(config)

@@ -20,7 +20,9 @@ class Chain(Enum):
     POLYGON = (SupportedChainId.POLYGON, "polygon", "https://polygonscan.com")
     AVALANCHE = (SupportedChainId.AVALANCHE, "avalanche", "https://snowtrace.io")
     BNB = (SupportedChainId.BNB, "bnb", "https://bscscan.com")
-    LENS = (SupportedChainId.LENS, "lens", "https://explorer.lens.xyz/")
+    LINEA = (SupportedChainId.LINEA, "linea", "https://lineascan.build")
+    PLASMA = (SupportedChainId.PLASMA, "plasma", "https://plasmascan.to")
+    INK = (SupportedChainId.INK, "ink", "https://explorer.inkonchain.com")
 
     def __init__(
         self, id: SupportedChainId, network_name: str, explorer_url: str
