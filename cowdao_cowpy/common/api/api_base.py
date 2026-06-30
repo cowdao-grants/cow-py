@@ -276,9 +276,13 @@ class ApiBase:
         # gateway), not just the X-API-Key header.
         api_key_override = context_override.get("api_key")
 
-        # Handle environment override
+        # Handle environment override. Read non-destructively: backoff retries
+        # re-invoke this coroutine with the *same* context_override dict, so
+        # mutating it here (e.g. pop) would strip the override on the 2nd+ try
+        # and silently fall back to the default-env URL. context_override is
+        # excluded from the httpx kwargs below, so it never reaches httpx.
         if "env" in context_override:
-            env = context_override.pop("env")  # Remove to avoid passing to httpx
+            env = context_override.get("env")
             try:
                 # Use the config's with_env method to get a config for the desired environment
                 temp_config = self.config.with_env(env)

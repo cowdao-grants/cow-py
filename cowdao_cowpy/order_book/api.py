@@ -94,7 +94,6 @@ class OrderBookApi(ApiBase):
         for env in ENVS_LIST:
             # TODO extract & exclude current env from loop.
             try:
-                # TODO: context override does not appear to work as expected.
                 result = await self.get_order_by_uid(
                     order_uid, {**context_override, "env": env.value}
                 )

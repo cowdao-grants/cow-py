@@ -230,3 +230,59 @@ async def test_order_book_api_accepts_injected_client(httpx_mock: HTTPXMock):
     assert order_book._get_client() is client
     assert not client.is_closed
     await client.aclose()
+
+
+STAGING_BASE_URL = "http://staging.localhost"
+
+
+def make_env_sut():
+    """A SUT whose ``with_env("staging")`` routes to a distinct base URL, so a
+    request that switches env can be told apart from one that fell back to prod."""
+
+    class StagingConfig(APIConfig):
+        config_map = {SupportedChainId.SEPOLIA: STAGING_BASE_URL}
+        partner_config_map = {SupportedChainId.SEPOLIA: STAGING_BASE_URL}
+
+        def __init__(self):
+            super().__init__(SupportedChainId.SEPOLIA, None)
+
+    class ProdConfig(APIConfig):
+        config_map = {SupportedChainId.SEPOLIA: BASE_URL}
+        partner_config_map = {SupportedChainId.SEPOLIA: PARTNER_BASE_URL}
+
+        def __init__(self):
+            super().__init__(SupportedChainId.SEPOLIA, None)
+
+        def with_env(self, env):
+            return StagingConfig() if env == "staging" else self
+
+    class MyAPI(ApiBase):
+        async def get_version(self, context_override={}):
+            return await self._fetch(
+                path="/api/v1/version", context_override=context_override
+            )
+
+    return MyAPI(config=ProdConfig())
+
+
+@pytest.mark.asyncio
+async def test_env_override_survives_retry(httpx_mock: HTTPXMock):
+    # Regression: backoff retries re-invoke _fetch with the *same*
+    # context_override dict. The env override used to be popped on the first
+    # attempt, so retries silently fell back to the default (prod) URL. Both
+    # the initial 503 and its retry must target the staging URL.
+    httpx_mock.add_response(
+        url=f"{STAGING_BASE_URL}/api/v1/version", status_code=503, text="busy"
+    )
+    httpx_mock.add_response(url=f"{STAGING_BASE_URL}/api/v1/version", json=OK_RESPONSE)
+
+    response = await make_env_sut().get_version(
+        context_override={"env": "staging", **FAST_BACKOFF}
+    )
+
+    assert response == OK_RESPONSE
+    requests = httpx_mock.get_requests()
+    assert len(requests) == 2
+    assert all(
+        str(request.url) == f"{STAGING_BASE_URL}/api/v1/version" for request in requests
+    )
