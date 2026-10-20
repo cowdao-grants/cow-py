@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Union
 
 from eth_account import Account
 from eth_account.datastructures import SignedMessage
+from eth_account.messages import encode_defunct
 from eth_account.signers.local import LocalAccount
 from eth_typing import ChecksumAddress
 from eth_utils.conversions import to_hex
@@ -83,9 +84,24 @@ def ecdsa_sign_typed_data(
     domain_data: TypedDataDomain,
     message_types: Dict[str, Any],
     message_data: Dict[str, Any],
+    scheme: SigningScheme = SigningScheme.EIP712,
 ) -> SignedMessage:
-    return Account._sign_hash(
-        hash_typed_data(domain_data, message_types, message_data), owner.key
+    """
+    Sign EIP-712 typed data with one of the two ECDSA signing schemes the
+    settlement contract accepts.
+
+    EIP712 signs the typed-data digest directly. ETHSIGN signs the digest the
+    way ``eth_sign`` does, i.e. ``keccak256("\\x19Ethereum Signed Message:\\n32"
+    || digest)``, which is what ``GPv2Signing`` and the orderbook recover
+    against for that scheme.
+    """
+    digest = hash_typed_data(domain_data, message_types, message_data)
+    if scheme == SigningScheme.EIP712:
+        return Account._sign_hash(digest, owner.key)
+    if scheme == SigningScheme.ETHSIGN:
+        return owner.sign_message(encode_defunct(primitive=bytes(digest)))
+    raise ValueError(
+        f"{scheme!r} is not an ECDSA signing scheme; use EIP712 or ETHSIGN"
     )
 
 
@@ -94,7 +110,7 @@ def sign_order(
 ) -> EcdsaSignature:
     normalized_order = normalize_order(order)
     signed_data = ecdsa_sign_typed_data(
-        owner, domain, {"Order": ORDER_TYPE_FIELDS}, normalized_order
+        owner, domain, {"Order": ORDER_TYPE_FIELDS}, normalized_order, scheme
     )
     return EcdsaSignature(
         scheme=scheme,
@@ -120,7 +136,7 @@ def sign_order_cancellations(
     data = {"orderUids": order_uids}
     types = {"OrderCancellations": CANCELLATIONS_TYPE_FIELDS}
 
-    signed_data = ecdsa_sign_typed_data(owner, domain, types, data)
+    signed_data = ecdsa_sign_typed_data(owner, domain, types, data, scheme)
 
     return EcdsaSignature(scheme=scheme, data=to_hex(signed_data.signature))
 

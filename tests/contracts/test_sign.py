@@ -1,11 +1,11 @@
 import pytest
-from eth_account.messages import SignableMessage
-from eth_account.signers.local import LocalAccount
-from eth_utils.conversions import to_hex
+from eth_account import Account
+from eth_account.messages import encode_defunct
+from eth_typing import HexStr
+from eth_utils.crypto import keccak
 from web3 import EthereumTesterProvider, Web3
 
-from cowdao_cowpy.contracts.order import hash_order_cancellation
-
+from cowdao_cowpy.contracts.order import hash_order, hash_order_cancellation
 from cowdao_cowpy.contracts.sign import (
     SigningScheme,
     sign_order,
@@ -16,60 +16,59 @@ from .conftest import SAMPLE_DOMAIN, SAMPLE_ORDER
 
 w3 = Web3(EthereumTesterProvider())
 
-
-def patched_sign_message_builder(account: LocalAccount):
-    def sign_message(message):
-        # Determine the correct message format
-        if isinstance(message, SignableMessage):
-            message_to_hash = message.body
-        elif isinstance(message, (bytes, str)):
-            message_to_hash = message
-        else:
-            raise TypeError("Unsupported message type for signing.")
-
-        # Hash and sign the message
-        message_hash = Web3.solidity_keccak(["bytes"], [message_to_hash])
-        signature = account.sign_message(message_hash)
-        r, s, v = signature["r"], signature["s"], signature["v"]
-
-        # Concatenate the signature components into a hex string
-        signature_hex = to_hex(r)[2:] + to_hex(s)[2:] + hex(v)[2:]
-
-        return signature_hex
-
-    return sign_message
+ETHSIGN_PREFIX = b"\x19Ethereum Signed Message:\n32"
 
 
-@pytest.mark.asyncio
+def _signed_digest(digest: bytes, scheme: SigningScheme) -> bytes:
+    """The 32 bytes an ECDSA signature of ``digest`` must recover against."""
+    if scheme == SigningScheme.ETHSIGN:
+        return keccak(ETHSIGN_PREFIX + digest)
+    return digest
+
+
 @pytest.mark.parametrize("scheme", [SigningScheme.EIP712, SigningScheme.ETHSIGN])
-async def test_sign_order(monkeypatch, scheme):
+def test_sign_order(scheme):
     signer = w3.eth.account.create()
-
-    patched_sign_message = patched_sign_message_builder(signer)
-
-    # Use monkeypatch to temporarily replace sign_message
-    monkeypatch.setattr(signer, "sign_message", patched_sign_message)
 
     signed_order = sign_order(SAMPLE_DOMAIN, SAMPLE_ORDER, signer, scheme)
 
-    # Extract 'v' value from the last two characters of the signature
-    v = signed_order.data[-2:]
+    assert signed_order.scheme == scheme
+    assert signed_order.data[-2:] in ["1b", "1c"]
 
-    assert v in ["1b", "1c"]
+    digest = bytes(hash_order(SAMPLE_DOMAIN, SAMPLE_ORDER))
+    recovered = Account._recover_hash(
+        _signed_digest(digest, scheme), signature=signed_order.data
+    )
+    assert recovered == signer.address
 
 
-@pytest.mark.asyncio
+def test_ethsign_order_signature_is_an_eth_sign_of_the_eip712_digest():
+    """ETHSIGN must equal what a wallet's ``eth_sign`` of the EIP-712 digest returns."""
+    signer = w3.eth.account.create()
+    digest = bytes(hash_order(SAMPLE_DOMAIN, SAMPLE_ORDER))
+
+    expected = signer.sign_message(encode_defunct(primitive=digest)).signature
+    actual = sign_order(SAMPLE_DOMAIN, SAMPLE_ORDER, signer, SigningScheme.ETHSIGN)
+
+    assert actual.data == Web3.to_hex(expected)
+
+
 @pytest.mark.parametrize(
     "scheme", [SigningScheme.EIP712.value, SigningScheme.ETHSIGN.value]
 )
-async def test_sign_order_cancellation(scheme):
+def test_sign_order_cancellation(scheme):
     signer = w3.eth.account.create()
     order_uid = "0x" + "2a" * 56
 
     signature_data = sign_order_cancellation(SAMPLE_DOMAIN, order_uid, signer, scheme)
-    order_hash = hash_order_cancellation(SAMPLE_DOMAIN, order_uid)
+    order_hash = Web3.to_bytes(
+        hexstr=HexStr(hash_order_cancellation(SAMPLE_DOMAIN, order_uid))
+    )
 
     assert (
-        w3.eth.account._recover_hash(order_hash, signature=signature_data.data)
+        w3.eth.account._recover_hash(
+            _signed_digest(order_hash, SigningScheme(scheme)),
+            signature=signature_data.data,
+        )
         == signer.address
     )
