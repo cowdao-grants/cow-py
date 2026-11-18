@@ -643,3 +643,75 @@ class TestCurrentTwapPartInOrderBook:
 
 def uint256_helper(n: int) -> str:
     return Web3.to_hex(Web3.to_bytes(n).rjust(32, b"\x00"))[2:]
+
+
+@pytest.mark.asyncio
+class TestTwapStartAndDurationTypes:
+    """`TwapData` holds `StartType`/`DurationType` members, so every branch on
+    them must compare against the members, not their string values."""
+
+    START = 1700000000
+
+    def data(self, **overrides) -> TwapData:
+        return TwapData(**{**TWAP_PARAMS_TEST.__dict__, **overrides})
+
+    async def test_at_epoch_start_does_not_read_the_cabinet(self):
+        # A TWAP created without a context factory never has its cabinet set.
+        mock_cabinet = AsyncMock(return_value=uint256_helper(0))
+
+        class UnsetCabinetTwap(Twap):
+            cabinet = mock_cabinet
+
+        twap = UnsetCabinetTwap(
+            handler=TWAP_ADDRESS,
+            data=self.data(start_type=StartType.AT_EPOCH, start_time_epoch=self.START),
+        )
+        params = PollParams(
+            owner=OWNER,
+            provider=Mock(),
+            chain=Chain.MAINNET,
+            order_book_api=AsyncMock(),
+            block_info={"number": 1, "timestamp": self.START + 50},  # type: ignore
+        )
+
+        assert await twap.start_timestamp(params) == self.START
+        assert await twap.poll_validate(params) is None
+        mock_cabinet.assert_not_called()
+
+    def test_limit_duration_end_timestamp(self):
+        twap = Twap.from_data(
+            self.data(
+                duration_type=DurationType.LIMIT_DURATION,
+                duration_of_part=600,
+            )
+        )
+        # (n - 1) * t + span, not n * t.
+        assert twap.end_timestamp(self.START) == self.START + 9 * 3600 + 600
+
+    def test_static_input_ignores_unused_epoch_and_duration(self):
+        twap = Twap.from_data(
+            self.data(
+                start_type=StartType.AT_MINING_TIME,
+                start_time_epoch=self.START,
+                duration_type=DurationType.AUTO,
+                duration_of_part=600,
+            )
+        )
+        assert twap.static_input.t0 == 0
+        assert twap.static_input.span == 0
+        assert twap.id == Twap.from_data(TWAP_PARAMS_TEST, twap.salt).id
+
+    def test_deserialized_data_uses_the_enums(self):
+        twap = Twap.from_data(
+            self.data(
+                start_type=StartType.AT_EPOCH,
+                start_time_epoch=self.START,
+                duration_type=DurationType.LIMIT_DURATION,
+                duration_of_part=600,
+            )
+        )
+        data = Twap.deserialize(twap.serialize()).data
+        assert data.start_type is StartType.AT_EPOCH
+        assert data.duration_type is DurationType.LIMIT_DURATION
+        assert data.to_dict()["startType"] == "AT_EPOCH"
+        assert data.to_dict()["durationType"] == "LIMIT_DURATION"
