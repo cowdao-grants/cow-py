@@ -228,13 +228,11 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         data = self.data
         start_time = (
             "AT_MINING_TIME"
-            if data.start_type == StartType.AT_MINING_TIME.value
+            if data.start_type == StartType.AT_MINING_TIME
             else data.start_time_epoch
         )
         duration_of_part = (
-            "AUTO"
-            if data.duration_type == DurationType.AUTO.value
-            else data.duration_of_part
+            "AUTO" if data.duration_type == DurationType.AUTO else data.duration_of_part
         )
 
         details = {
@@ -261,13 +259,11 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         min_part_limit = buy_amount // number_of_parts if number_of_parts > 0 else 0
 
         span = (
-            0
-            if params.duration_type == DurationType.AUTO.value
-            else params.duration_of_part
+            0 if params.duration_type == DurationType.AUTO else params.duration_of_part
         )
         t0 = (
             0
-            if params.start_type == StartType.AT_MINING_TIME.value
+            if params.start_type == StartType.AT_MINING_TIME
             else params.start_time_epoch
         )
 
@@ -331,7 +327,7 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
     async def start_timestamp(self, params: PollParams) -> int:
         start_type = self.data.start_type
 
-        if start_type == StartType.AT_EPOCH.value:
+        if start_type == StartType.AT_EPOCH:
             return self.data.start_time_epoch
 
         cabinet = await self.cabinet(params)
@@ -355,7 +351,7 @@ class Twap(ConditionalOrder[TwapData, TwapStruct]):
         duration_type = self.data.duration_type
         duration_of_part = self.data.duration_of_part
 
-        if duration_type == DurationType.LIMIT_DURATION.value:
+        if duration_type == DurationType.LIMIT_DURATION:
             return (
                 start_timestamp
                 + (number_of_parts - 1) * time_between_parts
@@ -425,18 +421,18 @@ def static_transform_struct_to_data(
     params: TwapStruct,
 ) -> TwapData:
     duration_of_part = (
-        {"type": DurationType.AUTO.value, "duration": 0}
+        {"type": DurationType.AUTO, "duration": 0}
         if params.span == 0
         else {
-            "type": DurationType.LIMIT_DURATION.value,
+            "type": DurationType.LIMIT_DURATION,
             "duration": params.span,
         }
     )
 
     start_time = (
-        {"type": StartType.AT_MINING_TIME.value, "epoch": 0}
+        {"type": StartType.AT_MINING_TIME, "epoch": 0}
         if params.t0 == 0
-        else {"type": StartType.AT_EPOCH.value, "epoch": params.t0}
+        else {"type": StartType.AT_EPOCH, "epoch": params.t0}
     )
 
     return TwapData(
